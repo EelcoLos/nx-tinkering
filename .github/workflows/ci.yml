@@ -37,7 +37,7 @@ jobs:
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       - run: export DOTNET_ROOT="$(dirname $(which dotnet))"
         continue-on-error: true
-      - run: nx affected -t lint test build
+      - run: npx nx affected -t lint test build
 
       - run: npx playwright install
-      - run: nx affected --parallel 1 -t e2e-ci
+      - run: npx nx affected --parallel 1 -t e2e-ci
