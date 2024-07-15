@@ -66,14 +66,13 @@
         "inferredTargets": {
           "build": {
             "inputs": [
-              "production",
-              "^production",
-              { "externalDependencies": [] },
-              "!{workspaceRoot}/nx.json",
-              "!{workspaceRoot}/packag*.*",
-              "!{workspaceRoot}/**/packag*.*",
+              "!{workspaceRoot}/package-lock.json",
               "!{workspaceRoot}/package.json",
-              "!{workspaceRoot}/package-lock.json"
+              "!{workspaceRoot}/**/packag*.*",
+              "!{workspaceRoot}/packag*.*",
+              "!{workspaceRoot}/nx.json",
+              "production",
+              "^production"
             ],
             "targetName": "build",
             "configurations": {
@@ -88,14 +87,13 @@
           "serve": "serve",
           "test": {
             "inputs": [
-              "default",
-              "^production",
-              { "externalDependencies": [] },
-              "!{workspaceRoot}/nx.json",
-              "!{workspaceRoot}/packag*.*",
-              "!{workspaceRoot}/**/packag*.*",
+              "!{workspaceRoot}/package-lock.json",
               "!{workspaceRoot}/package.json",
-              "!{workspaceRoot}/package-lock.json"
+              "!{workspaceRoot}/**/packag*.*",
+              "!{workspaceRoot}/packag*.*",
+              "!{workspaceRoot}/nx.json",
+              "default",
+              "^production"
             ],
             "targetName": "test",
             "cache": true,
