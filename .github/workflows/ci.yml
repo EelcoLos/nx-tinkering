@@ -47,5 +47,19 @@ jobs:
         continue-on-error: true
       - run: npx nx affected -t lint test build
 
-      - run: npx playwright install
+      # - name: Cache Playwright node modules
+      #   id: cache-node-playwright-modules
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: node_modules
+      #     key: npm-playwright-${{runner.os}}-${{ hashFiles('package-lock.json') }}
+      - name: Cache Playwright binary
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install
       - run: npx nx affected --parallel 1 -t e2e-ci
