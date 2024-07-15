@@ -1,0 +1,9 @@
+{
+  "name": "nx-tinkering-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/nx-tinkering-e2e/src",
+  "implicitDependencies": ["nx-tinkering"],
+  "// targets": "to see all targets run: nx show project nx-tinkering-e2e --web",
+  "targets": {}
+}
