@@ -47,11 +47,11 @@ jobs:
         continue-on-error: true
       - name: Install dotnet SDK
         run: |
-          npx nx cloud record -- wget https://download.visualstudio.microsoft.com/download/pr/2e5b5b8e-4e0d-4d6a-8e3e-8f5a8b7b2b6e/0e3c632f6e8a8e6a2e8e8e8e8e8e8e8e/dotnet-sdk-8.0.103-linux-x64.tar.gz
-          npx nx cloud record -- mkdir -p /usr/share/dotnet
-          npx nx cloud record -- tar -zxf dotnet-sdk-8.0.103-linux-x64.tar.gz -C /usr/share/dotnet
-          npx nx cloud record -- export PATH="$PATH:/usr/share/dotnet"
-          npx nx cloud record -- dotnet --version
+          npx nx-cloud record -- wget https://download.visualstudio.microsoft.com/download/pr/2e5b5b8e-4e0d-4d6a-8e3e-8f5a8b7b2b6e/0e3c632f6e8a8e6a2e8e8e8e8e8e8e8e/dotnet-sdk-8.0.103-linux-x64.tar.gz
+          npx nx-cloud record -- mkdir -p /usr/share/dotnet
+          npx nx-cloud record -- tar -zxf dotnet-sdk-8.0.103-linux-x64.tar.gz -C /usr/share/dotnet
+          npx nx-cloud record -- export PATH="$PATH:/usr/share/dotnet"
+          npx nx-cloud record -- dotnet --version
       - run: npx nx-cloud record -- nx affected -t lint test build
       # - name: Cache Playwright node modules
       #   id: cache-node-playwright-modules
