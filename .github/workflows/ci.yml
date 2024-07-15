@@ -45,7 +45,7 @@ jobs:
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       - run: export DOTNET_ROOT="$(dirname $(which dotnet))"
         continue-on-error: true
-      - run: npx nx affected -t lint test build
+      - run: nx-cloud record -- nx affected -t lint test build
 
       # - name: Cache Playwright node modules
       #   id: cache-node-playwright-modules
@@ -61,5 +61,5 @@ jobs:
           key: playwright-${{ hashFiles('package-lock.json') }}
       - name: Install playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install
-      - run: npx nx affected --parallel 1 -t e2e-ci
+        run: nx-cloud record -- npx playwright install
+      - run: nx-cloud record -- nx affected --parallel 1 -t e2e-ci
