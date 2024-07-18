@@ -119,10 +119,5 @@
       "unitTestRunner": "jest"
     }
   },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx-remotecache-azure",
-      "options": {}
-    }
-  }
+  "nxCloudAccessToken": "ZjAxYjNmZTUtOGE3OS00MTgzLTlmNGQtN2ZhYzdhNWI3NzkzfHJlYWQtd3JpdGU="
 }
