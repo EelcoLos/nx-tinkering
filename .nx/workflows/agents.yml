@@ -1,0 +1,24 @@
+launch-templates:
+  # Custom template name, the name is referenced via --distribute-on="3 my-linux-medium-js"
+  # You can define as many templates as you need, commonly used to make different sizes or toolchains depending on your workspace needs
+  # template that installs rust
+  my-linux-dotnet-medium:
+    resource-class: 'docker_linux_amd64/medium'
+    image: 'ubuntu22.04-node20.11-v9'
+    init-steps:
+      - name: Checkout
+        uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/checkout/main.yaml'
+      - name: Restore Node Modules Cache
+        uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/cache/main.yaml'
+        inputs:
+          key: 'package-lock.json|yarn.lock|pnpm-lock.yaml'
+          paths: 'node_modules'
+          base_branch: 'main'
+      - name: Install Node Modules
+        uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/install-node-modules/main.yaml'
+      - name: Install Dotnet
+        script: |
+          sudo apt-get update && \
+          sudo apt-get install -y dotnet-sdk-8.0    
+          echo "export PATH=$PATH:/usr/share/dotnet" >> $NX_CLOUD_ENV
+
