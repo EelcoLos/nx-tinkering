@@ -32,14 +32,3 @@ jobs:
 
       # Prepend any command with "nx-cloud" to record its logs to Nx Cloud
       - run: npx nx-cloud record -- nx affected -t lint test build e2e-ci
-
-      - name: Cache Playwright binary
-        id: cache-playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ hashFiles('package-lock.json') }}
-      - name: Install playwright browsers
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install
-      - run: npx nx-cloud record -- nx affected --parallel 1 -t e2e-ci
