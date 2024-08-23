@@ -34,7 +34,9 @@ launch-templates:
       - name: Install Dotnet
         script: |
           sudo apt-get update && \
-          sudo apt-get install -y dotnet-sdk-8.0    
+          sudo apt-get install -y dotnet-sdk-8.0
+          dotnet dev-certs https
+          sudo -E dotnet dev-certs https -ep /usr/local/share/ca-certificates/aspnet/https.crt --format PEM    
           echo "export DOTNET_ROOT=~/.dotnet" >> $NX_CLOUD_ENV
           echo "export PATH=$PATH:$DOTNET_ROOT" >> $NX_CLOUD_ENV
 
