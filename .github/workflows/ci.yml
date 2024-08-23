@@ -29,7 +29,11 @@ jobs:
 
       - run: npm ci --foreground-scripts
       - uses: nrwl/nx-set-shas@v4
-       - name: Cache Playwright binary
+
+      # Prepend any command with "nx-cloud" to record its logs to Nx Cloud
+      - run: npx nx-cloud record -- nx affected -t lint test build e2e-ci
+
+      - name: Cache Playwright binary
         id: cache-playwright
         uses: actions/cache@v4
         with:
@@ -38,6 +42,4 @@ jobs:
       - name: Install playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install
-
-      # Prepend any command with "nx-cloud" to record its logs to Nx Cloud
-      - run: npx nx-cloud record -- nx affected -t lint test build e2e-ci
+      - run: npx nx-cloud record -- nx affected --parallel 1 -t e2e-ci
