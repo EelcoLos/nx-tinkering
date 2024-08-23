@@ -20,6 +20,12 @@ launch-templates:
           key: 'package-lock.json|yarn.lock|pnpm-lock.yaml'
           paths: '~/.cache/ms-playwright'
           base_branch: 'main'
+      - name: Restore Nuget Cache
+        uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/cache/main.yaml'
+        inputs:
+          key: '**/*.csproj'
+          paths: '~/.nuget/packages'
+          base_branch: 'main'
       - name: Install Node Modules
         uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/install-node-modules/main.yaml'
       - name: Install Playwright
