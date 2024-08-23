@@ -1,0 +1,136 @@
+# Basic set up for three package managers
+
+version: 2
+updates:
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'daily'
+    # Npm Packages
+    - package-ecosystem: 'npm'
+      directory: '/'
+      ignore:
+          - dependency-name: '@angular/*'
+            update-types: ['version-update:semver-major']
+          - dependency-name: '@ngrx/*'
+            update-types: ['version-update:semver-major']
+          - dependency-name: 'ng-packagr'
+            update-types: ['version-update:semver-major']
+          - dependency-name: 'nx'
+            update-types:
+                ['version-update:semver-major', 'version-update:semver-minor']
+          - dependency-name: '@nx/*'
+            update-types:
+                ['version-update:semver-major', 'version-update:semver-minor']
+      groups:
+          client-angular:
+              patterns:
+                  - '@angular/*'
+          client-angular-devkit:
+              patterns:
+                  - '@angular-devkit/*'
+          client-angular-eslint:
+              patterns:
+                  - '@angular-eslint/*'
+          client-angular-schematics:
+              patterns:
+                  - '@angular-devkit/schematics'
+                  - '@schematics/angular'
+          client-fortawesome:
+              patterns:
+                  - '@fortawesome/fontawesome-free'
+                  - '@fortawesome/fontawesome-svg-core'
+                  - '@fortawesome/free-solid-svg-icons'
+          client-jest:
+              patterns:
+                  - 'jest'
+                  - 'jest-environment-jsdom'
+                  - 'jest-jasmine2'
+          client-ngrx:
+              patterns:
+                  - '@ngrx*'
+          client-nx:
+              patterns:
+                  - '@nx*'
+                  - 'nx-cloud'
+                  - 'nx'
+          client-pdfmake:
+              patterns:
+                  - '@types/pdfmake'
+                  - 'pdfmake'
+          client-typescript-eslint:
+              patterns:
+                  - 'typescript-eslint/*'
+                  - '@typescript-eslint/*'
+                  - '@typescript-eslint/eslint-plugin'
+                  - '@typescript-eslint/utils'
+                  - '@nx/eslint-plugin'
+          client-prettier:
+              patterns:
+                  - 'eslint-plugin-prettier'
+                  - 'prettier'
+      labels:
+          # Use our labels instead of default dependabot labels (we like consistency)
+          - 'type: dependencies'
+      open-pull-requests-limit: 99
+      pull-request-branch-name:
+          # This branch separator prevents creating deeply nested folder names due to the default '/' separator.
+          # we like it better this way but its up to you to pick your preference.
+          separator: '-'
+      rebase-strategy: 'auto'
+      schedule:
+          interval: 'daily'
+      target-branch: 'main'
+
+    # Dotnet apps
+    - package-ecosystem: 'nuget'
+      directory: '/'
+      ignore:
+          - dependency-name: 'Microsoft.*'
+            update-types: ['version-update:semver-major']
+          - dependency-name: 'FluentValidation'
+            update-types:
+                ['version-update:semver-major', 'version-update:semver-minor']
+          - dependency-name: 'FluentValidation.*'
+            update-types:
+                ['version-update:semver-major', 'version-update:semver-minor']
+      groups:
+          nuget-fastendpoints:
+              patterns:
+                  - 'FastEndpoints*'
+          nuget-microsoft-updated-at-same-time:
+              patterns:
+                  - 'Microsoft.AspNetCore.Authentication.JwtBearer'
+                  - 'Microsoft.AspNetCore.Mvc.Testing'
+                  - 'Microsoft.AspNetCore.SpaServices.Extensions'
+                  - 'Microsoft.EntityFrameworkCore.SqlServer'
+                  - 'Microsoft.EntityFrameworkCore.Tools'
+                  - 'Microsoft.EntityFrameworkCore'
+                  - 'Microsoft.Extensions.Caching.SqlServer'
+                  - 'Microsoft.Extensions.Http.Polly'
+          nuget-microsoft-identity-web:
+              patterns:
+                  - 'Microsoft.Identity.Web*'
+          nuget-microsoft-update-config-at-same-time:
+              patterns:
+                  - 'Microsoft.Extensions.Configuration.Json'
+                  - 'Microsoft.Extensions.Http'
+                  - 'Microsoft.Extensions.Logging'
+                  - 'Microsoft.Extensions.Options'
+          nuget-xunit:
+              patterns:
+                  - 'xunit'
+                  - 'xunit*'
+
+      labels:
+          # Use our labels instead of default dependabot labels (we like consistency)
+          - 'type: dependencies'
+      open-pull-requests-limit: 99
+      pull-request-branch-name:
+          # This branch separator prevents creating deeply nested folder names due to the default '/' separator.
+          # we like it better this way but its up to you to pick your preference.
+          separator: '-'
+      rebase-strategy: 'auto'
+      schedule:
+          interval: 'daily'
+      target-branch: 'main'
