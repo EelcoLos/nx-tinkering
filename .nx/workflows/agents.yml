@@ -5,6 +5,9 @@ launch-templates:
   my-linux-dotnet-medium:
     resource-class: 'docker_linux_amd64/medium'
     image: 'ubuntu22.04-node20.11-v9'
+    env:
+      # enable verbose logging for all steps
+      NX_VERBOSE_LOGGING: true
     init-steps:
       - name: Checkout
         uses: 'nrwl/nx-cloud-workflows/v4/workflow-steps/checkout/main.yaml'
