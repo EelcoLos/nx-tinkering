@@ -1,0 +1,87 @@
+#full documentation can be found here: https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning
+name: 'CodeQL'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 5 * * 0'
+
+jobs:
+  trigger:
+    if: github.event.pull_request.draft == false
+    name: Trigger
+    runs-on: ubuntu-latest
+    outputs:
+      language: ${{steps.custom-trigger.outputs.language}}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 2
+
+      - name: Custom path trigger
+        id: custom-trigger
+        shell: pwsh
+        run: |
+          Write-Output "files changed: " + (git diff --name-only HEAD^1..HEAD)
+          $codeLanguage = New-Object Collections.Generic.List[String]
+          if ($null -ne ($(git diff --name-only HEAD^1..HEAD -- *.cs))){
+            #todo needs custom build or something
+            Write-Output "C# files changed"
+            $codeLanguage.Add("csharp")
+          }
+          if ($null -ne ($(git diff --name-only HEAD^1..HEAD -- '*.js' '*.ts'))){
+            $codeLanguage.Add("javascript-typescript")
+          }
+          $jsonString = ConvertTo-Json($codeLanguage) -Compress
+
+          Write-Output "language=$jsonString" >> $env:GITHUB_OUTPUT
+
+  analyze:
+    needs: trigger
+    if: github.event.pull_request.draft == false && needs.trigger.outputs.language != '' && needs.trigger.outputs.language != '[]'
+    name: Analyze
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{fromJson(needs.trigger.outputs.language)}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: restore nuget cache for csharp
+        if: contains(matrix.language, 'csharp')
+        id: cache-nuget
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('apps/api/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-${{ hashFiles('apps/api/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
+
+      - name: Build dotnet
+        if: contains(matrix.language, 'csharp')
+        run: dotnet build nx-tinker.sln
+
+      - name: Autobuild
+        if: ${{!contains(matrix.language, 'csharp')}}
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{matrix.language}}'
