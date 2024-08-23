@@ -17,18 +17,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      - name: Cache nuget packages
-        id: cache-nuget
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/**-test/*.csproj', 'apps/**-integration-test/*.csproj', 'libs/**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/**-test/*.csproj', 'apps/**-integration-test/*.csproj', 'libs/**/*.csproj') }}
-
       # Connect your workspace on nx.app and uncomment this to enable task distribution.
       # The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
       - run: npx nx-cloud start-ci-run --distribute-on="3 my-linux-dotnet-medium" --stop-agents-after="e2e-ci" --with-env-vars="DOTNET_ROOT"
@@ -36,7 +24,7 @@ jobs:
       # Cache node_modules
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: lts/*
           cache: 'npm'
 
       - run: npm ci --foreground-scripts
