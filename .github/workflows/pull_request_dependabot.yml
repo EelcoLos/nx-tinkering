@@ -2,6 +2,12 @@ name: 'PR: Dependabot auto-merge'
 on:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request number'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -19,6 +25,18 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
           skip-commit-verification: true
+      - name: 'Run Nx Migrate if package is NX'
+        if: ${{ github.event.action == 'opened' && steps.metadata.outputs.package-ecosystem == 'npm' && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx')) }}
+        run: |
+          nx_version=$(npm show @nx/workspace version)
+          jq --arg version "$nx_version" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
+          npx nx migrate latest
+          npx nx migrate --run-migrations --create-commits
+      - name: 'Run Nx Migrate if package is @nx-dotnet/core'
+        if: ${{ github.event.action == 'opened' && steps.metadata.outputs.package-ecosystem == 'npm' && (contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core')) }}
+        run: |
+          npx nx migrate @nx-dotnet/core
+          npx nx migrate --run-migrations --create-commits
       - name: 'Enable auto-merge for minor/patch updates'
         id: enable-automerge
         # update-type is one of [ version-update:semver-major, version-update:semver-minor, version-update:semver-patch ]
