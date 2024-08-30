@@ -1,0 +1,15 @@
+# This file defines which labels to automatically add to your pull requests
+# Auto labeling your PRs helps categorizing and gives insight in affected scope and status of a PR.
+
+# The format of the file is
+#'labelname':
+#- glob expression
+#- glob expression2
+
+# If any globs match, the label is added. More advanced expressions are possible, see docs.
+# Source labeler action: https://github.com/actions/labeler
+# Source glob matcher: https://github.com/isaacs/minimatch
+
+'type: dependencies':
+  - 'package.json'
+  - 'package-lock.json'

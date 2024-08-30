@@ -1,0 +1,21 @@
+on:
+    # Workflow_dispatch enables you to manually run this job
+    workflow_dispatch:
+    # It is also scheduled to run nightly. (mostly due to the last comment in this file)
+    schedule:
+        - cron: '0 0 * * *'
+name: 'Labels: create declared labels'
+jobs:
+    labels:
+        name: Update Labels
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4.1.7
+            - uses: lannonbr/issue-label-manager-action@4.0.0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  # delete: true deletes undefined labels (in labels.yml) from your repository
+                  # This helps against creating a messy set of labels over a longer period of time.
+                  # To add labels, simply declare them in labels.yml, this way, its a team decision.
+                  delete: true
