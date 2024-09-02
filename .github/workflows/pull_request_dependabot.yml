@@ -41,8 +41,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: 'Run Nx Migrate if package is NX/NX-Dotnet'
         run: |
-          set -e
-          set -x
           npm i
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
@@ -60,7 +58,10 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore(nx): Migration items"
-            git push origin ${{ github.event.pull_request.head.ref }}
+            # Set up the remote tracking branch
+            git branch --set-upstream-to=origin/${{ github.event.pull_request.head.ref }} ${{ github.event.pull_request.head.ref }}
+            # Force push the changes
+            git push origin ${{ github.event.pull_request.head.ref }} --force
           fi
         working-directory: ${{ github.workspace }}
 
