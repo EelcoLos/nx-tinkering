@@ -15,8 +15,11 @@ permissions:
 
 jobs:
   dependabot-check:
-    name: 'Check dependency metadata'
+    name: 'Dependabot Check'
     runs-on: ubuntu-latest
+    outputs:
+      dependency-names: ${{ steps.metadata.outputs.dependency-names }}
+      update-type: ${{ steps.metadata.outputs.update-type }}
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'eelcolos'}}
     steps:
       - name: Fetch dependabot metadata
@@ -25,12 +28,17 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
           skip-commit-verification: true
+
+  nx-migrate:
+    name: 'NX Migrate'
+    runs-on: ubuntu-latest
+    needs: dependabot-check
+    if: ${{ github.event.action == 'opened' && (contains(needs.dependabot-check.outputs.dependency-names, '@nx/') || contains(needs.dependabot-check.outputs.dependency-names, 'nx') || contains(needs.dependabot-check.outputs.dependency-names, '@nx-dotnet/core')) }}
+    steps:
       - name: 'Checkout code if nx or nx-dotnet'
         id: checkout-code
-        if: ${{ github.event.action == 'opened' && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core')) }}
         uses: actions/checkout@v4
       - name: 'Run Nx Migrate if package is NX/NX-Dotnet'
-        if: ${{ github.event.action == 'opened' && contains(steps.metadata.outputs.package-ecosystem, 'npm') && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || (contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core'))) }}
         run: |
           set -e
           set -x
@@ -51,23 +59,26 @@ jobs:
             git push origin ${{ github.head_ref }}
           fi
         working-directory: ${{ github.workspace }}
+
+  auto-merge-and-review:
+    name: 'Enable Auto-Merge'
+    runs-on: ubuntu-latest
+    needs: dependabot-check
+    if: ${{ needs.dependabot-check.outputs.update-type == 'version-update:semver-minor' || needs.dependabot-check.outputs.update-type == 'version-update:semver-patch' }}
+    steps:
       - name: 'Enable auto-merge for minor/patch updates'
         id: enable-automerge
-        # update-type is one of [ version-update:semver-major, version-update:semver-minor, version-update:semver-patch ]
-        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch' }}
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Review PR with approval'
-        if: steps.enable-automerge.outcome == 'success'
         run: |
           gh pr review "$PR_URL" --approve --body "This dependency update can be auto-merged since it's a minor or patch version update."
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Comment on PR'
-        if: steps.enable-automerge.outcome != 'success'
         run: |
           gh pr comment "$PR_URL" --body "This dependency update was not auto-merged as this is a major version update, please review manually."
         env:
