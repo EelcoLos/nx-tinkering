@@ -64,21 +64,20 @@ jobs:
       - name: running rest of commits
         run: |
           git add .
-      - name: 'Check if there are changes'
+      - name: 'Check for changes and get exit code'
         id: check-changes
         run: |
           # Fetch the main branch
           git fetch origin main
           # Check for differences between the current branch and the main branch
-          git diff --exit-code origin/main
-        continue-on-error: true
-      - name: 'Commit changes'
+          git diff --exit-code HEAD origin/main || echo "Changes detected"
+          echo "::set-output name=exit_code::$?"
+
+      - name: 'Commit and push changes'
         if: ${{ steps.check-changes.outputs.exit_code != 0 }}
         run: |
+          git add .
           git commit -m "chore: nx migrate"
-      - name: 'Push changes'
-        if: ${{ steps.check-changes.outputs.exit_code != 0 }}
-        run: |
           git push origin ${{ github.event.pull_request.head.ref }}
   auto-merge-and-review:
     name: 'Enable Auto-Merge'
