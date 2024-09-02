@@ -42,4 +42,3 @@ launch-templates:
           sudo -E dotnet dev-certs https -ep /usr/local/share/ca-certificates/aspnet/https.crt --format PEM    
           echo "export DOTNET_ROOT=~/.dotnet" >> $NX_CLOUD_ENV
           echo "export PATH=$PATH:$DOTNET_ROOT" >> $NX_CLOUD_ENV
-
