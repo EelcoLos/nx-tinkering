@@ -63,6 +63,7 @@ jobs:
           npx nx migrate --run-migrations --create-commits
       - name: running rest of commits
         run: |
+          npx prettier --write .
           git add .
       - name: 'Check for changes, push if there are'
         id: check-changes
@@ -74,7 +75,7 @@ jobs:
             echo "No changes found"
           else
             echo "Changes found"
-            egit add .
+            git add .
             git commit -m "chore: nx migrate"
             git push origin ${{ github.event.pull_request.head.ref }}
           fi
