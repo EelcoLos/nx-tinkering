@@ -48,14 +48,14 @@ jobs:
           nx_version=$(npm show @nx/workspace version)
           jq --arg version "$nx_version" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
           npx nx migrate latest
-          npx nx migrate --run-migrations --create-commits
+          npx nx migrate --run-migrations
           npx nx migrate @nx-dotnet/core
-          npx nx migrate --run-migrations --create-commits
+          npx nx migrate --run-migrations
           git add .
           if git diff-index --quiet HEAD --; then
             echo "No changes to commit"
           else
-            git commit -m "chore(nx): last migration items"
+            git commit -m "chore(nx): Migration items"
             git push origin ${{ github.head_ref }}
           fi
         working-directory: ${{ github.workspace }}
