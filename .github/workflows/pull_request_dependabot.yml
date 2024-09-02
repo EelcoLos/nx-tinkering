@@ -28,10 +28,12 @@ jobs:
       - name: 'Checkout code if nx or nx-dotnet'
         id: checkout-code
         if: ${{ github.event.action == 'opened' && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core')) }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: 'Run Nx Migrate if package is NX/NX-Dotnet'
         if: ${{ github.event.action == 'opened' && contains(steps.metadata.outputs.package-ecosystem, 'npm') && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || (contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core'))) }}
         run: |
+          set -e
+          set -x
           npm i
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
