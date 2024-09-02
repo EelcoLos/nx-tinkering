@@ -52,8 +52,10 @@ jobs:
           npx nx migrate --run-migrations --create-commits
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits
-          npx nx run-many -t lint --fix
           git add .
+          # Fetch the main branch
+          git fetch origin main
+          # Check for differences between the current branch and the main branch
           if git diff --quiet HEAD origin/main; then
             echo "No changes to commit"
           else
