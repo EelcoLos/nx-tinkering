@@ -44,8 +44,12 @@ jobs:
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits
           git add .
-          git commit -m "chore(nx): last migration items"
-          git push origin ${{ github.head_ref }}
+          if git diff-index --quiet HEAD --; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(nx): last migration items"
+            git push origin ${{ github.head_ref }}
+          fi
         working-directory: ${{ github.workspace }}
       - name: 'Enable auto-merge for minor/patch updates'
         id: enable-automerge
