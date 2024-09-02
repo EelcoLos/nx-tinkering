@@ -11,6 +11,7 @@ import {
 } from '../../../models/index.js';
 // @ts-ignore
 import {
+  ModelSerializerFunction,
   type BaseRequestBuilder,
   type Parsable,
   type ParsableFactory,
@@ -57,7 +58,8 @@ export const CreateRequestBuilderRequestsMetadata: RequestsMetadata = {
     adapterMethodName: 'send',
     responseBodyFactory: createMyResponseFromDiscriminatorValue,
     requestBodyContentType: 'application/json',
-    requestBodySerializer: serializeMyRequest,
+    requestBodySerializer:
+      serializeMyRequest as ModelSerializerFunction<Parsable>,
     requestInformationContentSetMethod: 'setContentFromParsable',
   },
 };

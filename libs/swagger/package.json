@@ -2,7 +2,11 @@
   "name": "swagger",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@microsoft/kiota-abstractions": "^1.0.0-preview.61",
+    "@microsoft/kiota-serialization-form": "^1.0.0-preview.50",
+    "@microsoft/kiota-serialization-json": "^1.0.0-preview.61",
+    "@microsoft/kiota-serialization-text": "^1.0.0-preview.58"
   },
   "type": "commonjs",
   "main": "./src/index.js",
