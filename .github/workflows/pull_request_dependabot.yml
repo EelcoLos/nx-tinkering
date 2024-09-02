@@ -47,7 +47,7 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-      - name: 'get nx version'
+      - name: 'Get nx version'
         id: nx-version
         run: |
           NX_VERSION=$(npm show @nx/workspace version)
@@ -61,7 +61,7 @@ jobs:
           npx nx migrate --run-migrations --create-commits
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits
-      - name: running rest of commits
+      - name: Running rest of commits
         run: |
           npx prettier --write .
           git add .
@@ -76,7 +76,7 @@ jobs:
           else
             echo "Changes found"
             git add .
-            git commit -m "chore: nx migrate"
+            git commit -m "chore(deps): nx migrate"
             git push origin ${{ github.event.pull_request.head.ref }}
           fi
         continue-on-error: true
