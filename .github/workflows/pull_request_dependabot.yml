@@ -25,18 +25,27 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
           skip-commit-verification: true
-      - name: 'Run Nx Migrate if package is NX'
-        if: ${{ github.event.action == 'opened' && steps.metadata.outputs.package-ecosystem == 'npm' && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx')) }}
+      - name: 'Checkout code if nx or nx-dotnet'
+        id: checkout-code
+        if: ${{ github.event.action == 'opened' && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core')) }}
+        uses: actions/checkout@v2
+      - name: 'Run Nx Migrate if package is NX/NX-Dotnet'
+        if: ${{ github.event.action == 'opened' && contains(steps.metadata.outputs.package-ecosystem, 'npm') && (contains(steps.metadata.outputs.dependency-names, '@nx/') || contains(steps.metadata.outputs.dependency-names, 'nx') || (contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core'))) }}
         run: |
+          npm i
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           nx_version=$(npm show @nx/workspace version)
           jq --arg version "$nx_version" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
           npx nx migrate latest
           npx nx migrate --run-migrations --create-commits
-      - name: 'Run Nx Migrate if package is @nx-dotnet/core'
-        if: ${{ github.event.action == 'opened' && steps.metadata.outputs.package-ecosystem == 'npm' && (contains(steps.metadata.outputs.dependency-names, '@nx-dotnet/core')) }}
-        run: |
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits
+          git add .
+          git commit -m "chore(nx): last migration items"
+          git push origin ${{ github.head_ref }}
+        continue-on-error: true
+        working-directory: ${{ github.workspace }}
       - name: 'Enable auto-merge for minor/patch updates'
         id: enable-automerge
         # update-type is one of [ version-update:semver-major, version-update:semver-minor, version-update:semver-patch ]
