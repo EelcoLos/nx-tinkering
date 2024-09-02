@@ -54,7 +54,7 @@ jobs:
           echo "::set-output name=nx-version::$NX_VERSION"
       - name: 'Set nx version in package.json'
         run: |
-          jq --arg version "$nx_version" '.version = ${{ steps.nx-version.outputs.nx-version}}' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
+          jq --arg version "${{ steps.nx-version.outputs['nx-version'] }}" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
       - name: 'Run nx migrate and create commits'
         run: |
           npx nx migrate latest
@@ -72,14 +72,15 @@ jobs:
           # Check for differences between the current branch and the main branch
           git diff --exit-code HEAD origin/main
           echo "exit code: $?"
-          echo "::set-output name=exit_code::$?"
-
+          echo "exit_code=$?" >> $GITHUB_ENV
+        continue-on-error: true
       - name: 'Commit and push changes'
-        if: ${{ steps.check-changes.outputs.exit_code != 0 }}
+        if: ${{ env.exit_code != 0 }}
         run: |
           git add .
           git commit -m "chore: nx migrate"
           git push origin ${{ github.event.pull_request.head.ref }}
+
   auto-merge-and-review:
     name: 'Enable Auto-Merge'
     runs-on: ubuntu-latest
