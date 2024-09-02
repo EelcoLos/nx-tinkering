@@ -44,7 +44,6 @@ jobs:
           git add .
           git commit -m "chore(nx): last migration items"
           git push origin ${{ github.head_ref }}
-        continue-on-error: true
         working-directory: ${{ github.workspace }}
       - name: 'Enable auto-merge for minor/patch updates'
         id: enable-automerge
