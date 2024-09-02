@@ -50,7 +50,7 @@ jobs:
       - name: 'get nx version'
         id: nx-version
         run: |
-          NX_VERSION=$(npm show @nrwl/workspace version)
+          NX_VERSION=$(npm show @nx/workspace version)
           echo "::set-output name=nx-version::$NX_VERSION"
       - name: 'Set nx version in package.json'
         run: |
@@ -70,7 +70,8 @@ jobs:
           # Fetch the main branch
           git fetch origin main
           # Check for differences between the current branch and the main branch
-          git diff --exit-code HEAD origin/main || echo "Changes detected"
+          git diff --exit-code HEAD origin/main
+          echo "exit code: $?"
           echo "::set-output name=exit_code::$?"
 
       - name: 'Commit and push changes'
