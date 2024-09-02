@@ -20,7 +20,7 @@ jobs:
     outputs:
       dependency-names: ${{ steps.metadata.outputs.dependency-names }}
       update-type: ${{ steps.metadata.outputs.update-type }}
-    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'eelcolos'}}
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]'}}
     steps:
       - name: Fetch dependabot metadata
         id: metadata
