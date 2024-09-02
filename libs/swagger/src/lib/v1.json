@@ -8,9 +8,7 @@
   "paths": {
     "/api/user/create": {
       "post": {
-        "tags": [
-          "Api"
-        ],
+        "tags": ["Api"],
         "operationId": "MyEndpoint",
         "requestBody": {
           "x-name": "MyRequest",
