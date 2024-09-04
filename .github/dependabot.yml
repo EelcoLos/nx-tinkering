@@ -69,6 +69,10 @@ updates:
         patterns:
           - 'eslint-plugin-prettier'
           - 'prettier'
+      client-kiota:
+        patterns:
+          - '@microsoft/kiota*'
+          - '@microsoft/kiota'
     labels:
       # Use our labels instead of default dependabot labels (we like consistency)
       - 'type: dependencies'
