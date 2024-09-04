@@ -67,6 +67,7 @@ jobs:
         run: |
           npx nx run-many -t lint --fix
           npm i
+          git fetch origin main
           npm run format:write
           git add .
       - name: 'Check for changes, push if there are'

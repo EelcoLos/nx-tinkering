@@ -3,7 +3,7 @@
   "version": "19.6.4",
   "license": "MIT",
   "scripts": {
-    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix"
+    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix --base=origin/main"
   },
   "private": true,
   "dependencies": {
