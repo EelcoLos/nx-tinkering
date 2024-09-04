@@ -2,7 +2,9 @@
   "name": "nx-tinkering",
   "version": "19.6.4",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix --base=remotes/origin/master"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "18.2.2",
