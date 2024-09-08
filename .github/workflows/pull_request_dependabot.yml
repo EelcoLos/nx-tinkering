@@ -47,8 +47,8 @@ jobs:
         working-directory: ${{ github.workspace }}
       - name: Set user to github actions
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config --global user.email "dependabot[bot]@users.noreply.github.com"
+          git config --global user.name "dependabot[bot]"
       - name: 'Get nx version'
         id: nx-version
         run: |
@@ -82,7 +82,7 @@ jobs:
             echo "Changes found"
             git add .
             git commit -m "chore(deps): nx migrate"
-            git push origin ${{ github.event.pull_request.head.ref }}
+            git push origin ${{ github.event.pull_request.head.ref }} --force
           fi
         continue-on-error: true
 
