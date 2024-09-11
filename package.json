@@ -37,7 +37,7 @@
     "@nx-dotnet/core": "2.4.5",
     "@nx/devkit": "19.7.2",
     "@nx/eslint": "19.7.2",
-    "@nx/eslint-plugin": "19.7.0",
+    "@nx/eslint-plugin": "19.7.2",
     "@nx/jest": "19.7.2",
     "@nx/js": "19.7.2",
     "@nx/playwright": "19.7.2",
