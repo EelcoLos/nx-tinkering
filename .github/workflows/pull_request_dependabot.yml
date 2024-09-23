@@ -63,7 +63,7 @@ jobs:
           npx nx migrate --run-migrations --create-commits
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits
-          rm -rf migrations.json
+          if [ -f migrations.json ]; then rm -rf migrations.json; fi
       - name: Running rest of commits
         run: |
           npx nx run-many -t lint --fix
