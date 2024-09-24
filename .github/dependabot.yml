@@ -60,6 +60,7 @@ updates:
           - 'pdfmake'
       client-typescript-eslint:
         patterns:
+          - 'typescript-eslint'
           - 'typescript-eslint/*'
           - '@typescript-eslint/*'
           - '@typescript-eslint/eslint-plugin'
@@ -73,6 +74,10 @@ updates:
         patterns:
           - '@microsoft/kiota*'
           - '@microsoft/kiota'
+      client-eslint:
+        patterns:
+          - 'eslint'
+          - '@eslint/js'
     labels:
       # Use our labels instead of default dependabot labels (we like consistency)
       - 'type: dependencies'
