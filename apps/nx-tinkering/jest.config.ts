@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default {
   displayName: 'nx-tinkering',
   preset: '../../jest.preset.js',
