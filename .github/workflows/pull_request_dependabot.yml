@@ -60,9 +60,9 @@ jobs:
       - name: 'Run nx migrate and create commits'
         run: |
           npx nx migrate latest
-          npx nx migrate --run-migrations --create-commits
+          npx nx migrate --run-migrations --create-commits --if-exists
           npx nx migrate @nx-dotnet/core
-          npx nx migrate --run-migrations --create-commits
+          npx nx migrate --run-migrations --create-commits --if-exists
           if [ -f migrations.json ]; then rm -rf migrations.json; fi
       - name: Running rest of commits
         run: |
