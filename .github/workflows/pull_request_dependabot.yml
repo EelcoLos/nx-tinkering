@@ -66,6 +66,7 @@ jobs:
           if [ -f migrations.json ]; then rm -rf migrations.json; fi
       - name: Running rest of commits
         run: |
+          npm i
           npx nx run-many -t lint --fix
           npm i
           git fetch origin main
