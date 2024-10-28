@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "build": "npx nx --run-many -t build -p dotnet-fe-auth angular-auth-example"
+  }
+}

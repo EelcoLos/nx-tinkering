@@ -56,13 +56,14 @@
           "buildTarget": "angular-auth-example:build:production"
         },
         "development": {
-          "buildTarget": "angular-auth-example:build:development"
+          "buildTarget": "angular-auth-example:build:development",
+          "proxyConfig": "proxy.config.js",
+          "sslKey": "ssl/localhost.key",
+          "sslCert": "ssl/localhost.pem",
+          "ssl": true
         }
       },
-      "defaultConfiguration": "development",
-      "options": {
-        "proxyConfig": "apps/angular-auth-example/proxy.conf.json"
-      }
+      "defaultConfiguration": "development"
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
