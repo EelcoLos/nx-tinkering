@@ -1,0 +1,9 @@
+{
+  "context": [
+    "/api",
+    "/scim",
+    "/signout",
+    "/signin-oidc",
+    "/swagger"
+  ],
+  "target": "https://localhost:5001",
