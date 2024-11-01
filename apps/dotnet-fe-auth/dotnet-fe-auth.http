@@ -1,6 +1,10 @@
 @dotnet_fe_auth_HostAddress = http://localhost:5085
 
-GET {{dotnet_fe_auth_HostAddress}}/weatherforecast/
+POST {{dotnet_fe_auth_HostAddress}}/api/login
 Accept: application/json
 
+{
+  "Email": "any@mail.com",
+  "Password": "SecureDevPassword123!"
+}
 ###

@@ -19,11 +19,15 @@ export interface IClient {
     /**
      * @return Success
      */
-    dotnetFeAuthLoginEndpoint(loginRequest: DotnetFeAuthLoginRequest): Observable<any>;
+    login(loginRequest: DotnetFeAuthLoginRequest): Observable<any>;
     /**
      * @return Success
      */
-    dotnetFeAuthMyEndpoint(myRequest: DotnetFeAuthMyRequest): Observable<DotnetFeAuthMyResponse>;
+    createuser(myRequest: DotnetFeAuthMyRequest): Observable<DotnetFeAuthMyResponse>;
+    /**
+     * @return Success
+     */
+    validatetoken(validateTokenRequest: DotnetFeAuthValidateTokenRequest): Observable<DotnetFeAuthValidateTokenResponse>;
 }
 
 @Injectable({
@@ -42,13 +46,13 @@ export class Client implements IClient {
     /**
      * @return Success
      */
-    dotnetFeAuthLoginEndpoint(loginRequest: DotnetFeAuthLoginRequest): Observable<any> {
+    login(loginRequest: DotnetFeAuthLoginRequest): Observable<any> {
         let url_ = this.baseUrl + "/api/login";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(loginRequest);
 
-        let options_ : any = {
+        let options_: any = {
             body: content_,
             observe: "response",
             responseType: "blob",
@@ -58,12 +62,12 @@ export class Client implements IClient {
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processDotnetFeAuthLoginEndpoint(response_);
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processLogin(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processDotnetFeAuthLoginEndpoint(response_ as any);
+                    return this.processLogin(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<any>;
                 }
@@ -72,22 +76,22 @@ export class Client implements IClient {
         }));
     }
 
-    protected processDotnetFeAuthLoginEndpoint(response: HttpResponseBase): Observable<any> {
+    protected processLogin(response: HttpResponseBase): Observable<any> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
 
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as any;
-            return _observableOf(result200);
+                let result200: any = null;
+                result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as any;
+                return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
         return _observableOf(null as any);
@@ -96,13 +100,13 @@ export class Client implements IClient {
     /**
      * @return Success
      */
-    dotnetFeAuthMyEndpoint(myRequest: DotnetFeAuthMyRequest): Observable<DotnetFeAuthMyResponse> {
+    createuser(myRequest: DotnetFeAuthMyRequest): Observable<DotnetFeAuthMyResponse> {
         let url_ = this.baseUrl + "/api/user/create";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(myRequest);
 
-        let options_ : any = {
+        let options_: any = {
             body: content_,
             observe: "response",
             responseType: "blob",
@@ -112,12 +116,12 @@ export class Client implements IClient {
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processDotnetFeAuthMyEndpoint(response_);
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processCreateuser(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processDotnetFeAuthMyEndpoint(response_ as any);
+                    return this.processCreateuser(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<DotnetFeAuthMyResponse>;
                 }
@@ -126,26 +130,80 @@ export class Client implements IClient {
         }));
     }
 
-    protected processDotnetFeAuthMyEndpoint(response: HttpResponseBase): Observable<DotnetFeAuthMyResponse> {
+    protected processCreateuser(response: HttpResponseBase): Observable<DotnetFeAuthMyResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
 
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as DotnetFeAuthMyResponse;
-            return _observableOf(result200);
+                let result200: any = null;
+                result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as DotnetFeAuthMyResponse;
+                return _observableOf(result200);
             }));
         } else if (status === 401) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
+                return throwException("Unauthorized", status, _responseText, _headers);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return Success
+     */
+    validatetoken(validateTokenRequest: DotnetFeAuthValidateTokenRequest): Observable<DotnetFeAuthValidateTokenResponse> {
+        let url_ = this.baseUrl + "/api/validate-token";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(validateTokenRequest);
+
+        let options_: any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_: any) => {
+            return this.processValidatetoken(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processValidatetoken(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DotnetFeAuthValidateTokenResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DotnetFeAuthValidateTokenResponse>;
+        }));
+    }
+
+    protected processValidatetoken(response: HttpResponseBase): Observable<DotnetFeAuthValidateTokenResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+                (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); } }
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                let result200: any = null;
+                result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as DotnetFeAuthValidateTokenResponse;
+                return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
         return _observableOf(null as any);
@@ -153,19 +211,27 @@ export class Client implements IClient {
 }
 
 export interface DotnetFeAuthLoginRequest {
-    email?: string;
-    password?: string;
+    Email?: string;
+    Password?: string;
 }
 
 export interface DotnetFeAuthMyResponse {
-    fullName?: string;
-    isOver18?: boolean;
+    FullName?: string;
+    IsOver18?: boolean;
 }
 
 export interface DotnetFeAuthMyRequest {
-    firstName?: string;
-    lastName?: string;
-    age?: number;
+    FirstName?: string;
+    LastName?: string;
+    Age?: number;
+}
+
+export interface DotnetFeAuthValidateTokenResponse {
+    IsValid?: boolean;
+}
+
+export interface DotnetFeAuthValidateTokenRequest {
+    Token?: string;
 }
 
 export class SwaggerException extends Error {

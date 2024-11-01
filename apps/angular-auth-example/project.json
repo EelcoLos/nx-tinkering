@@ -57,9 +57,9 @@
         },
         "development": {
           "buildTarget": "angular-auth-example:build:development",
-          "proxyConfig": "proxy.config.js",
-          "sslKey": "ssl/localhost.key",
-          "sslCert": "ssl/localhost.pem",
+          "proxyConfig": "apps/angular-auth-example/proxy.conf.json",
+          "sslKey": "apps/angular-auth-example/ssl/localhost.key",
+          "sslCert": "apps/angular-auth-example/ssl/localhost.pem",
           "ssl": true
         }
       },

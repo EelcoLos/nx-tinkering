@@ -1,6 +1,6 @@
 {
-  "/dotnet-fe-auth": {
-    "target": "http://localhost:3333",
+  "/api": {
+    "target": "https://localhost:5085",
     "secure": false
   }
 }

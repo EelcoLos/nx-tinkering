@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiDemo", "apps\api-demo\Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiDemo.Test", "apps\api-demo.Test\ApiDemo.Test.csproj", "{6BC3F2D8-B627-46B4-B195-5A4D28D17DCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-fe-auth", "apps\dotnet-fe-auth\dotnet-fe-auth.csproj", "{06C2217F-5830-4336-ADB9-B7E9043F5AE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +28,14 @@ Global
 		{6BC3F2D8-B627-46B4-B195-5A4D28D17DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BC3F2D8-B627-46B4-B195-5A4D28D17DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BC3F2D8-B627-46B4-B195-5A4D28D17DCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06C2217F-5830-4336-ADB9-B7E9043F5AE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06C2217F-5830-4336-ADB9-B7E9043F5AE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06C2217F-5830-4336-ADB9-B7E9043F5AE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06C2217F-5830-4336-ADB9-B7E9043F5AE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E9A61689-8EAF-482B-82E5-08B56176EA77} = {4A8DA5DB-AB5A-4312-9932-9F5F7649AF6C}
 		{6BC3F2D8-B627-46B4-B195-5A4D28D17DCB} = {4A8DA5DB-AB5A-4312-9932-9F5F7649AF6C}
+		{06C2217F-5830-4336-ADB9-B7E9043F5AE9} = {4A8DA5DB-AB5A-4312-9932-9F5F7649AF6C}
 	EndGlobalSection
 EndGlobal

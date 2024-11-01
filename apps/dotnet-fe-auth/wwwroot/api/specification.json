@@ -11,7 +11,7 @@
         "tags": [
           "Api"
         ],
-        "operationId": "DotnetFeAuthLoginEndpoint",
+        "operationId": "login",
         "requestBody": {
           "x-name": "LoginRequest",
           "description": "",
@@ -45,7 +45,7 @@
         "tags": [
           "Api"
         ],
-        "operationId": "DotnetFeAuthMyEndpoint",
+        "operationId": "createuser",
         "requestBody": {
           "x-name": "MyRequest",
           "description": "",
@@ -80,6 +80,39 @@
           }
         ]
       }
+    },
+    "/api/validate-token": {
+      "post": {
+        "tags": [
+          "Api"
+        ],
+        "operationId": "validatetoken",
+        "requestBody": {
+          "x-name": "ValidateTokenRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DotnetFeAuthValidateTokenRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DotnetFeAuthValidateTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -88,10 +121,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "email": {
+          "Email": {
             "type": "string"
           },
-          "password": {
+          "Password": {
             "type": "string"
           }
         }
@@ -100,10 +133,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "fullName": {
+          "FullName": {
             "type": "string"
           },
-          "isOver18": {
+          "IsOver18": {
             "type": "boolean"
           }
         }
@@ -112,15 +145,33 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "firstName": {
+          "FirstName": {
             "type": "string"
           },
-          "lastName": {
+          "LastName": {
             "type": "string"
           },
-          "age": {
+          "Age": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "DotnetFeAuthValidateTokenResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "IsValid": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DotnetFeAuthValidateTokenRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Token": {
+            "type": "string"
           }
         }
       }

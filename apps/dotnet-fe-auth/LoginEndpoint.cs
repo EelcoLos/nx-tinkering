@@ -9,6 +9,7 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest>
     public override void Configure()
     {
         Post("/api/login");
+        Description(d => d.WithName("login"));
         AllowAnonymous();
     }
 
