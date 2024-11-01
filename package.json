@@ -3,7 +3,8 @@
   "version": "19.8.6",
   "license": "MIT",
   "scripts": {
-    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix --base=origin/main"
+    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix --base=origin/main",
+    "dev-cert": "dotnet dev-certs https -ep apps/angular-auth-example/ssl/localhost.pem -np --format pem"
   },
   "private": true,
   "dependencies": {

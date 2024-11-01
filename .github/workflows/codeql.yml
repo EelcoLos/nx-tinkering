@@ -63,15 +63,26 @@ jobs:
         with:
           languages: ${{ matrix.language }}
 
+      - name: Restore npm cache for javascript-typescript
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      - name: Install npm dependencies
+        run: npm ci
+
       - name: restore nuget cache for csharp
         if: contains(matrix.language, 'csharp')
         id: cache-nuget
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('apps/api/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-${{ hashFiles('apps/api/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
+            ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
 
       - name: Build dotnet
         if: contains(matrix.language, 'csharp')

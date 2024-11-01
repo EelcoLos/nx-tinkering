@@ -7,12 +7,12 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:application",
+      "executor": "@nx/angular:webpack-browser",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/angular-auth-example",
         "index": "apps/angular-auth-example/src/index.html",
-        "browser": "apps/angular-auth-example/src/main.ts",
+        "main": "apps/angular-auth-example/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/angular-auth-example/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
@@ -57,9 +57,9 @@
         },
         "development": {
           "buildTarget": "angular-auth-example:build:development",
-          "proxyConfig": "proxy.config.js",
-          "sslKey": "ssl/localhost.key",
-          "sslCert": "ssl/localhost.pem",
+          "proxyConfig": "apps/angular-auth-example/proxy.conf.json",
+          "sslKey": "apps/angular-auth-example/ssl/localhost.key",
+          "sslCert": "apps/angular-auth-example/ssl/localhost.pem",
           "ssl": true
         }
       },
