@@ -22,7 +22,7 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
 		try
 		{
 			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.ASCII.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
+			var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
 
 			tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
 			{
@@ -34,7 +34,6 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
 			}, out SecurityToken validatedToken);
 
 			var jwtToken = (JwtSecurityToken)validatedToken;
-			var userId = jwtToken.Claims.First(x => x.Type == "id").Value;
 
 			response.IsValid = true;
 		}

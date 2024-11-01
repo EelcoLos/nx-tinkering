@@ -27,7 +27,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization()
                 .AddFastEndpoints()
-                .SwaggerDocument();
+                .SwaggerDocument(p =>
+{
+    p.ShortSchemaNames = true;
+    p.MaxEndpointVersion = 1;
+
+    p.NewtonsoftSettings = s =>
+    {
+        s.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
+        {
+            NamingStrategy = new Newtonsoft.Json.Serialization.CamelCaseNamingStrategy()
+        };
+    };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

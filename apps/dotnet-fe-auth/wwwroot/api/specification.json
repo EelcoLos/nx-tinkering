@@ -18,7 +18,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DotnetFeAuthLoginRequest"
+                "$ref": "#/components/schemas/LoginRequest"
               }
             }
           },
@@ -29,11 +29,10 @@
           "200": {
             "description": "Success",
             "content": {
-              "text/plain": {
-                "schema": {}
-              },
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
               }
             }
           }
@@ -52,7 +51,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DotnetFeAuthMyRequest"
+                "$ref": "#/components/schemas/MyRequest"
               }
             }
           },
@@ -65,7 +64,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DotnetFeAuthMyResponse"
+                  "$ref": "#/components/schemas/MyResponse"
                 }
               }
             }
@@ -93,7 +92,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DotnetFeAuthValidateTokenRequest"
+                "$ref": "#/components/schemas/ValidateTokenRequest"
               }
             }
           },
@@ -106,7 +105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DotnetFeAuthValidateTokenResponse"
+                  "$ref": "#/components/schemas/ValidateTokenResponse"
                 }
               }
             }
@@ -117,60 +116,69 @@
   },
   "components": {
     "schemas": {
-      "DotnetFeAuthLoginRequest": {
+      "LoginResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "Email": {
-            "type": "string"
-          },
-          "Password": {
+          "token": {
             "type": "string"
           }
         }
       },
-      "DotnetFeAuthMyResponse": {
+      "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "FullName": {
+          "email": {
             "type": "string"
           },
-          "IsOver18": {
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "MyResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "isOver18": {
             "type": "boolean"
           }
         }
       },
-      "DotnetFeAuthMyRequest": {
+      "MyRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "FirstName": {
+          "firstName": {
             "type": "string"
           },
-          "LastName": {
+          "lastName": {
             "type": "string"
           },
-          "Age": {
+          "age": {
             "type": "integer",
             "format": "int32"
           }
         }
       },
-      "DotnetFeAuthValidateTokenResponse": {
+      "ValidateTokenResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "IsValid": {
+          "isValid": {
             "type": "boolean"
           }
         }
       },
-      "DotnetFeAuthValidateTokenRequest": {
+      "ValidateTokenRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "Token": {
+          "token": {
             "type": "string"
           }
         }

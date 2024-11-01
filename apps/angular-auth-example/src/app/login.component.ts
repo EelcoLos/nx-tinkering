@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IClient, Client } from '../api-integration/api';
+import { Client } from '../api-integration/api';
 import { CommonModule } from '@angular/common';
-import { map } from 'rxjs';
+import { Router } from '@angular/router';
+import { catchError, map } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -54,12 +55,13 @@ import { map } from 'rxjs';
   `],
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  providers: [{ provide: IClient, useClass: Client }]
+  providers: [Client]
 })
 export class LoginComponent {
   loginForm: FormGroup;
   apiService = inject(Client)
   error: string | null = null;
+  router = inject(Router);
 
   constructor(private fb: FormBuilder) {
     this.loginForm = this.fb.group({
@@ -68,17 +70,27 @@ export class LoginComponent {
     });
   }
 
-  async onSubmit() {
+  onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      try {
-        const response = this.apiService.login({ Email: email, Password: password });
-        // Handle successful login
+      console.log('Logging in...');
+      this.apiService.login({ email, password }).pipe(map(response => {
+        console.log('Login response:', response);
+        if (!response.token) {
+          this.error = 'Invalid email or password.';
+          return [];
+        }
+        localStorage.setItem('token', response.token);
 
-      } catch (err) {
-        // Handle login error
-        this.error = err as string;
-      }
+        this.router.navigate(['/endpoint']);
+        return response; // Ensure a value is returned
+      }),
+        catchError(error => {
+          console.error('Login error:', error);
+          this.error = 'An error occurred while logging in. Please try again.';
+          return [];
+        })
+      ).subscribe();
     }
   }
 }

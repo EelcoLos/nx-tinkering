@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DotnetFeAuth;
 
-public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest>
+public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest, LoginResponse>
 {
     public override void Configure()
     {
@@ -15,13 +15,18 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        var token = tokenHandler.GenerateToken("test", "SecureDevPassword123!");
+        var token = tokenHandler.GenerateToken(req.Email, "SecureDevPassword123!");
         Console.WriteLine(token);
-        await SendAsync(new { Token = token }, cancellation: ct);
+        await SendAsync(new() { Token = token }, cancellation: ct);
     }
 }
 public class LoginRequest
 {
     public string Email { get; set; }
     public string Password { get; set; }
+}
+
+public class LoginResponse
+{
+    public string Token { get; set; }
 }
