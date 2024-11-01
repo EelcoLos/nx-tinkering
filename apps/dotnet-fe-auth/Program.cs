@@ -16,9 +16,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "http://localhost:5085",
+            ValidIssuer = "https://localhost:5001",
             ValidateAudience = true,
-            ValidAudience = "http://localhost:5085",
+            ValidAudience = "https://localhost:5001",
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"))
