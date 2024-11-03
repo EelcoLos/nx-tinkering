@@ -48,7 +48,7 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
 
 public class ValidateTokenRequest
 {
-	public string Token { get; set; }
+	public required string Token { get; set; }
 }
 
 public class ValidateTokenResponse

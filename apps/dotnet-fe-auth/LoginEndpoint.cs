@@ -22,11 +22,11 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest,
 }
 public class LoginRequest
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public required string Email { get; set; }
+    public required string Password { get; set; }
 }
 
 public class LoginResponse
 {
-    public string Token { get; set; }
+    public required string Token { get; set; }
 }
