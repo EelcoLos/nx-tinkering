@@ -32,8 +32,8 @@ public class FETokenHandler
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(1),
-            Issuer = "http://localhost:5085",
-            Audience = "http://localhost:5085",
+            Issuer = "https://localhost:5001",
+            Audience = "https://localhost:5001",
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 

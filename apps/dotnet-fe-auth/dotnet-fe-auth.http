@@ -1,10 +1,37 @@
-@dotnet_fe_auth_HostAddress = http://localhost:5085
+@dotnet_fe_auth_HostAddress = https://localhost:5001
 
+### Login Request
+
+# @name login
 POST {{dotnet_fe_auth_HostAddress}}/api/login
-Accept: application/json
+Content-Type: application/json
 
 {
   "Email": "any@mail.com",
   "Password": "SecureDevPassword123!"
 }
-###
+
+### Validate Token Request
+
+@token = {{login.response.body}}
+
+POST {{dotnet_fe_auth_HostAddress}}/api/validate-token
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "token": "{{token}}"
+}
+
+### Create User Request
+@token = {{login.response.body.token}}
+
+POST {{dotnet_fe_auth_HostAddress}}/api/user/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "string",
+  "lastName": "string",
+  "age": 0
+}
