@@ -20,7 +20,7 @@ jobs:
     outputs:
       dependency-names: ${{ steps.metadata.outputs.dependency-names }}
       update-type: ${{ steps.metadata.outputs.update-type }}
-      version: ${{ steps.metadata.outputs.new-version }}
+      dependency-versions: ${{ steps.metadata.outputs.new-version }}
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]'}}
     steps:
       - name: Fetch dependabot metadata
@@ -53,8 +53,8 @@ jobs:
       - name: 'Get nx version'
         id: nx-version
         run: |
-          NX_VERSION= ${{needs.dependabot-check.outputs.version}}
-          echo "::set-output name=nx-version::$NX_VERSION"
+          NX_VERSION= ${{ needs.dependabot-check.outputs.dependency-versions }} || { echo "Failed to get nx version" >&2; exit 1; }
+          echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
       - name: 'Set nx version in package.json'
         run: |
           jq --arg version "${{ steps.nx-version.outputs['nx-version'] }}" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
