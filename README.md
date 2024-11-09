@@ -1,4 +1,7 @@
-## Projects in this Workspace
+# Projects in this Workspace
+## Angular and dotnet fastendpoint combination
+Considering https://github.com/EelcoLos/nx-tinkering/issues/240, there is a 2 part project, namely `dotnet-fe-auth` and `angular-auth-example` that represent the option that would normally be a dotnet new creation, namely `dotnet new angular -o Project`. However, this is a project that would be intertwined with **controllers** and an old angular version, which makes it hard to maintain both. Second, there is no real interaction between the two itself... you have to still create the services to call the controller api.
+This combination has `nswag` in between, creating said interaction.
 
 ### dotnet-fe-auth
 
