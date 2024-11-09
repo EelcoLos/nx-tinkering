@@ -1,6 +1,5 @@
 using FastEndpoints;
-using System.Threading;
-using System.Threading.Tasks;
+using FluentValidation;
 
 namespace DotnetFeAuth;
 
@@ -15,7 +14,7 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest,
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        var token = tokenHandler.GenerateToken(req.Email, "SecureDevPassword123!");
+        var token = tokenHandler.GenerateToken(req.Email, req.Password);
         Console.WriteLine(token);
         await SendAsync(new() { Token = token }, cancellation: ct);
     }
@@ -29,4 +28,13 @@ public class LoginRequest
 public class LoginResponse
 {
     public required string Token { get; set; }
+}
+
+public class LoginEndpointValidator : Validator<LoginRequest>
+{
+    public LoginEndpointValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).NotEmpty().Equal("SecureDevPassword123!").WithMessage("Invalid password");
+    }
 }
