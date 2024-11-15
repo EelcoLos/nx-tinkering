@@ -35,7 +35,7 @@
     "@angular/cli": "~18.2.12",
     "@angular/compiler-cli": "18.2.12",
     "@angular/language-service": "18.2.12",
-    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "~9.14.0",
     "@nx-dotnet/core": "2.4.5",
     "@nx/devkit": "19.8.10",
