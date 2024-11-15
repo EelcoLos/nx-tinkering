@@ -89,12 +89,6 @@ export class Client implements IClient {
             result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as LoginResponse;
             return _observableOf(result200);
             }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ErrorResponse;
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
@@ -220,15 +214,9 @@ export interface LoginResponse {
     token?: string;
 }
 
-export interface ErrorResponse {
-    statusCode?: number;
-    message?: string;
-    errors?: { [key: string]: string[]; };
-}
-
 export interface LoginRequest {
-    email: string;
-    password: string;
+    email?: string;
+    password?: string;
 }
 
 export interface MyResponse {

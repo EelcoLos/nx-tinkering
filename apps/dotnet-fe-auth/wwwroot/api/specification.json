@@ -35,16 +35,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
           }
         }
       }
@@ -135,49 +125,15 @@
           }
         }
       },
-      "ErrorResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "format": "int32",
-            "default": 400
-          },
-          "message": {
-            "type": "string",
-            "default": "One or more errors occurred!"
-          },
-          "errors": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
       "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "email",
-          "password"
-        ],
         "properties": {
           "email": {
-            "type": "string",
-            "format": "email",
-            "minLength": 1,
-            "pattern": "^[^@]+@[^@]+$",
-            "nullable": false
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "minLength": 1,
-            "nullable": false
+            "type": "string"
           }
         }
       },
