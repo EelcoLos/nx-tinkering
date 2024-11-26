@@ -1,6 +1,6 @@
 {
   "name": "nx-tinkering",
-  "version": "19.8.6",
+  "version": "19.8.13",
   "license": "MIT",
   "scripts": {
     "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.sln && npx nx affected -t lint --fix --base=origin/main",
@@ -40,7 +40,7 @@
     "@nx-dotnet/core": "2.4.5",
     "@nx/devkit": "19.8.13",
     "@nx/eslint": "19.8.13",
-    "@nx/eslint-plugin": "19.8.12",
+    "@nx/eslint-plugin": "19.8.13",
     "@nx/jest": "19.8.13",
     "@nx/js": "19.8.13",
     "@nx/playwright": "19.8.13",
