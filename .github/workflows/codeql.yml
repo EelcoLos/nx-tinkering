@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '0 5 * * 0'
 
+env:
+  DOTNET_VERSION: '9.0.x'
+
 jobs:
   trigger:
     if: github.event.pull_request.draft == false
@@ -73,6 +76,12 @@ jobs:
             ${{ runner.os }}-npm-
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Set up .NET
+        if: contains(matrix.language, 'csharp')
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: restore nuget cache for csharp
         if: contains(matrix.language, 'csharp')
