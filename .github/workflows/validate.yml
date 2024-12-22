@@ -38,7 +38,7 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Build
         run: npx nx build
 
@@ -70,7 +70,7 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Test
         run: npx nx test
 
@@ -102,6 +102,6 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Lint
         run: npx nx lint
