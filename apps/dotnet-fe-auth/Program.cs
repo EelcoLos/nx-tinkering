@@ -13,41 +13,41 @@ builder.Services.AddSingleton<FETokenHandler>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = "https://localhost:5001",
-            ValidateAudience = true,
-            ValidAudience = "https://localhost:5001",
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"))
-        };
+      options.TokenValidationParameters = new TokenValidationParameters
+      {
+        ValidateIssuer = true,
+        ValidIssuer = "https://localhost:5001",
+        ValidateAudience = true,
+        ValidAudience = "https://localhost:5001",
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"))
+      };
     });
 
 builder.Services.AddAuthorization()
                 .AddFastEndpoints()
                 .SwaggerDocument(p =>
 {
-    p.ShortSchemaNames = true;
-    p.MaxEndpointVersion = 1;
+  p.ShortSchemaNames = true;
+  p.MaxEndpointVersion = 1;
 
-    p.NewtonsoftSettings = s =>
+  p.NewtonsoftSettings = s =>
+  {
+    s.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
     {
-        s.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
-        {
-            NamingStrategy = new Newtonsoft.Json.Serialization.CamelCaseNamingStrategy()
-        };
+      NamingStrategy = new Newtonsoft.Json.Serialization.CamelCaseNamingStrategy()
     };
+  };
 });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-    app.UseSwaggerGen();
-    app.UseSwaggerUI();
+  app.UseDeveloperExceptionPage();
+  app.UseSwaggerGen();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
