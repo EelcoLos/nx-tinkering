@@ -5,7 +5,7 @@ updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
   # Npm Packages
   - package-ecosystem: 'npm'
     directory: '/'
@@ -88,7 +88,7 @@ updates:
       separator: '-'
     rebase-strategy: 'auto'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     target-branch: 'main'
 
   # Dotnet apps
@@ -141,5 +141,5 @@ updates:
       separator: '-'
     rebase-strategy: 'auto'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     target-branch: 'main'
