@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/dist/apps/dotnet-fe-auth/net8.0/dotnet-fe-auth.dll",
+      "program": "${workspaceFolder}/dist/apps/dotnet-fe-auth/net9.0/dotnet-fe-auth.dll",
       "args": [],
       "cwd": "${workspaceFolder}/apps/dotnet-fe-auth",
       "stopAtEntry": false,
