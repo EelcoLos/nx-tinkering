@@ -16,14 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Cache Node.js modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Cache .NET packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/global.json') }}
@@ -48,14 +48,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Cache Node.js modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Cache .NET packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/global.json') }}
@@ -80,14 +80,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Cache Node.js modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Cache .NET packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/global.json') }}
