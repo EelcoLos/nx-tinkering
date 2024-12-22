@@ -8,50 +8,50 @@ namespace DotnetFeAuth;
 
 public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateTokenResponse>
 {
-	public override void Configure()
-	{
-		Post("/api/validate-token");
-		Description(d => d.WithName("validatetoken"));
-		AllowAnonymous();
-	}
+  public override void Configure()
+  {
+    Post("/api/validate-token");
+    Description(d => d.WithName("validatetoken"));
+    AllowAnonymous();
+  }
 
-	public override async Task HandleAsync(ValidateTokenRequest req, CancellationToken ct)
-	{
-		var response = new ValidateTokenResponse();
+  public override async Task HandleAsync(ValidateTokenRequest req, CancellationToken ct)
+  {
+    var response = new ValidateTokenResponse();
 
-		try
-		{
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
+    try
+    {
+      var tokenHandler = new JwtSecurityTokenHandler();
+      var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
 
-			tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
-			{
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = new SymmetricSecurityKey(key),
-				ValidateIssuer = false,
-				ValidateAudience = false,
-				ClockSkew = TimeSpan.Zero
-			}, out SecurityToken validatedToken);
+      tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
+      {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
+      }, out SecurityToken validatedToken);
 
-			var jwtToken = (JwtSecurityToken)validatedToken;
+      var jwtToken = (JwtSecurityToken)validatedToken;
 
-			response.IsValid = true;
-		}
-		catch
-		{
-			response.IsValid = false;
-		}
+      response.IsValid = true;
+    }
+    catch
+    {
+      response.IsValid = false;
+    }
 
-		await SendAsync(response, cancellation: ct);
-	}
+    await SendAsync(response, cancellation: ct);
+  }
 }
 
 public class ValidateTokenRequest
 {
-	public required string Token { get; set; }
+  public required string Token { get; set; }
 }
 
 public class ValidateTokenResponse
 {
-	public bool IsValid { get; set; }
+  public bool IsValid { get; set; }
 }
