@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { Client, ValidateTokenRequest, } from '../api-integration/api';
 import { tap } from 'rxjs';
@@ -7,13 +7,11 @@ import { tap } from 'rxjs';
   providedIn: 'root'
 })
 export class LoginGuard implements CanActivate {
-
-  constructor(private router: Router, private apiService: Client) { }
+  private router = inject(Router);
+  private apiService = inject(Client);
 
   canActivate(): boolean {
-    console.log('LoginGuard#canActivate called');
     const token = localStorage.getItem('token');
-    console.log('Token validation request:', token);
     if (!token) {
       this.router.navigate(['/login']);
       return false;
@@ -23,7 +21,6 @@ export class LoginGuard implements CanActivate {
     // try validate request
     this.apiService.validatetoken(request).pipe(
       tap((response) => {
-        console.log('Token validation response:', response);
         if (!response.isValid) {
           this.router.navigate(['/login']);
           return false;
