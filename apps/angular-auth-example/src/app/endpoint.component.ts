@@ -5,8 +5,8 @@ import { catchError, map } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-endpoint',
-  template: `
+    selector: 'app-endpoint',
+    template: `
     <div class="container">
       <h2>Endpoint Form</h2>
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
       <pre>{{ data() | json }}</pre>
     </div>
   `,
-  styles: [`
+    styles: [`
     .container {
       display: flex;
       flex-direction: column;
@@ -60,9 +60,8 @@ import { CommonModule } from '@angular/common';
       margin-bottom: 20px;
     }
   `],
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  providers: [Client]
+    imports: [CommonModule, ReactiveFormsModule],
+    providers: [Client]
 })
 export class EndpointComponent {
   apiService = inject(Client);

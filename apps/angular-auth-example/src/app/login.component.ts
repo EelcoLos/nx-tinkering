@@ -6,8 +6,8 @@ import { Router } from '@angular/router';
 import { catchError, map } from 'rxjs';
 
 @Component({
-  selector: 'app-login',
-  template: `
+    selector: 'app-login',
+    template: `
     <div class="login-container">
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <label for="email">Email:</label>
@@ -29,7 +29,7 @@ import { catchError, map } from 'rxjs';
       }
     </div>
   `,
-  styles: [`
+    styles: [`
     .login-container {
       display: flex;
       justify-content: center;
@@ -53,9 +53,8 @@ import { catchError, map } from 'rxjs';
       margin-top: 20px;
     }
   `],
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  providers: [Client]
+    imports: [CommonModule, ReactiveFormsModule],
+    providers: [Client]
 })
 export class LoginComponent {
   loginForm: FormGroup;
