@@ -54,12 +54,6 @@
   },
   "plugins": [
     {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    },
-    {
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
@@ -78,5 +72,6 @@
     "@nx/js": {
       "projectsAffectedByDependencyUpdates": "auto"
     }
-  }
+  },
+  "useLegacyCache": true
 }
