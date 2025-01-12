@@ -37,7 +37,7 @@
     "@angular/language-service": "18.2.13",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "~9.17.0",
-    "@nx-dotnet/core": "2.4.5",
+    "@nx-dotnet/core": "2.5.0",
     "@nx/devkit": "19.8.14",
     "@nx/eslint": "19.8.14",
     "@nx/eslint-plugin": "19.8.14",
