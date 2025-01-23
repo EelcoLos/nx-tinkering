@@ -53,7 +53,7 @@ jobs:
       - name: 'Get nx version'
         id: nx-version
         run: |
-          NX_VERSION= ${{ needs.dependabot-check.outputs.dependency-versions }} || { echo "Failed to get nx version" >&2; exit 1; }
+          NX_VERSION= ${{ needs.dependabot-check.outputs.new-version }} || { echo "Failed to get nx version" >&2; exit 1; }
           echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
       - name: 'Set nx version in package.json'
         run: |
