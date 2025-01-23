@@ -18,17 +18,45 @@ jobs:
     name: 'Dependabot Check'
     runs-on: ubuntu-latest
     outputs:
-      dependency-names: ${{ steps.metadata.outputs.dependency-names }}
-      update-type: ${{ steps.metadata.outputs.update-type }}
-      dependency-versions: ${{ steps.metadata.outputs.new-version }}
+      nx-version: ${{ steps.check-nx-versions.outputs.nx-version }}
+      dependency-names: ${{ steps.check-nx-versions.outputs.dependency-names }}
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]'}}
     steps:
-      - name: Fetch dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2.2.0
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fetch pull request details
+        id: fetch-pr-details
+        uses: actions/github-script@v6
         with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
-          skip-commit-verification: true
+          script: |
+            const pr = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            return pr.data.body;
+
+      - name: Check for singular version for all @nx/ packages
+        id: check-nx-versions
+        run: |
+          echo "${{ steps.fetch-pr-details.outputs.result }}" > pr_description.txt
+          NX_VERSIONS=$(grep -oP '@nx/[^:]+: \K[^,]+' pr_description.txt | sort | uniq)
+          if [ $(echo "$NX_VERSIONS" | wc -l) -ne 1; then
+            echo "Error: Multiple versions found for @nx/ packages: $NX_VERSIONS"
+            exit 1
+          fi
+          NX_VERSION=$(echo "$NX_VERSIONS" | head -n 1)
+          echo "nx-version=$NX_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=nx-version::$NX_VERSION"
+
+          DEPENDENCY_NAMES=$(grep -oP '@nx/[^:]+(?=:)' pr_description.txt | sort | uniq | tr '\n' ' ')
+          echo "dependency-names=$DEPENDENCY_NAMES" >> $GITHUB_ENV
+          echo "::set-output name=dependency-names::$DEPENDENCY_NAMES"
+
+      - name: Output new versions
+        run: |
+          echo "New versions: ${{ steps.fetch-pr-details.outputs.result }}"
 
   nx-migrate:
     name: 'NX Migrate'
