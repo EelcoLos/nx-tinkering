@@ -2,7 +2,7 @@ namespace ApiDemo;
 
 public class MyRequest
 {
-  public string FirstName { get; set; }
-  public string LastName { get; set; }
+  public string FirstName { get; set; } = string.Empty;
+  public string LastName { get; set; } = string.Empty;
   public int Age { get; set; }
 }
