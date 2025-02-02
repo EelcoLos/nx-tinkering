@@ -8,6 +8,15 @@ const compat = new FlatCompat({
 });
 
 module.exports = [
+  {
+    files: ['**/*.json'],
+    // Override or add rules here
+    rules: {},
+    languageOptions: {
+      parser: require('jsonc-eslint-parser'),
+    },
+  },
+
   { plugins: { '@nx': nxEslintPlugin } },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
