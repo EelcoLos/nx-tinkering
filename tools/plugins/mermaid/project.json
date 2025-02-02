@@ -43,6 +43,13 @@
       "options": {
         "jestConfig": "tools/plugins/mermaid/jest.config.ts"
       }
+    },
+    "generate-mermaid": {
+      "executor": "mermaid/generate-mermaid",
+      "options": {
+        "outputPath": "diagram.md",
+        "affected": false
+      }
     }
   }
 }

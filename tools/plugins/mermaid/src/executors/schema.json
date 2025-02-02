@@ -4,6 +4,15 @@
   "title": "GenerateMermaid executor",
   "description": "",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "outputPath": {
+      "type": "string",
+      "description": "Where to write the Mermaid diagram"
+    },
+    "affected": {
+      "type": "boolean",
+      "description": "Style affected nodes"
+    }
+  },
   "required": []
 }

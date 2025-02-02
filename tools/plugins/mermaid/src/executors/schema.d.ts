@@ -1,1 +1,4 @@
-export interface GenerateMermaidExecutorSchema {} // eslint-disable-line
+export interface GenerateMermaidExecutorSchema {
+  outputPath?: string;
+  affected?: boolean;
+}
