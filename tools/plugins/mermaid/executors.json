@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "generate-mermaid": {
+      "implementation": "./src/executors/generate-mermaid",
+      "schema": "./src/executors/schema.json",
+      "description": "generate-mermaid executor"
+    }
+  }
+}

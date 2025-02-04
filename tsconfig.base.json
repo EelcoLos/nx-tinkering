@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "mermaid": ["tools/plugins/mermaid/src/index.ts"],
       "swagger": ["libs/swagger/src/index.ts"]
     }
   },
