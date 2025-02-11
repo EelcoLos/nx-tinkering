@@ -57,7 +57,7 @@
     "@typescript-eslint/eslint-plugin": "8.24.0",
     "@typescript-eslint/parser": "8.24.0",
     "@typescript-eslint/utils": "8.24.0",
-    "angular-eslint": "19.0.2",
+    "angular-eslint": "19.1.0",
     "eslint": "~9.20.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-playwright": "^2.2.0",
