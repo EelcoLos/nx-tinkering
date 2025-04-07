@@ -50,7 +50,7 @@
     "@playwright/test": "^1.51.1",
     "@schematics/angular": "19.2.5",
     "@swc-node/register": "~1.10.10",
-    "@swc/core": "~1.11.13",
+    "@swc/core": "~1.11.18",
     "@swc/helpers": "~0.5.15",
     "@types/jest": "29.5.14",
     "@types/node": "22.13.14",
