@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: 'read'
-  actions: 'read'
-  id-token: 'write'
+  contents: read
+  actions: read
+  id-token: write
 
 env:
   NODE_VERSION: 'lts/*'
