@@ -28,15 +28,15 @@ builder.Services
     .AddFastEndpoints()
     .AddAuthorization(options =>
     {
-        // Define policies for Graph API scopes
-        options.AddPolicy("GraphUser.Read", policy =>
-            policy.RequireScope("User.Read"));
+      // Define policies for Graph API scopes
+      options.AddPolicy("GraphUser.Read", policy =>
+          policy.RequireScope("User.Read"));
 
-        options.AddPolicy("GraphUser.ReadWrite", policy =>
-            policy.RequireScope("User.ReadWrite"));
+      options.AddPolicy("GraphUser.ReadWrite", policy =>
+          policy.RequireScope("User.ReadWrite"));
 
-        options.AddPolicy("GraphDirectory.Read", policy =>
-            policy.RequireScope("Directory.Read.All"));
+      options.AddPolicy("GraphDirectory.Read", policy =>
+          policy.RequireScope("Directory.Read.All"));
     })
     .SwaggerDocument();
 
@@ -45,7 +45,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerGen();
+  app.UseSwaggerGen();
 }
 
 // Enable authentication and authorization
@@ -55,8 +55,8 @@ app.UseAuthentication()
 // Enable FastEndpoints
 app.UseFastEndpoints(c =>
 {
-    c.Endpoints.RoutePrefix = "api";
-    c.Serializer.Options.PropertyNamingPolicy = null;
+  c.Endpoints.RoutePrefix = "api";
+  c.Serializer.Options.PropertyNamingPolicy = null;
 });
 
 app.Run();
@@ -64,34 +64,34 @@ app.Run();
 // Extension method to add Microsoft Graph client without circular dependencies
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMicrosoftGraphClient(
-        this IServiceCollection services,
-        IConfigurationSection graphSection)
+  public static IServiceCollection AddMicrosoftGraphClient(
+      this IServiceCollection services,
+      IConfigurationSection graphSection)
+  {
+    services.Configure<ConfidentialClientApplicationOptions>(graphSection);
+
+    services.AddSingleton<IConfidentialClientApplication>(sp =>
     {
-        services.Configure<ConfidentialClientApplicationOptions>(graphSection);
+      var config = sp.GetRequiredService<IOptionsMonitor<ConfidentialClientApplicationOptions>>().CurrentValue;
 
-        services.AddSingleton<IConfidentialClientApplication>(sp =>
-        {
-            var config = sp.GetRequiredService<IOptionsMonitor<ConfidentialClientApplicationOptions>>().CurrentValue;
+      return ConfidentialClientApplicationBuilder
+              .Create(config.ClientId)
+              .WithClientSecret(config.ClientSecret)
+              .WithAuthority(new Uri($"{config.Instance}{config.TenantId}"))
+              .Build();
+    });
 
-            return ConfidentialClientApplicationBuilder
-                .Create(config.ClientId)
-                .WithClientSecret(config.ClientSecret)
-                .WithAuthority(new Uri($"{config.Instance}{config.TenantId}"))
-                .Build();
-        });
+    services.AddSingleton<GraphServiceClient>(sp =>
+    {
+      var app = sp.GetRequiredService<IConfidentialClientApplication>();
+      var scopes = new[] { "https://graph.microsoft.com/.default" };
 
-        services.AddSingleton<GraphServiceClient>(sp =>
-        {
-            var app = sp.GetRequiredService<IConfidentialClientApplication>();
-            var scopes = new[] { "https://graph.microsoft.com/.default" };
+      return new GraphServiceClient(
+              new ClientCredentialProvider(app, scopes));
+    });
 
-            return new GraphServiceClient(
-                new ClientCredentialProvider(app, scopes));
-        });
-
-        return services;
-    }
+    return services;
+  }
 }
 
 // Provider to avoid token acquisition loops
@@ -100,12 +100,12 @@ public class ClientCredentialProvider(
     string[] scopes) : IAuthenticationProvider
 {
 
-    public async Task AuthenticateRequestAsync(RequestInformation request, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
-    {
-        var result = await clientApplication
-                .AcquireTokenForClient(scopes)
-                .ExecuteAsync();
+  public async Task AuthenticateRequestAsync(RequestInformation request, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+  {
+    var result = await clientApplication
+            .AcquireTokenForClient(scopes)
+            .ExecuteAsync();
 
-        request.Headers.Add("Authorization", $"Bearer {result.AccessToken}");
-    }
+    request.Headers.Add("Authorization", $"Bearer {result.AccessToken}");
+  }
 }
