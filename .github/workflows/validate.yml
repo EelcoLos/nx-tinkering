@@ -10,8 +10,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: 'read'
-  actions: 'read'
+  contents: read
+  actions: read
+  id-token: write
 
 env:
   NODE_VERSION: 'lts/*'
@@ -21,6 +22,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      NX_KEY: ${{ secrets.NX_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,6 +50,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_GITHUB_NX_CACHE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
         uses: nrwl/nx-set-shas@v4
@@ -58,6 +67,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      NX_KEY: ${{ secrets.NX_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,6 +95,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_GITHUB_NX_CACHE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
         uses: nrwl/nx-set-shas@v4
@@ -95,6 +112,8 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    env:
+      NX_KEY: ${{ secrets.NX_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,6 +140,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_GITHUB_NX_CACHE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
         uses: nrwl/nx-set-shas@v4
