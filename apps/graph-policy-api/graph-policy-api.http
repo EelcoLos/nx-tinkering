@@ -1,0 +1,28 @@
+@baseUrl = https://localhost:5001
+@tenantId = {{$dotenv B2C_TENANT_ID}}
+@clientId = {{$dotenv B2C_CLIENT_ID}}
+@clientSecret = {{$dotenv B2C_CLIENT_SECRET}}
+@b2cPolicyName = {{$dotenv B2C_POLICY_NAME}}
+@b2cScope = {{$dotenv B2C_API_SCOPE}}
+W
+
+### Get B2C Token
+# @name getToken
+POST https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+&client_id={{clientId}}
+&client_secret={{clientSecret}}
+&scope={{b2cScope}}
+
+### Set the token variable from the response
+@authToken = {{getToken.response.body.access_token}}
+
+### Get Current User
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{authToken}}
+
+### Get Users
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{authToken}}

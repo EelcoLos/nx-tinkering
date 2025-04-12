@@ -47,3 +47,4 @@ Thumbs.db
 
 appsettings.*.json
 **/ssl/
+apps/graph-policy-api/.env
