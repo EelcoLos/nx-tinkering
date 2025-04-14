@@ -10,6 +10,7 @@ public class Tests(App App) : TestBase<App>
         var (rsp, res) = await App.Client.POSTAsync<Endpoint, Request, ProblemDetails>(
                              new()
                              {
+                                 Prefix = "Mr.",
                                  FirstName = "x",
                                  LastName = "y"
                              });
@@ -25,11 +26,15 @@ public class Tests(App App) : TestBase<App>
         var (rsp, res) = await App.Client.POSTAsync<Endpoint, Request, Response>(
                              new()
                              {
-                                 FirstName = "Mike",
-                                 LastName = "Kelso"
+                                 Prefix = "Sir",
+                                 FirstName = "DJ Awesome",
+                                 LastName = "Nighthawk"
                              });
 
+        var rspcontent = await rsp.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        rspcontent.ShouldNotBeNullOrEmpty();
+
         rsp.StatusCode.ShouldBe(HttpStatusCode.OK);
-        res.Message.ShouldBe("Hello Mike Kelso...");
+        res.Message.ShouldBe("Hello Sir DJ Awesome Nighthawk...");
     }
 }

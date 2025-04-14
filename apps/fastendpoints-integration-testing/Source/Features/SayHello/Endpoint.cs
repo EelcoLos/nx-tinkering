@@ -12,7 +12,7 @@ sealed class Endpoint : Endpoint<Request, Response>
     {
         await SendAsync(new()
         {
-            Message = $"Hello {r.FirstName} {r.LastName}..."
+            Message = $"Hello {r.Prefix} {r.FirstName} {r.LastName}..."
         });
     }
 }

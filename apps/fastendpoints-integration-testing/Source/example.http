@@ -1,0 +1,11 @@
+@dotnet_fe_auth_HostAddress = http://localhost:5000
+
+### example
+POST {{dotnet_fe_auth_HostAddress}}/api/hello
+Content-Type: application/json
+prefix: "Sir"
+
+{
+	"firstName": "DJ Awesome",
+	"lastName": "Nighhawk"
+}
