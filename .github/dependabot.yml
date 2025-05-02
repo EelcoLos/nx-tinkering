@@ -130,6 +130,9 @@ updates:
         patterns:
           - 'xunit'
           - 'xunit*'
+      nuget-nswag:
+        patterns:
+          - 'Nswag*'
 
     labels:
       # Use our labels instead of default dependabot labels (we like consistency)
