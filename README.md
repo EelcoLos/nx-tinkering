@@ -19,6 +19,26 @@ This combination has `nswag` in between, creating said interaction.
 3. Run `dotnet run` to start the server.
 4. The server will be available at `https://localhost:5001`.
 
+### dotnet-fe-msgraph
+
+`dotnet-fe-msgraph` is a .NET backend project that integrates Microsoft Graph API with FastEndpoints. It demonstrates how to implement dynamic permission scopes and provides both user authentication (delegated permissions) and application authentication flows.
+
+#### Key Features:
+- Microsoft Graph API Integration
+- Dynamic Permission Scopes
+- User Authentication (Delegated Permissions)
+- Application Authentication
+- Multiple API Endpoints (User Profile, Mail, Calendar)
+- Swagger Documentation
+
+#### How to Run:
+1. Register an application in Azure AD and configure the necessary permissions.
+2. Update the `appsettings.json` with your Azure AD application details.
+3. Navigate to the `dotnet-fe-msgraph` directory.
+4. Run `dotnet build` to build the project.
+5. Run `dotnet run` to start the server.
+6. The server will be available at `https://localhost:7001`.
+
 ### angular-auth-example
 
 `angular-auth-example` is an Angular frontend project that demonstrates authentication using JWT tokens. It includes a login form, protected routes, and integration with the `dotnet-fe-auth` backend for token validation.
