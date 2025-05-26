@@ -29,17 +29,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2
+          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 highlight.js@11.9.0
 
       - name: Convert Markdown to Email-Ready HTML
         id: convert
         run: |
           # Create a conversion script optimized for email clients
-          cat > convert.js << 'EOF'
-          const fs = require('fs');
+          cat > convert.js << 'EOF'          const fs = require('fs');
           const { marked } = require('marked');
           const juice = require('juice');
           const { encode } = require('html-entities');
+          const hljs = require('highlight.js');
 
           const markdownFile = process.argv[2];
           const markdown = fs.readFileSync(markdownFile, 'utf8');
@@ -78,14 +78,37 @@ jobs:
           };          // Override link renderer for email safety
           renderer.link = function(href, title, text) {
             return `<a href="${href}" style="color: #0066cc; text-decoration: underline;" target="_blank">${text}</a>`;
-          };
-
-          // Override code block renderer for better email styling
+          };          // Override code block renderer with syntax highlighting
           renderer.code = function(code, language) {
-            const languageLabel = language ? `<div style="background-color: #405F5C; color: #ffffff; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 0; border-radius: 4px 4px 0 0;">${language}</div>` : '';
+            let highlightedCode;
+            let validLanguage = language;
+            
+            try {
+              if (language && hljs.getLanguage(language)) {
+                // Use the specified language
+                highlightedCode = hljs.highlight(code, { language: language }).value;
+              } else if (language) {
+                // Try to auto-detect if specified language isn't supported
+                const autoDetected = hljs.highlightAuto(code);
+                highlightedCode = autoDetected.value;
+                validLanguage = autoDetected.language || language;
+              } else {
+                // Auto-detect language
+                const autoDetected = hljs.highlightAuto(code);
+                highlightedCode = autoDetected.value;
+                validLanguage = autoDetected.language || 'text';
+              }
+            } catch (e) {
+              // Fallback to plain text if highlighting fails
+              highlightedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              validLanguage = language || 'text';
+            }
+            
+            const languageLabel = validLanguage ? `<div style="background-color: #405F5C; color: #ffffff; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 0; border-radius: 4px 4px 0 0;">${validLanguage}</div>` : '';
+            
             return `<div style="margin: 16px 0;">
               ${languageLabel}
-              <pre style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: ${language ? '0 0 4px 4px' : '4px'}; padding: 12px; margin: 0; overflow-x: auto; font-family: 'Courier New', Consolas, monospace; font-size: 13px; line-height: 1.4; color: #212529; white-space: pre-wrap; word-wrap: break-word;"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+              <pre style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: ${validLanguage ? '0 0 4px 4px' : '4px'}; padding: 12px; margin: 0; overflow-x: auto; font-family: 'Courier New', Consolas, monospace; font-size: 13px; line-height: 1.4; color: #212529; white-space: pre-wrap; word-wrap: break-word;"><code class="hljs">${highlightedCode}</code></pre>
             </div>`;
           };
 
@@ -161,8 +184,7 @@ jobs:
                 font-size: 12px;
                 color: #6c757d;
               }
-              
-              /* Code block styles */
+                /* Code block styles */
               pre {
                 background-color: #f8f9fa !important;
                 border: 1px solid #e9ecef !important;
@@ -181,6 +203,95 @@ jobs:
               code {
                 font-family: 'Courier New', Consolas, monospace !important;
                 font-size: 12px !important;
+              }
+              
+              /* Syntax highlighting styles - email-friendly theme */
+              .hljs {
+                display: block !important;
+                overflow-x: auto !important;
+                padding: 0 !important;
+                color: #212529 !important;
+              }
+              
+              .hljs-comment,
+              .hljs-quote {
+                color: #6c757d !important;
+                font-style: italic !important;
+              }
+              
+              .hljs-keyword,
+              .hljs-selector-tag,
+              .hljs-subst {
+                color: #d73a49 !important;
+                font-weight: bold !important;
+              }
+              
+              .hljs-number,
+              .hljs-literal,
+              .hljs-variable,
+              .hljs-template-variable,
+              .hljs-tag .hljs-attr {
+                color: #005cc5 !important;
+              }
+              
+              .hljs-string,
+              .hljs-doctag {
+                color: #032f62 !important;
+              }
+              
+              .hljs-title,
+              .hljs-section,
+              .hljs-selector-id {
+                color: #6f42c1 !important;
+                font-weight: bold !important;
+              }
+              
+              .hljs-type,
+              .hljs-class .hljs-title {
+                color: #005cc5 !important;
+                font-weight: bold !important;
+              }
+              
+              .hljs-tag,
+              .hljs-name,
+              .hljs-attribute {
+                color: #22863a !important;
+                font-weight: normal !important;
+              }
+              
+              .hljs-regexp,
+              .hljs-link {
+                color: #032f62 !important;
+              }
+              
+              .hljs-symbol,
+              .hljs-bullet {
+                color: #e36209 !important;
+              }
+              
+              .hljs-built_in,
+              .hljs-builtin-name {
+                color: #005cc5 !important;
+              }
+              
+              .hljs-meta {
+                color: #6c757d !important;
+              }
+              
+              .hljs-deletion {
+                background: #ffeef0 !important;
+              }
+              
+              .hljs-addition {
+                background: #f0fff4 !important;
+              }
+              
+              .hljs-emphasis {
+                font-style: italic !important;
+              }
+              
+              .hljs-strong {
+                font-weight: bold !important;
               }
               
               /* Inline code styles */

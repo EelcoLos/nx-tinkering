@@ -14,7 +14,7 @@ Het is ons streven om deze nieuwsbrief maandelijks te versturen. We hopen dat ju
 # Aankondigingen/CTA's
 In deze sectie vind je aankondigingen en calls to action van het team Platform & Services. We moedigen iedereen aan om actief deel te nemen en feedback te geven op de verschillende onderwerpen. 
 
-## keyvault rbac roles
+## Key Vault RBAC roles
 
 In een artikel van Microsoft https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-access-policy wordt uitgelegd hoe je Key Vault kunt beveiligen met RBAC-rollen in plaats van toegangspolicies. Dit biedt meer flexibiliteit en controle over wie toegang heeft tot de Key Vault en welke acties ze kunnen uitvoeren. Ook in de vraag https://learn.microsoft.com/en-us/answers/questions/1691908/access-policies-for-keyvaults-decommission wordt aangegeven dat access policies geen einddatum hebben, maar wel als legacy worden beschouwd.
 Om te laten zien welke stappen nodig zijn. De mapping van je huidige policies naar RBAC-rollen is te vinden in de volgende link:https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-migration?tabs=cli#access-policies-to-azure-roles-mapping. Bijvoorbeeld deze mapping:
