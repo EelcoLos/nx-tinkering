@@ -84,20 +84,54 @@ jobs:
             let highlightedCode;
             let validLanguage = language;
             
+            // Helper function to detect Bicep patterns
+            function isBicepCode(code) {
+              const bicepPatterns = [
+                /resource\s+\w+\s+['"][^'"]+['"][^{]*{/,  // resource declarations
+                /param\s+\w+\s+\w+/,                      // parameter declarations
+                /var\s+\w+\s*=/,                          // variable declarations
+                /output\s+\w+\s+\w+\s*=/,                 // output declarations
+                /Microsoft\.\w+\/\w+@\d{4}-\d{2}-\d{2}/,  // Azure resource types with API versions
+                /properties:\s*{/,                        // properties blocks
+                /subscriptionResourceId\(/,               // Bicep functions
+                /resourceGroup\(\)/,                      // Bicep functions
+                /guid\(/,                                 // Bicep functions
+                /scope:\s*\w+/                            // scope property
+              ];
+              
+              return bicepPatterns.some(pattern => pattern.test(code));
+            }
+            
             try {
-              if (language && hljs.getLanguage(language)) {
+              // Check if it's Bicep code (either explicitly marked or detected)
+              if (language === 'bicep' || (!language && isBicepCode(code))) {
+                // Use JSON highlighting for Bicep since it has similar structure
+                highlightedCode = hljs.highlight(code, { language: 'json' }).value;
+                validLanguage = 'bicep';
+              } else if (language && hljs.getLanguage(language)) {
                 // Use the specified language
                 highlightedCode = hljs.highlight(code, { language: language }).value;
               } else if (language) {
-                // Try to auto-detect if specified language isn't supported
-                const autoDetected = hljs.highlightAuto(code);
-                highlightedCode = autoDetected.value;
-                validLanguage = autoDetected.language || language;
+                // Check if it's actually Bicep but misidentified
+                if (isBicepCode(code)) {
+                  highlightedCode = hljs.highlight(code, { language: 'json' }).value;
+                  validLanguage = 'bicep';
+                } else {
+                  // Try to auto-detect if specified language isn't supported
+                  const autoDetected = hljs.highlightAuto(code);
+                  highlightedCode = autoDetected.value;
+                  validLanguage = autoDetected.language || language;
+                }
               } else {
-                // Auto-detect language
-                const autoDetected = hljs.highlightAuto(code);
-                highlightedCode = autoDetected.value;
-                validLanguage = autoDetected.language || 'text';
+                // Auto-detect language, but check for Bicep first
+                if (isBicepCode(code)) {
+                  highlightedCode = hljs.highlight(code, { language: 'json' }).value;
+                  validLanguage = 'bicep';
+                } else {
+                  const autoDetected = hljs.highlightAuto(code);
+                  highlightedCode = autoDetected.value;
+                  validLanguage = autoDetected.language || 'text';
+                }
               }
             } catch (e) {
               // Fallback to plain text if highlighting fails
