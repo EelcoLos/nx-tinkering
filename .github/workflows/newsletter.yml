@@ -25,11 +25,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Changed from lts/*
+          node-version: '18'
 
       - name: Install dependencies
         run: |
-          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 # Downgraded marked
+          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2
 
       - name: Convert Markdown to Email-Ready HTML
         id: convert
@@ -58,7 +58,7 @@ jobs:
               6: '12px'
             };
             
-            return `<h${level} style="font-family: Arial, sans-serif; font-size: ${fontSize[level]}; font-weight: bold; color: #2c3e50; margin: 20px 0 10px 0; line-height: 1.2;">${text}</h${level}>`;
+            return `<h${level} style="font-family: Arial, sans-serif; font-size: ${fontSize[level]}; font-weight: bold; color: #003d5c; margin: 20px 0 10px 0; line-height: 1.2;">${text}</h${level}>`;
           };
 
           // Override paragraph renderer
@@ -79,7 +79,7 @@ jobs:
 
           // Override link renderer for email safety
           renderer.link = function(href, title, text) {
-            return `<a href="${href}" style="color: #3498db; text-decoration: underline;" target="_blank">${text}</a>`;
+            return `<a href="${href}" style="color: #0066cc; text-decoration: underline;" target="_blank">${text}</a>`;
           };
 
           marked.setOptions({
@@ -133,9 +133,8 @@ jobs:
                 background-color: #ffffff;
                 border: 1px solid #e0e0e0;
               }
-              
-              .email-header {
-                background-color: #2c3e50;
+                .email-header {
+                background-color: #003d5c;
                 color: #ffffff;
                 padding: 20px;
                 text-align: center;
@@ -146,11 +145,11 @@ jobs:
               }
               
               .email-footer {
-                background-color: #ecf0f1;
+                background-color: #f8f9fa;
                 padding: 20px;
                 text-align: center;
                 font-size: 12px;
-                color: #7f8c8d;
+                color: #6c757d;
               }
               
               /* Mobile responsive */
@@ -220,59 +219,116 @@ jobs:
       - name: Generate Teams Card Format
         id: teams-card
         run: |
-          # Create the Teams card JSON for upload
+          # Create the Teams Adaptive Card JSON for upload
           cat > teams-card.json << 'EOF'
           {
-            "@type": "MessageCard",
-            "@context": "https://schema.org/extensions",
-            "themeColor": "0078D4",
-            "sections": [
+            "type": "message",
+            "attachments": [
               {
-                "activityTitle": "📰 Nieuwe Newsletter Beschikbaar",
-                "activitySubtitle": "Platform & Services Team",
-                "activityImage": "https://github.com/favicon.ico",
-                "facts": [
-                  {
-                    "name": "Titel:",
-                    "value": "${{ steps.convert.outputs.title }}"
-                  },
-                  {
-                    "name": "Datum:",
-                    "value": "${{ steps.convert.outputs.date }}"
-                  },
-                  {
-                    "name": "Repository:",
-                    "value": "${{ github.repository }}"
-                  },
-                  {
-                    "name": "HTML Artifact:",
-                    "value": "newsletter-html-${{ steps.convert.outputs.date }}"
-                  }
-                ],
-                "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄\n\n*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
-                "markdown": true
-              }
-            ],
-            "potentialAction": [
-              {
-                "@type": "OpenUri",
-                "name": "Bekijk in Repository",
-                "targets": [
-                  {
-                    "os": "default",
-                    "uri": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
-                  }
-                ]
-              },
-              {
-                "@type": "OpenUri",
-                "name": "Download HTML Artifact",
-                "targets": [
-                  {
-                    "os": "default",
-                    "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                ]
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": {
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  "type": "AdaptiveCard",
+                  "version": "1.3",
+                  "body": [
+                    {
+                      "type": "Container",
+                      "style": "accent",
+                      "items": [
+                        {
+                          "type": "ColumnSet",
+                          "columns": [
+                            {
+                              "type": "Column",
+                              "width": "auto",
+                              "items": [
+                                {
+                                  "type": "Image",
+                                  "url": "https://github.com/favicon.ico",
+                                  "size": "Small"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "Column",
+                              "width": "stretch",
+                              "items": [
+                                {
+                                  "type": "TextBlock",
+                                  "text": "📰 Nieuwe Newsletter Beschikbaar",
+                                  "weight": "Bolder",
+                                  "size": "Medium",
+                                  "color": "Light"
+                                },
+                                {
+                                  "type": "TextBlock",
+                                  "text": "Platform & Services Team",
+                                  "size": "Small",
+                                  "color": "Light",
+                                  "spacing": "None"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Container",
+                      "items": [
+                        {
+                          "type": "TextBlock",
+                          "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄",
+                          "wrap": true,
+                          "size": "Medium",
+                          "spacing": "Medium"
+                        },
+                        {
+                          "type": "TextBlock",
+                          "text": "*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
+                          "wrap": true,
+                          "isSubtle": true,
+                          "style": "emphasis",
+                          "spacing": "Small"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "FactSet",
+                      "facts": [
+                        {
+                          "title": "Titel:",
+                          "value": "${{ steps.convert.outputs.title }}"
+                        },
+                        {
+                          "title": "Datum:",
+                          "value": "${{ steps.convert.outputs.date }}"
+                        },
+                        {
+                          "title": "Repository:",
+                          "value": "${{ github.repository }}"
+                        },
+                        {
+                          "title": "HTML Artifact:",
+                          "value": "newsletter-${{ steps.convert.outputs.date }}"
+                        }
+                      ],
+                      "spacing": "Medium"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.OpenUrl",
+                      "title": "📂 Bekijk in Repository",
+                      "url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
+                    },
+                    {
+                      "type": "Action.OpenUrl",
+                      "title": "⬇️ Download HTML Artifact",
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -286,7 +342,7 @@ jobs:
 
           **Datum:** ${{ steps.convert.outputs.date }}  
           **Repository:** ${{ github.repository }}  
-          **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}
+          **HTML Artifact:** newsletter-${{ steps.convert.outputs.date }}
 
           ---
 
@@ -295,7 +351,7 @@ jobs:
           *Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*
 
           ### Acties
-          - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file }})
+          - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }})
           - [Download HTML Artifact](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
           ---
@@ -310,78 +366,132 @@ jobs:
             newsletter.html
             teams-card.json
             teams-card.md
-          retention-days: 30
-
-      #   - name: Send Email Newsletter
-      #     uses: dawidd6/action-send-mail@v3
-      #     with:
-      #       server_address: smtp.gmail.com
-      #       server_port: 587
-      #       username: ${{ secrets.SMTP_USERNAME }}
-      #       password: ${{ secrets.SMTP_PASSWORD }}
-      #       subject: '${{ steps.convert.outputs.title }} - ${{ steps.convert.outputs.date }}'
-      #       to: ${{ secrets.NEWSLETTER_RECIPIENTS }}
-      #       from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'
-      #       html_body: file://newsletter.html
-      #       convert_markdown: false
+          retention-days: 30 # - name: Send Email Newsletter
+      #   uses: dawidd6/action-send-mail@v3
+      #   with:
+      #     server_address: smtp.gmail.com
+      #     server_port: 587
+      #     username: ${{ secrets.SMTP_USERNAME }}
+      #     password: ${{ secrets.SMTP_PASSWORD }}
+      #     subject: '${{ steps.convert.outputs.title }} - ${{ steps.convert.outputs.date }}'
+      #     to: ${{ secrets.NEWSLETTER_RECIPIENTS }}
+      #     from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'
+      #     html_body: file://newsletter.html
+      #     convert_markdown: false
 
       # - name: Post to Microsoft Teams
       #   uses: skitionek/notify-microsoft-teams@master
       #   with:
       #     webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
-      #     overwrite: |
+      #     raw: |
       #       {
-      #         "@type": "MessageCard",
-      #         "@context": "https://schema.org/extensions",
-      #         // "summary": "Nieuwe Platform & Services Newsletter", // Temporarily commented out due to parsing issues
-      #         "themeColor": "0078D4",
-      #         "sections": [
+      #         "type": "message",
+      #         "attachments": [
       #           {
-      #             "activityTitle": "📰 Nieuwe Newsletter Beschikbaar",
-      #             "activitySubtitle": "Platform & Services Team",
-      #             "activityImage": "https://github.com/favicon.ico",
-      #             "facts": [
-      #               {
-      #                 "name": "Titel:",
-      #                 "value": "${{ steps.convert.outputs.title }}"
-      #               },
-      #               {
-      #                 "name": "Datum:",
-      #                 "value": "${{ steps.convert.outputs.date }}"
-      #               },
-      #               {
-      #                 "name": "Repository:",
-      #                 "value": "${{ github.repository }}"
-      #               },
-      #               {
-      #                 "name": "HTML Artifact:",
-      #                 "value": "newsletter-${{ steps.convert.outputs.date }}"
-      #               }
-      #             ],
-      #             "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄\n\n*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
-      #             "markdown": true
-      #           }
-      #         ],
-      #         "potentialAction": [
-      #           {
-      #             "@type": "OpenUri",
-      #             "name": "Bekijk in Repository",
-      #             "targets": [
-      #               {
-      #                 "os": "default",
-      #                 "uri": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
-      #               }
-      #             ]
-      #           },
-      #           {
-      #             "@type": "OpenUri",
-      #             "name": "Download HTML Artifact",
-      #             "targets": [
-      #               {
-      #                 "os": "default",
-      #                 "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      #               }
-      #             ]
+      #             "contentType": "application/vnd.microsoft.card.adaptive",
+      #             "content": {
+      #               "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+      #               "type": "AdaptiveCard",
+      #               "version": "1.3",
+      #               "body": [
+      #                 {
+      #                   "type": "Container",
+      #                   "style": "accent",
+      #                   "items": [
+      #                     {
+      #                       "type": "ColumnSet",
+      #                       "columns": [
+      #                         {
+      #                           "type": "Column",
+      #                           "width": "auto",
+      #                           "items": [
+      #                             {
+      #                               "type": "Image",
+      #                               "url": "https://github.com/favicon.ico",
+      #                               "size": "Small"
+      #                             }
+      #                           ]
+      #                         },
+      #                         {
+      #                           "type": "Column",
+      #                           "width": "stretch",
+      #                           "items": [
+      #                             {
+      #                               "type": "TextBlock",
+      #                               "text": "📰 Nieuwe Newsletter Beschikbaar",
+      #                               "weight": "Bolder",
+      #                               "size": "Medium",
+      #                               "color": "Light"
+      #                             },
+      #                             {
+      #                               "type": "TextBlock",
+      #                               "text": "Platform & Services Team",
+      #                               "size": "Small",
+      #                               "color": "Light",
+      #                               "spacing": "None"
+      #                             }
+      #                           ]
+      #                         }
+      #                       ]
+      #                     }
+      #                   ]
+      #                 },
+      #                 {
+      #                   "type": "Container",
+      #                   "items": [
+      #                     {
+      #                       "type": "TextBlock",
+      #                       "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄",
+      #                       "wrap": true,
+      #                       "size": "Medium",
+      #                       "spacing": "Medium"
+      #                     },
+      #                     {
+      #                       "type": "TextBlock",
+      #                       "text": "*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
+      #                       "wrap": true,
+      #                       "isSubtle": true,
+      #                       "style": "emphasis",
+      #                       "spacing": "Small"
+      #                     }
+      #                   ]
+      #                 },
+      #                 {
+      #                   "type": "FactSet",
+      #                   "facts": [
+      #                     {
+      #                       "title": "Titel:",
+      #                       "value": "${{ steps.convert.outputs.title }}"
+      #                     },
+      #                     {
+      #                       "title": "Datum:",
+      #                       "value": "${{ steps.convert.outputs.date }}"
+      #                     },
+      #                     {
+      #                       "title": "Repository:",
+      #                       "value": "${{ github.repository }}"
+      #                     },
+      #                     {
+      #                       "title": "HTML Artifact:",
+      #                       "value": "newsletter-${{ steps.convert.outputs.date }}"
+      #                     }
+      #                   ],
+      #                   "spacing": "Medium"
+      #                 }
+      #               ],
+      #               "actions": [
+      #                 {
+      #                   "type": "Action.OpenUrl",
+      #                   "title": "📂 Bekijk in Repository",
+      #                   "url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
+      #                 },
+      #                 {
+      #                   "type": "Action.OpenUrl",
+      #                   "title": "⬇️ Download HTML Artifact",
+      #                   "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #                 }
+      #               ]
+      #             }
       #           }
       #         ]
       #       }
