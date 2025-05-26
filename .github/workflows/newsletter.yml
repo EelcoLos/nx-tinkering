@@ -8,6 +8,11 @@ on:
         required: true
         default: 'annoucements/250516 newsletter.md'
         type: string
+  push:
+    paths:
+      - 'annoucements/*.md'
+    branches:
+      - main
 
 jobs:
   distribute-newsletter:
@@ -20,11 +25,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '18' # Changed from lts/*
 
       - name: Install dependencies
         run: |
-          npm install marked juice html-entities
+          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 # Downgraded marked
 
       - name: Convert Markdown to Email-Ready HTML
         id: convert
@@ -220,7 +225,6 @@ jobs:
           {
             "@type": "MessageCard",
             "@context": "https://schema.org/extensions",
-            "summary": "Nieuwe Platform & Services Newsletter",
             "themeColor": "0078D4",
             "sections": [
               {
@@ -291,7 +295,7 @@ jobs:
           *Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*
 
           ### Acties
-          - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file  }})
+          - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file }})
           - [Download HTML Artifact](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
           ---
@@ -329,7 +333,7 @@ jobs:
       #       {
       #         "@type": "MessageCard",
       #         "@context": "https://schema.org/extensions",
-      #         "summary": "Nieuwe Platform & Services Newsletter",
+      #         // "summary": "Nieuwe Platform & Services Newsletter", // Temporarily commented out due to parsing issues
       #         "themeColor": "0078D4",
       #         "sections": [
       #           {
