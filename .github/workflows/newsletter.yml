@@ -1,0 +1,383 @@
+name: Newsletter Distribution
+
+on:
+  workflow_dispatch:
+    inputs:
+      newsletter_file:
+        description: 'Path to the newsletter markdown file'
+        required: true
+        default: 'annoucements/250516 newsletter.md'
+        type: string
+
+jobs:
+  distribute-newsletter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts'
+
+      - name: Install dependencies
+        run: |
+          npm install marked juice html-entities
+
+      - name: Convert Markdown to Email-Ready HTML
+        id: convert
+        run: |
+          # Create a conversion script optimized for email clients
+          cat > convert.js << 'EOF'
+          const fs = require('fs');
+          const { marked } = require('marked');
+          const juice = require('juice');
+          const { encode } = require('html-entities');
+
+          const markdownFile = process.argv[2];
+          const markdown = fs.readFileSync(markdownFile, 'utf8');
+
+          // Configure marked for email compatibility
+          const renderer = new marked.Renderer();
+
+          // Override heading renderer to use proper email-safe styling
+          renderer.heading = function(text, level) {
+            const fontSize = {
+              1: '24px',
+              2: '20px', 
+              3: '18px',
+              4: '16px',
+              5: '14px',
+              6: '12px'
+            };
+            
+            return `<h${level} style="font-family: Arial, sans-serif; font-size: ${fontSize[level]}; font-weight: bold; color: #2c3e50; margin: 20px 0 10px 0; line-height: 1.2;">${text}</h${level}>`;
+          };
+
+          // Override paragraph renderer
+          renderer.paragraph = function(text) {
+            return `<p style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333333; margin: 0 0 16px 0;">${text}</p>`;
+          };
+
+          // Override list renderer
+          renderer.list = function(body, ordered) {
+            const tag = ordered ? 'ol' : 'ul';
+            const listStyle = ordered ? 'decimal' : 'disc';
+            return `<${tag} style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; margin: 0 0 16px 0; padding-left: 30px; list-style-type: ${listStyle};">${body}</${tag}>`;
+          };
+
+          renderer.listitem = function(text) {
+            return `<li style="margin-bottom: 8px; line-height: 1.5;">${text}</li>`;
+          };
+
+          // Override link renderer for email safety
+          renderer.link = function(href, title, text) {
+            return `<a href="${href}" style="color: #3498db; text-decoration: underline;" target="_blank">${text}</a>`;
+          };
+
+          marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+          });
+
+          let html = marked(markdown);
+
+          // Create email-optimized HTML structure
+          const emailHTML = `
+          <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+          <html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Platform & Services Newsletter</title>
+            <style type="text/css">
+              /* Reset styles */
+              body, table, td, p, a, li, blockquote { 
+                -webkit-text-size-adjust: 100%; 
+                -ms-text-size-adjust: 100%; 
+              }
+              table, td { 
+                mso-table-lspace: 0pt; 
+                mso-table-rspace: 0pt; 
+              }
+              img { 
+                -ms-interpolation-mode: bicubic; 
+                border: 0; 
+                height: auto; 
+                line-height: 100%; 
+                outline: none; 
+                text-decoration: none; 
+              }
+              
+              /* Email client specific styles */
+              body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: #f4f4f4;
+                font-family: Arial, sans-serif;
+              }
+              
+              .email-container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+              }
+              
+              .email-header {
+                background-color: #2c3e50;
+                color: #ffffff;
+                padding: 20px;
+                text-align: center;
+              }
+              
+              .email-body {
+                padding: 30px;
+              }
+              
+              .email-footer {
+                background-color: #ecf0f1;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #7f8c8d;
+              }
+              
+              /* Mobile responsive */
+              @media only screen and (max-width: 600px) {
+                .email-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                }
+                .email-body {
+                  padding: 20px !important;
+                }
+              }
+            </style>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td>
+                  <div class="email-container">
+                    <div class="email-header">
+                      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Platform & Services Newsletter</h1>
+                    </div>
+                    <div class="email-body">
+                      ${html}
+                    </div>
+                    <div class="email-footer">
+                      <p style="margin: 0;">Dit is een automatisch gegenereerde nieuwsbrief van het Platform & Services team.</p>
+                      <p style="margin: 5px 0 0 0;">Heb je vragen? Neem contact met ons op via Teams.</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>`;
+
+          // Inline all CSS for maximum email client compatibility
+          const inlinedHTML = juice(emailHTML, {
+            removeStyleTags: false,
+            preserveMediaQueries: true,
+            preserveKeyFrames: true
+          });
+
+          fs.writeFileSync('newsletter.html', inlinedHTML);
+
+          // Extract title for email subject
+          const titleMatch = markdown.match(/^#\s+(.+)$/m);
+          const title = titleMatch ? titleMatch[1] : 'Platform & Services Newsletter';
+          console.log(`NEWSLETTER_TITLE=${title}`);
+
+          // Get date from filename
+          const filename = markdownFile.split('/').pop();
+          const dateMatch = filename.match(/(\d{6})/);
+          const date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          console.log(`NEWSLETTER_DATE=${date}`);
+          EOF
+
+          node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
+
+          # Extract outputs from the conversion script
+          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
+          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+
+      - name: Generate Teams Card Format
+        id: teams-card
+        run: |
+          # Create the Teams card JSON for upload
+          cat > teams-card.json << 'EOF'
+          {
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Nieuwe Platform & Services Newsletter",
+            "themeColor": "0078D4",
+            "sections": [
+              {
+                "activityTitle": "📰 Nieuwe Newsletter Beschikbaar",
+                "activitySubtitle": "Platform & Services Team",
+                "activityImage": "https://github.com/favicon.ico",
+                "facts": [
+                  {
+                    "name": "Titel:",
+                    "value": "${{ steps.convert.outputs.title }}"
+                  },
+                  {
+                    "name": "Datum:",
+                    "value": "${{ steps.convert.outputs.date }}"
+                  },
+                  {
+                    "name": "Repository:",
+                    "value": "${{ github.repository }}"
+                  },
+                  {
+                    "name": "HTML Artifact:",
+                    "value": "newsletter-html-${{ steps.convert.outputs.date }}"
+                  }
+                ],
+                "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄\n\n*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
+                "markdown": true
+              }
+            ],
+            "potentialAction": [
+              {
+                "@type": "OpenUri",
+                "name": "Bekijk in Repository",
+                "targets": [
+                  {
+                    "os": "default",
+                    "uri": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
+                  }
+                ]
+              },
+              {
+                "@type": "OpenUri",
+                "name": "Download HTML Artifact",
+                "targets": [
+                  {
+                    "os": "default",
+                    "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+
+          # Create Teams markdown format
+          cat > teams-card.md << 'EOF'
+          # 📰 Platform & Services Newsletter
+
+          ## ${{ steps.convert.outputs.title }}
+
+          **Datum:** ${{ steps.convert.outputs.date }}  
+          **Repository:** ${{ github.repository }}  
+          **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}
+
+          ---
+
+          De nieuwste Platform & Services newsletter is beschikbaar! 📄
+
+          *Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*
+
+          ### Acties
+          - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file  }})
+          - [Download HTML Artifact](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ---
+          *Platform & Services Team*
+          EOF
+
+      - name: Upload Newsletter Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter-${{ steps.convert.outputs.date }}
+          path: |
+            newsletter.html
+            teams-card.json
+            teams-card.md
+          retention-days: 30
+
+      #   - name: Send Email Newsletter
+      #     uses: dawidd6/action-send-mail@v3
+      #     with:
+      #       server_address: smtp.gmail.com
+      #       server_port: 587
+      #       username: ${{ secrets.SMTP_USERNAME }}
+      #       password: ${{ secrets.SMTP_PASSWORD }}
+      #       subject: '${{ steps.convert.outputs.title }} - ${{ steps.convert.outputs.date }}'
+      #       to: ${{ secrets.NEWSLETTER_RECIPIENTS }}
+      #       from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'
+      #       html_body: file://newsletter.html
+      #       convert_markdown: false
+
+      # - name: Post to Microsoft Teams
+      #   uses: skitionek/notify-microsoft-teams@master
+      #   with:
+      #     webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      #     overwrite: |
+      #       {
+      #         "@type": "MessageCard",
+      #         "@context": "https://schema.org/extensions",
+      #         "summary": "Nieuwe Platform & Services Newsletter",
+      #         "themeColor": "0078D4",
+      #         "sections": [
+      #           {
+      #             "activityTitle": "📰 Nieuwe Newsletter Beschikbaar",
+      #             "activitySubtitle": "Platform & Services Team",
+      #             "activityImage": "https://github.com/favicon.ico",
+      #             "facts": [
+      #               {
+      #                 "name": "Titel:",
+      #                 "value": "${{ steps.convert.outputs.title }}"
+      #               },
+      #               {
+      #                 "name": "Datum:",
+      #                 "value": "${{ steps.convert.outputs.date }}"
+      #               },
+      #               {
+      #                 "name": "Repository:",
+      #                 "value": "${{ github.repository }}"
+      #               },
+      #               {
+      #                 "name": "HTML Artifact:",
+      #                 "value": "newsletter-${{ steps.convert.outputs.date }}"
+      #               }
+      #             ],
+      #             "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄\n\n*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
+      #             "markdown": true
+      #           }
+      #         ],
+      #         "potentialAction": [
+      #           {
+      #             "@type": "OpenUri",
+      #             "name": "Bekijk in Repository",
+      #             "targets": [
+      #               {
+      #                 "os": "default",
+      #                 "uri": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
+      #               }
+      #             ]
+      #           },
+      #           {
+      #             "@type": "OpenUri",
+      #             "name": "Download HTML Artifact",
+      #             "targets": [
+      #               {
+      #                 "os": "default",
+      #                 "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
