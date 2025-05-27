@@ -30,13 +30,13 @@ jobs:
       - name: Install dependencies
         run: |
           npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 highlight.js@11.9.0
-
       - name: Convert Markdown to Email-Ready HTML
         id: convert
         run: |
           # Create a conversion script optimized for email clients
           cat > convert.js << 'EOF'
           const fs = require('fs');
+          const path = require('path');
           const { marked } = require('marked');
           const juice = require('juice');
           const { encode } = require('html-entities');
@@ -44,7 +44,13 @@ jobs:
 
           const markdownFile = process.argv[2];
           let markdown = fs.readFileSync(markdownFile, 'utf8');
-          
+
+          // Read the header image and convert to base64
+          const headerImagePath = path.join('annoucements', 'attachments', 'brink-header.png');
+          const headerImageBase64 = fs.existsSync(headerImagePath) ? 
+            fs.readFileSync(headerImagePath).toString('base64') : 
+            null;
+
           // Remove GitHub permalink image reference that will be replaced by the email header
           markdown = markdown.replace(/^\[<img[^\]]*\](\([^)]*\))?\s*\n/m, '');
 
@@ -376,10 +382,12 @@ jobs:
           <body style="margin: 0; padding: 0; background-color: #f4f4f4;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
               <tr>
-                <td>
-                  <div class="email-container">
+                <td>                  <div class="email-container">
                     <div class="email-header">
-                      <img src="cid:brink-header.png" alt="Brink Team Header" style="width:100%;max-width:600px;display:block;margin:0 auto 0 auto;border-radius:0 0 12px 12px;">
+                      ${headerImageBase64 ? 
+                        `<img src="data:image/png;base64,${headerImageBase64}" alt="Brink Team Header" style="width:100%;max-width:600px;display:block;margin:0 auto 0 auto;border-radius:0 0 12px 12px;">` : 
+                        '<!-- No header image found -->'
+                      }
                       <div style="padding: 20px 0 0 0;">
                         <span style="font-size: 28px; font-weight: bold; letter-spacing: 1px;">Platform & Services Newsletter</span>
                       </div>
@@ -590,6 +598,7 @@ jobs:
       #     from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'
       #     html_body: file://newsletter.html
       #     convert_markdown: false
+      #     # Since we've embedded the image in the HTML, we no longer need to attach it separately
 
       # - name: Post to Microsoft Teams
       #   uses: skitionek/notify-microsoft-teams@master
