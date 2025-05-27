@@ -412,38 +412,75 @@ jobs:
             removeStyleTags: false,
             preserveMediaQueries: true,
             preserveKeyFrames: true
-          });
-
-          fs.writeFileSync('newsletter.html', inlinedHTML);
+          });          fs.writeFileSync('newsletter.html', inlinedHTML);
 
           // Extract title for email subject
           const titleMatch = markdown.match(/^#\s+(.+)$/m);
           const title = titleMatch ? titleMatch[1] : 'Platform & Services Newsletter';
-          console.log(`NEWSLETTER_TITLE=${title}`);          // Get date from filename
-          const filename = markdownFile.split('/').pop();
-          const dateMatch = filename.match(/(\d{6})/);
-          let date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          console.log(`NEWSLETTER_TITLE=${title}`);
 
-          // Convert YYMMDD to readable format (DD-MM-YYYY)
-          let formattedDate = date;
+          // Get date from filename and convert properly
+          const filename = markdownFile.split('/').pop() || markdownFile.split('\\').pop();
+          const dateMatch = filename.match(/(\d{6})/);
+          let date = '';
+          let formattedDate = '';
+          
           if (dateMatch && dateMatch[1].length === 6) {
-            const yy = dateMatch[1].substring(0, 2);
-            const mm = dateMatch[1].substring(2, 4);
-            const dd = dateMatch[1].substring(4, 6);
-            // Assuming 20xx for years
+            const dateStr = dateMatch[1];
+            const yy = dateStr.substring(0, 2);
+            const mm = dateStr.substring(2, 4);
+            const dd = dateStr.substring(4, 6);
+            
+            // Convert to full year (assuming 20xx)
             const yyyy = '20' + yy;
+            date = dateStr;
             formattedDate = `${dd}-${mm}-${yyyy}`;
+          } else {
+            // Fallback to current date
+            const now = new Date();
+            const yy = now.getFullYear().toString().substring(2, 4);
+            const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+            const dd = now.getDate().toString().padStart(2, '0');
+            date = yy + mm + dd;
+            formattedDate = `${dd}-${mm}-${now.getFullYear()}`;
+          }          // Extract CTA headers for summary
+          const ctaSection = markdown.match(/# Aankondigingen\/CTA's[\s\S]*?(?=\n# |\n(?=# )|$)/i);
+          let ctaSummary = '';
+          
+          if (ctaSection) {
+            const h2Headers = ctaSection[0].match(/^## (.+)$/gm);
+            if (h2Headers && h2Headers.length > 0) {
+              const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
+              if (headerTitles.length === 1) {
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]}.`;
+              } else if (headerTitles.length === 2) {
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]} en ${headerTitles[1]}.`;
+              } else {
+                const lastHeader = headerTitles.pop();
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles.join(', ')} en ${lastHeader}.`;
+              }
+            } else {
+              ctaSummary = 'Deze editie bevat belangrijke aankondigingen en calls-to-action van het Platform & Services team.';
+            }
+          } else {
+            ctaSummary = 'Bekijk de nieuwsbrief voor de laatste updates van het Platform & Services team.';
           }
+
           console.log(`NEWSLETTER_DATE=${date}`);
           console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
+          console.log(`NEWSLETTER_SUMMARY=${ctaSummary}`);
           EOF
 
           node convert.js "${{ github.event.inputs.newsletter_file }}"          # Extract outputs from the conversion script
           TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
           DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
-          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
+          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "date_formatted=$DATE_FORMATTED" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
 
       - name: Create Teams Icon
         id: teams-icon
@@ -624,11 +661,9 @@ jobs:
 
           ## ${{ steps.convert.outputs.title }}          **Datum:** ${{ steps.convert.outputs.date_formatted }}  
           **Repository:** ${{ github.repository }}  
-          **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}
+          **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}          ---
 
-          ---
-
-          De nieuwste Platform & Services newsletter is beschikbaar! 📄
+          ${{ steps.convert.outputs.summary }}
 
           *Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*
 
@@ -730,7 +765,7 @@ jobs:
                         "items": [
                           {
                             "type": "TextBlock",
-                            "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄",
+                            "text": "${{ steps.convert.outputs.summary }}",
                             "wrap": true,
                             "size": "Medium",
                             "spacing": "Medium"
