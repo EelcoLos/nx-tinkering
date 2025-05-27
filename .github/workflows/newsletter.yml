@@ -449,11 +449,9 @@ jobs:
           const ctaSection = markdown.match(/# Aankondigingen\/CTA's[\s\S]*?(?=\n# |\n(?=# )|$)/i);
           let ctaSummary = '';          if (ctaSection) {
             const h2Headers = ctaSection[0].match(/^## (.+)$/gm);            if (h2Headers && h2Headers.length > 0) {
-              const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
-              // Create TextRun elements for RichTextBlock
+              const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());              // Create TextRun elements for RichTextBlock
               const textRuns = [
-                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
-                {"type": "TextRun", "text": "\n\n"}
+                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:\n"}
               ];
               
               headerTitles.forEach((title, index) => {
@@ -463,25 +461,22 @@ jobs:
                 }
               });
               
-              ctaSummary = JSON.stringify(textRuns);
-              console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
-            } else {
+              ctaSummary = 'Deze editie bevat o.a. call to actions over: ' + headerTitles.join(', ');
+              console.log(`NEWSLETTER_TEXT_RUNS=${JSON.stringify(textRuns)}`);            } else {
               const defaultTextRuns = [
-                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
-                {"type": "TextRun", "text": "\n\n"},
+                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:\n"},
                 {"type": "TextRun", "text": "• Belangrijke aankondigingen en updates van het Platform & Services team"}
               ];
-              ctaSummary = JSON.stringify(defaultTextRuns);
-              console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
+              ctaSummary = 'Deze editie bevat o.a. call to actions over belangrijke aankondigingen en updates van het Platform & Services team';
+              console.log(`NEWSLETTER_TEXT_RUNS=${JSON.stringify(defaultTextRuns)}`);
             }
           } else {
             const fallbackTextRuns = [
-              {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
-              {"type": "TextRun", "text": "\n\n"},
+              {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:\n"},
               {"type": "TextRun", "text": "• De laatste updates van het Platform & Services team"}
             ];
-            ctaSummary = JSON.stringify(fallbackTextRuns);
-            console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
+            ctaSummary = 'Deze editie bevat o.a. call to actions over de laatste updates van het Platform & Services team';
+            console.log(`NEWSLETTER_TEXT_RUNS=${JSON.stringify(fallbackTextRuns)}`);
           }
 
           console.log(`NEWSLETTER_DATE=${date}`);
@@ -493,6 +488,11 @@ jobs:
           DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
           SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
           TEXT_RUNS=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)
+
+          # Handle empty TEXT_RUNS by providing a fallback
+          if [ -z "$TEXT_RUNS" ] || [ "$TEXT_RUNS" = "[]" ]; then
+            TEXT_RUNS='[{"type":"TextRun","text":"Deze editie bevat call to actions over de laatste updates van het Platform & Services team"}]'
+          fi
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "date=$DATE" >> $GITHUB_OUTPUT
