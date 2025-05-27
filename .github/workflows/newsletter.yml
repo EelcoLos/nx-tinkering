@@ -41,9 +41,8 @@ jobs:
           const { marked } = require('marked');
           const juice = require('juice');
           const { encode } = require('html-entities');
-          const hljs = require('highlight.js');
-
-          const markdownFile = process.argv[2];
+          const hljs = require('highlight.js');          const markdownFile = process.argv[2];
+          const inputTitle = process.argv[3] || '';
           let markdown = fs.readFileSync(markdownFile, 'utf8');
 
           // Read the header image and convert to base64
@@ -412,11 +411,14 @@ jobs:
             removeStyleTags: false,
             preserveMediaQueries: true,
             preserveKeyFrames: true
-          });          fs.writeFileSync('newsletter.html', inlinedHTML);
-
-          // Extract title for email subject
-          const titleMatch = markdown.match(/^#\s+(.+)$/m);
-          const title = titleMatch ? titleMatch[1] : 'Platform & Services Newsletter';
+          });          fs.writeFileSync('newsletter.html', inlinedHTML);          // Extract title for email subject
+          let title = '';
+          if (inputTitle && inputTitle.trim() !== '') {
+            title = inputTitle.trim();
+          } else {
+            const titleMatch = markdown.match(/^#\s+(.+)$/m);
+            title = titleMatch ? titleMatch[1] : 'Nieuwe Newsletter beschikbaar';
+          }
           console.log(`NEWSLETTER_TITLE=${title}`);
 
           // Get date from filename and convert properly
@@ -451,19 +453,14 @@ jobs:
             const h2Headers = ctaSection[0].match(/^## (.+)$/gm);
             if (h2Headers && h2Headers.length > 0) {
               const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
-              if (headerTitles.length === 1) {
-                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles[0]}.`;
-              } else if (headerTitles.length === 2) {
-                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles[0]} en ${headerTitles[1]}.`;
-              } else {
-                const lastHeader = headerTitles.pop();
-                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles.join(', ')} en ${lastHeader}.`;
-              }
+              // Format as list for all cases
+              const listItems = headerTitles.map(title => `• ${title}`).join('\n');
+              ctaSummary = `Deze editie bevat call to actions over:\n${listItems}`;
             } else {
-              ctaSummary = 'Deze editie bevat onder andere belangrijke aankondigingen en calls-to-action van het Platform & Services team.';
+              ctaSummary = 'Deze editie bevat call to actions over:\n• Belangrijke aankondigingen en updates van het Platform & Services team';
             }
           } else {
-            ctaSummary = 'Bekijk de nieuwsbrief voor de laatste updates van het Platform & Services team.';
+            ctaSummary = 'Deze editie bevat call to actions over:\n• De laatste updates van het Platform & Services team';
           }
 
           console.log(`NEWSLETTER_DATE=${date}`);
@@ -760,14 +757,6 @@ jobs:
                             "size": "Medium",
                             "spacing": "Medium"
                           },
-                          {
-                            "type": "TextBlock",
-                            "text": "*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
-                            "wrap": true,
-                            "isSubtle": true,
-                            "style": "emphasis",
-                            "spacing": "Small"
-                          }
                         ]
                       },
                       {
