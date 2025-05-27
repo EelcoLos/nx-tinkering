@@ -424,7 +424,7 @@ jobs:
           const dateMatch = filename.match(/(\d{6})/);
           let date = '';
           let formattedDate = '';
-          
+
           if (dateMatch && dateMatch[1].length === 6) {
             const dateStr = dateMatch[1];
             const yy = dateStr.substring(0, 2);
@@ -446,7 +446,7 @@ jobs:
           }          // Extract CTA headers for summary
           const ctaSection = markdown.match(/# Aankondigingen\/CTA's[\s\S]*?(?=\n# |\n(?=# )|$)/i);
           let ctaSummary = '';
-          
+
           if (ctaSection) {
             const h2Headers = ctaSection[0].match(/^## (.+)$/gm);
             if (h2Headers && h2Headers.length > 0) {
@@ -606,14 +606,6 @@ jobs:
                           "size": "Medium",
                           "spacing": "Medium"
                         },
-                        {
-                          "type": "TextBlock",
-                          "text": "*Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*",
-                          "wrap": true,
-                          "isSubtle": true,
-                          "style": "emphasis",
-                          "spacing": "Small"
-                        }
                       ]
                     },
                     {
