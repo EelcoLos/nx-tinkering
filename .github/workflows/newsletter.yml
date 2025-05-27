@@ -423,7 +423,7 @@ jobs:
           const filename = markdownFile.split('/').pop();
           const dateMatch = filename.match(/(\d{6})/);
           let date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10).replace(/-/g, '');
-          
+
           // Convert YYMMDD to readable format (DD-MM-YYYY)
           let formattedDate = date;
           if (dateMatch && dateMatch[1].length === 6) {
@@ -453,7 +453,7 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           const sharp = require('sharp');
-          
+
           async function createTeamsIcon() {
             const headerImagePath = path.join('annoucements', 'attachments', 'brink-header.png');
             const teamsIconPath = 'teams-icon.png';
@@ -490,16 +490,16 @@ jobs:
               console.log('TEAMS_ICON_URI=https://github.com/favicon.ico');
             }
           }
-          
+
           createTeamsIcon();
           EOF
-          
+
           node create-teams-icon.js
-          
+
           # Extract outputs from the icon creation script
           TEAMS_ICON_BASE64=$(node create-teams-icon.js | grep "TEAMS_ICON_BASE64=" | cut -d'=' -f2-)
           TEAMS_ICON_URI=$(node create-teams-icon.js | grep "TEAMS_ICON_URI=" | cut -d'=' -f2-)
-          
+
           echo "teams_icon_base64=$TEAMS_ICON_BASE64" >> $GITHUB_OUTPUT
           echo "teams_icon_uri=$TEAMS_ICON_URI" >> $GITHUB_OUTPUT
 
@@ -664,10 +664,11 @@ jobs:
       #     password: ${{ secrets.SMTP_PASSWORD }}
       #     subject: '${{ steps.convert.outputs.title }} - ${{ steps.convert.outputs.date }}'
       #     to: ${{ secrets.NEWSLETTER_RECIPIENTS }}
-      #     from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'
-      #     html_body: file://newsletter.html
+      #     from: 'Platform & Services Team <${{ secrets.SMTP_USERNAME }}>'      #     html_body: file://newsletter.html
       #     convert_markdown: false
-      #     # Since we've embedded the image in the HTML, we no longer need to attach it separately      - name: Post to Microsoft Teams
+      #     # Since we've embedded the image in the HTML, we no longer need to attach it separately
+
+      - name: Post to Microsoft Teams
         uses: skitionek/notify-microsoft-teams@master
         with:
           webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
