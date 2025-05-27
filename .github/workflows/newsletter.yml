@@ -43,7 +43,10 @@ jobs:
           const hljs = require('highlight.js');
 
           const markdownFile = process.argv[2];
-          const markdown = fs.readFileSync(markdownFile, 'utf8');
+          let markdown = fs.readFileSync(markdownFile, 'utf8');
+          
+          // Remove GitHub permalink image reference that will be replaced by the email header
+          markdown = markdown.replace(/^\[<img[^\]]*\](\([^)]*\))?\s*\n/m, '');
 
           // Configure marked for email compatibility
           const renderer = new marked.Renderer();

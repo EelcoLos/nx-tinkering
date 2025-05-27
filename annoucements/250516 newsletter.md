@@ -1,3 +1,4 @@
+[<img src="https://github.com/EelcoLos/nx-tinkering/blob/c1dcea83acc233650e8fa9a4bc415b88b194e470/annoucements/attachments/brink-header.png">](http://example.com)
 # Introductie Nieuwsbrief team Platform & Services
 
 welkom bij de eerste nieuwsbrief van het team Platform & Services! Hoewel het team al geruime tijd bestaat hebben we nog geen reviews gehouden. Dit heeft voor een groot deel te maken met het feit dat we veelal erg technische onderwerpen behandelen die niet altijd even toegankelijk zijn voor een breder publiek. Met deze nieuwsbrief willen we jullie op de hoogte houden van onze activiteiten, projecten en andere relevante informatie. Wat kunnen jullie concreet verwachten?
