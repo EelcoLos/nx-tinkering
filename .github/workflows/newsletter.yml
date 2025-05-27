@@ -452,15 +452,15 @@ jobs:
             if (h2Headers && h2Headers.length > 0) {
               const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
               if (headerTitles.length === 1) {
-                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]}.`;
+                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles[0]}.`;
               } else if (headerTitles.length === 2) {
-                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]} en ${headerTitles[1]}.`;
+                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles[0]} en ${headerTitles[1]}.`;
               } else {
                 const lastHeader = headerTitles.pop();
-                ctaSummary = `Deze editie bevat informatie over: ${headerTitles.join(', ')} en ${lastHeader}.`;
+                ctaSummary = `Deze editie bevat o.a. informatie over: ${headerTitles.join(', ')} en ${lastHeader}.`;
               }
             } else {
-              ctaSummary = 'Deze editie bevat belangrijke aankondigingen en calls-to-action van het Platform & Services team.';
+              ctaSummary = 'Deze editie bevat onder andere belangrijke aankondigingen en calls-to-action van het Platform & Services team.';
             }
           } else {
             ctaSummary = 'Bekijk de nieuwsbrief voor de laatste updates van het Platform & Services team.';
@@ -656,8 +656,6 @@ jobs:
           **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}          ---
 
           ${{ steps.convert.outputs.summary }}
-
-          *Email verzending is tijdelijk uitgeschakeld. Download de HTML versie via de artifact link hieronder.*
 
           ### Acties
           - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file }})
