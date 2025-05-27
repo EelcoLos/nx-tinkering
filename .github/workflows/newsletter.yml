@@ -8,11 +8,6 @@ on:
         required: true
         default: 'annoucements/250516 newsletter.md'
         type: string
-      newsletter_title:
-        description: 'Newsletter title (optional, defaults to "Nieuwe Newsletter beschikbaar")'
-        required: false
-        default: 'Nieuwe Newsletter beschikbaar'
-        type: string
   push:
     paths:
       - 'annoucements/*.md'
@@ -46,8 +41,9 @@ jobs:
           const { marked } = require('marked');
           const juice = require('juice');
           const { encode } = require('html-entities');
-          const hljs = require('highlight.js');          const markdownFile = process.argv[2];
-          const inputTitle = process.argv[3] || '';
+          const hljs = require('highlight.js');
+
+          const markdownFile = process.argv[2];
           let markdown = fs.readFileSync(markdownFile, 'utf8');
 
           // Read the header image and convert to base64
@@ -416,14 +412,11 @@ jobs:
             removeStyleTags: false,
             preserveMediaQueries: true,
             preserveKeyFrames: true
-          });          fs.writeFileSync('newsletter.html', inlinedHTML);          // Extract title for email subject
-          let title = '';
-          if (inputTitle && inputTitle.trim() !== '') {
-            title = inputTitle.trim();
-          } else {
-            const titleMatch = markdown.match(/^#\s+(.+)$/m);
-            title = titleMatch ? titleMatch[1] : 'Nieuwe Newsletter beschikbaar';
-          }
+          });          fs.writeFileSync('newsletter.html', inlinedHTML);
+
+          // Extract title for email subject
+          const titleMatch = markdown.match(/^#\s+(.+)$/m);
+          const title = titleMatch ? titleMatch[1] : 'Platform & Services Newsletter';
           console.log(`NEWSLETTER_TITLE=${title}`);
 
           // Get date from filename and convert properly
@@ -458,26 +451,31 @@ jobs:
             const h2Headers = ctaSection[0].match(/^## (.+)$/gm);
             if (h2Headers && h2Headers.length > 0) {
               const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
-              // Format as list for all cases
-              const listItems = headerTitles.map(title => `• ${title}`).join('\n');
-              ctaSummary = `Deze editie bevat o.a. call to actions over:\n${listItems}`;
+              if (headerTitles.length === 1) {
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]}.`;
+              } else if (headerTitles.length === 2) {
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles[0]} en ${headerTitles[1]}.`;
+              } else {
+                const lastHeader = headerTitles.pop();
+                ctaSummary = `Deze editie bevat informatie over: ${headerTitles.join(', ')} en ${lastHeader}.`;
+              }
             } else {
-              ctaSummary = 'Deze editie bevat call to actions over:\n• Belangrijke aankondigingen en updates van het Platform & Services team';
+              ctaSummary = 'Deze editie bevat belangrijke aankondigingen en calls-to-action van het Platform & Services team.';
             }
           } else {
-            ctaSummary = 'Deze editie bevat o.a. call to actions over:\n• De laatste updates van het Platform & Services team';
+            ctaSummary = 'Bekijk de nieuwsbrief voor de laatste updates van het Platform & Services team.';
           }
 
           console.log(`NEWSLETTER_DATE=${date}`);
           console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
           console.log(`NEWSLETTER_SUMMARY=${ctaSummary}`);
-          EOF          node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}"
+          EOF
 
-          # Extract outputs from the conversion script
-          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
-          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
-          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
-          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
+          node convert.js "${{ github.event.inputs.newsletter_file }}"          # Extract outputs from the conversion script
+          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
+          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
+          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
+          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "date=$DATE" >> $GITHUB_OUTPUT
@@ -580,7 +578,7 @@ jobs:
                               "items": [
                                 {
                                   "type": "TextBlock",
-                                  "text": "${{ steps.convert.outputs.title }}",
+                                  "text": "📰 Nieuwe Newsletter Beschikbaar",
                                   "weight": "Bolder",
                                   "size": "Medium",
                                   "color": "Light"
