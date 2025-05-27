@@ -447,37 +447,58 @@ jobs:
             formattedDate = `${dd}-${mm}-${now.getFullYear()}`;
           }          // Extract CTA headers for summary
           const ctaSection = markdown.match(/# Aankondigingen\/CTA's[\s\S]*?(?=\n# |\n(?=# )|$)/i);
-          let ctaSummary = '';
-
-          if (ctaSection) {
-            const h2Headers = ctaSection[0].match(/^## (.+)$/gm);
-            if (h2Headers && h2Headers.length > 0) {
+          let ctaSummary = '';          if (ctaSection) {
+            const h2Headers = ctaSection[0].match(/^## (.+)$/gm);            if (h2Headers && h2Headers.length > 0) {
               const headerTitles = h2Headers.map(header => header.replace(/^## /, '').trim());
-              // Format as list for all cases
-              const listItems = headerTitles.map(title => `• ${title}`).join('\n');
-              ctaSummary = `Deze editie bevat call to actions over:\n${listItems}`;
+              // Create TextRun elements for RichTextBlock
+              const textRuns = [
+                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
+                {"type": "TextRun", "text": "\n\n"}
+              ];
+              
+              headerTitles.forEach((title, index) => {
+                textRuns.push({"type": "TextRun", "text": `• ${title}`});
+                if (index < headerTitles.length - 1) {
+                  textRuns.push({"type": "TextRun", "text": "\n"});
+                }
+              });
+              
+              ctaSummary = JSON.stringify(textRuns);
+              console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
             } else {
-              ctaSummary = 'Deze editie bevat call to actions over:\n• Belangrijke aankondigingen en updates van het Platform & Services team';
+              const defaultTextRuns = [
+                {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
+                {"type": "TextRun", "text": "\n\n"},
+                {"type": "TextRun", "text": "• Belangrijke aankondigingen en updates van het Platform & Services team"}
+              ];
+              ctaSummary = JSON.stringify(defaultTextRuns);
+              console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
             }
           } else {
-            ctaSummary = 'Deze editie bevat call to actions over:\n• De laatste updates van het Platform & Services team';
+            const fallbackTextRuns = [
+              {"type": "TextRun", "text": "Deze editie bevat o.a. call to actions over:"},
+              {"type": "TextRun", "text": "\n\n"},
+              {"type": "TextRun", "text": "• De laatste updates van het Platform & Services team"}
+            ];
+            ctaSummary = JSON.stringify(fallbackTextRuns);
+            console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
           }
 
           console.log(`NEWSLETTER_DATE=${date}`);
           console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
           console.log(`NEWSLETTER_SUMMARY=${ctaSummary}`);
-          EOF
-
-          node convert.js "${{ github.event.inputs.newsletter_file }}"          # Extract outputs from the conversion script
-          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
-          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
-          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
-          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
+          EOF          node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}"          # Extract outputs from the conversion script
+          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
+          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
+          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
+          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
+          TEXT_RUNS=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "date_formatted=$DATE_FORMATTED" >> $GITHUB_OUTPUT
           echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+          echo "text_runs=$TEXT_RUNS" >> $GITHUB_OUTPUT
 
       - name: Create Teams Icon
         id: teams-icon
@@ -592,15 +613,18 @@ jobs:
                           ]
                         }
                       ]
-                    },
-                    {
+                    },                    {
                       "type": "Container",
                       "items": [
                         {
-                          "type": "TextBlock",
-                          "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄",
+                          "type": "RichTextBlock",
+                          "inlines": [
+                            {
+                              "type": "TextRun",
+                              "text": "De nieuwste Platform & Services newsletter is beschikbaar! 📄"
+                            }
+                          ],
                           "wrap": true,
-                          "size": "Medium",
                           "spacing": "Medium"
                         },
                       ]
@@ -746,15 +770,13 @@ jobs:
                             ]
                           }
                         ]
-                      },
-                      {
+                      },                      {
                         "type": "Container",
                         "items": [
                           {
-                            "type": "TextBlock",
-                            "text": "${{ steps.convert.outputs.summary }}",
+                            "type": "RichTextBlock",
+                            "inlines": ${{ steps.convert.outputs.text_runs }},
                             "wrap": true,
-                            "size": "Medium",
                             "spacing": "Medium"
                           }
                         ]

@@ -10,10 +10,34 @@ welkom bij de eerste nieuwsbrief van het team Platform & Services! Hoewel het te
 - Informatie over de roadmap van het team
 
 Het is ons streven om deze nieuwsbrief maandelijks te versturen. We hopen dat jullie het een waardevolle aanvulling vinden en staan open voor feedback en suggesties. Mochten jullie vragen hebben, aarzel dan niet om contact met ons op te nemen.
+# Acties die wij gedaan hebben
 
+## DNSSEC 
+- ADR 
+WIP
+
+## Release Ringen
+WIP
+
+## Windows nodes uit AKS
+WIP
+
+## Team overstijgende zaken
+### URL's die buiten FrontDoor gaan impact
+- voorbeeld: download service van team desktop
+WIP
+
+### App Attach
+WIP
+
+### (Front Door issues)
+WIP
 
 # Aankondigingen/CTA's
 In deze sectie vind je aankondigingen en calls to action van het team Platform & Services. We moedigen iedereen aan om actief deel te nemen en feedback te geven op de verschillende onderwerpen. 
+
+## Aankondiging van Appinsights -> connectionstring t.o.v. key
+WIP
 
 ## Key Vault RBAC roles
 
@@ -74,3 +98,16 @@ Dit deployen naar de keyvault werkt gewoon. Verder set je de `enableRbacAuthoriz
 Echter, De echte overstap gebeurd pas *na* dat je in de portal zelf de instelling aanpast (onder Settings => Access configuration). Daar staat het permission model voor velen op dit moment op 'Vault access policy' en moet je dit aanpassen naar 'Azure role-based access control (RBAC)'. Dit is een handmatige actie die je moet uitvoeren. Voor productie heb je daar een PIM verzoek voor nodig.
 Let op dat wanneer je dit doet, de resources die dat benaderen herstart, zodat die er gebruik van maken. 
 Let voor test op dat je calls naar keyvault niet meer werken, omdat de policies niet meer bestaan. Je moet dan de RBAC rollen toekennen aan de service principals die de Key Vault benaderen.
+
+# Post mortems
+
+## https://github.com/Brink-Software/Ibis.Platform/blob/master/docs/Post%20Mortems/2025-03-31%20activation%20service%20image%20deletion%20caused%20outage.md
+WIP
+
+# Inzicht Roadmap
+
+## Application Gateway for Container apps
+WIP
+
+## Ontvlechting
+WIP
