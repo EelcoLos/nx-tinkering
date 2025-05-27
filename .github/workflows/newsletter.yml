@@ -29,7 +29,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 highlight.js@11.9.0
+          npm install marked@12.0.2 juice@11.0.1 html-entities@2.5.2 highlight.js@11.9.0 sharp@0.33.2
+
       - name: Convert Markdown to Email-Ready HTML
         id: convert
         run: |
@@ -418,23 +419,89 @@ jobs:
           // Extract title for email subject
           const titleMatch = markdown.match(/^#\s+(.+)$/m);
           const title = titleMatch ? titleMatch[1] : 'Platform & Services Newsletter';
-          console.log(`NEWSLETTER_TITLE=${title}`);
-
-          // Get date from filename
+          console.log(`NEWSLETTER_TITLE=${title}`);          // Get date from filename
           const filename = markdownFile.split('/').pop();
           const dateMatch = filename.match(/(\d{6})/);
-          const date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          let date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          
+          // Convert YYMMDD to readable format (DD-MM-YYYY)
+          let formattedDate = date;
+          if (dateMatch && dateMatch[1].length === 6) {
+            const yy = dateMatch[1].substring(0, 2);
+            const mm = dateMatch[1].substring(2, 4);
+            const dd = dateMatch[1].substring(4, 6);
+            // Assuming 20xx for years
+            const yyyy = '20' + yy;
+            formattedDate = `${dd}-${mm}-${yyyy}`;
+          }
           console.log(`NEWSLETTER_DATE=${date}`);
+          console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
           EOF
 
-          node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"
-
-          # Extract outputs from the conversion script
+          node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}"          # Extract outputs from the conversion script
           TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
           DATE=$(node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
-
-          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)          echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "date=$DATE" >> $GITHUB_OUTPUT
+          echo "date_formatted=$DATE_FORMATTED" >> $GITHUB_OUTPUT
+
+      - name: Create Teams Icon
+        id: teams-icon
+        run: |
+          # Create a smaller icon for Teams card from the header image
+          cat > create-teams-icon.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const sharp = require('sharp');
+          
+          async function createTeamsIcon() {
+            const headerImagePath = path.join('annoucements', 'attachments', 'brink-header.png');
+            const teamsIconPath = 'teams-icon.png';
+            
+            if (fs.existsSync(headerImagePath)) {
+              try {
+                // Create a smaller icon (64x64) for Teams
+                await sharp(headerImagePath)
+                  .resize(64, 64, {
+                    fit: 'contain',
+                    background: { r: 64, g: 95, b: 92, alpha: 1 } // #405F5C background
+                  })
+                  .png()
+                  .toFile(teamsIconPath);
+                
+                console.log(`Teams icon created: ${teamsIconPath}`);
+                
+                // Convert to base64 for embedding
+                const iconBase64 = fs.readFileSync(teamsIconPath).toString('base64');
+                console.log(`TEAMS_ICON_BASE64=${iconBase64}`);
+                
+                // Also save as data URI for direct use
+                const dataUri = `data:image/png;base64,${iconBase64}`;
+                console.log(`TEAMS_ICON_URI=${dataUri}`);
+                
+              } catch (error) {
+                console.error('Error creating Teams icon:', error);
+                console.log('TEAMS_ICON_BASE64=');
+                console.log('TEAMS_ICON_URI=https://github.com/favicon.ico');
+              }
+            } else {
+              console.log('Header image not found, using GitHub favicon');
+              console.log('TEAMS_ICON_BASE64=');
+              console.log('TEAMS_ICON_URI=https://github.com/favicon.ico');
+            }
+          }
+          
+          createTeamsIcon();
+          EOF
+          
+          node create-teams-icon.js
+          
+          # Extract outputs from the icon creation script
+          TEAMS_ICON_BASE64=$(node create-teams-icon.js | grep "TEAMS_ICON_BASE64=" | cut -d'=' -f2-)
+          TEAMS_ICON_URI=$(node create-teams-icon.js | grep "TEAMS_ICON_URI=" | cut -d'=' -f2-)
+          
+          echo "teams_icon_base64=$TEAMS_ICON_BASE64" >> $GITHUB_OUTPUT
+          echo "teams_icon_uri=$TEAMS_ICON_URI" >> $GITHUB_OUTPUT
 
       - name: Generate Teams Card Format
         id: teams-card
@@ -461,10 +528,9 @@ jobs:
                             {
                               "type": "Column",
                               "width": "auto",
-                              "items": [
-                                {
+                              "items": [                                {
                                   "type": "Image",
-                                  "url": "https://github.com/favicon.ico",
+                                  "url": "${{ steps.teams-icon.outputs.teams_icon_uri }}",
                                   "size": "Small"
                                 }
                               ]
@@ -519,18 +585,16 @@ jobs:
                         {
                           "title": "Titel:",
                           "value": "${{ steps.convert.outputs.title }}"
-                        },
-                        {
+                        },                        {
                           "title": "Datum:",
-                          "value": "${{ steps.convert.outputs.date }}"
+                          "value": "${{ steps.convert.outputs.date_formatted }}"
                         },
                         {
                           "title": "Repository:",
                           "value": "${{ github.repository }}"
-                        },
-                        {
+                        },                        {
                           "title": "HTML Artifact:",
-                          "value": "newsletter-${{ steps.convert.outputs.date }}"
+                          "value": "newsletter-html-${{ steps.convert.outputs.date }}"
                         }
                       ],
                       "spacing": "Medium"
@@ -558,11 +622,9 @@ jobs:
           cat > teams-card.md << 'EOF'
           # 📰 Platform & Services Newsletter
 
-          ## ${{ steps.convert.outputs.title }}
-
-          **Datum:** ${{ steps.convert.outputs.date }}  
+          ## ${{ steps.convert.outputs.title }}          **Datum:** ${{ steps.convert.outputs.date_formatted }}  
           **Repository:** ${{ github.repository }}  
-          **HTML Artifact:** newsletter-${{ steps.convert.outputs.date }}
+          **HTML Artifact:** newsletter-html-${{ steps.convert.outputs.date }}
 
           ---
 
@@ -572,21 +634,28 @@ jobs:
 
           ### Acties
           - [Bekijk in Repository](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/${{ github.event.inputs.newsletter_file || 'annoucements/250516 newsletter.md' }})
-          - [Download HTML Artifact](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-          ---
+          - [Download HTML Artifact](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})          ---
           *Platform & Services Team*
           EOF
 
-      - name: Upload Newsletter Artifacts
+      - name: Upload Newsletter HTML
         uses: actions/upload-artifact@v4
         with:
-          name: newsletter-${{ steps.convert.outputs.date }}
+          name: newsletter-html-${{ steps.convert.outputs.date }}
+          path: newsletter.html
+          retention-days: 30
+
+      - name: Upload Teams Card Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: teams-cards-${{ steps.convert.outputs.date }}
           path: |
-            newsletter.html
             teams-card.json
             teams-card.md
-          retention-days: 30 # - name: Send Email Newsletter
+            teams-icon.png
+          retention-days: 30
+
+      # - name: Send Email Newsletter
       #   uses: dawidd6/action-send-mail@v3
       #   with:
       #     server_address: smtp.gmail.com
