@@ -756,7 +756,7 @@ jobs:
                             "wrap": true,
                             "size": "Medium",
                             "spacing": "Medium"
-                          },
+                          }
                         ]
                       },
                       {
