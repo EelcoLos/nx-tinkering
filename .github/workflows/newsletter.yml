@@ -492,11 +492,26 @@ jobs:
           DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
           DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
           SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
-          TEXT_RUNS=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)
-
-          # Handle empty TEXT_RUNS by providing a fallback
+          TEXT_RUNS=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)          # Handle empty TEXT_RUNS by providing a fallback
           if [ -z "$TEXT_RUNS" ] || [ "$TEXT_RUNS" = "[]" ]; then
-            TEXT_RUNS='[{"type":"TextRun","text":"Deze editie bevat call to actions over de laatste updates van het Platform & Services team"}]'
+            TEXT_RUNS='[{"type":"TextRun","text":"Deze editie bevat o.a. call to actions over:"},{"type":"TextRun","text":"\n\n"},{"type":"TextRun","text":"• De laatste updates van het Platform & Services team"}]'
+          fi
+
+          # Handle empty variables with fallbacks
+          if [ -z "$TITLE" ]; then
+            TITLE="Nieuwe Newsletter beschikbaar"
+          fi
+          
+          if [ -z "$DATE" ]; then
+            DATE=$(date +%y%m%d)
+          fi
+          
+          if [ -z "$DATE_FORMATTED" ]; then
+            DATE_FORMATTED=$(date +%d-%m-%Y)
+          fi
+          
+          if [ -z "$SUMMARY" ]; then
+            SUMMARY="Platform & Services Team Newsletter"
           fi
 
           echo "title=$TITLE" >> $GITHUB_OUTPUT
@@ -778,7 +793,7 @@ jobs:
                       },                      {
                         "type": "Container",                        "items": [
                           {                            "type": "RichTextBlock",
-                            "inlines": ${{ steps.convert.outputs.text_runs || '[{"type":"TextRun","text":"Deze editie bevat call to actions over de laatste updates van het Platform & Services team"}]' }},
+                            "inlines": ${{ steps.convert.outputs.text_runs || '[{"type":"TextRun","text":"Deze editie bevat o.a. call to actions over:"},{"type":"TextRun","text":"\n\n"},{"type":"TextRun","text":"• De laatste updates van het Platform & Services team"}]' }},
                             "wrap": true,
                             "spacing": "Medium"
                           }
