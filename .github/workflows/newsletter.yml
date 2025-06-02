@@ -776,11 +776,9 @@ jobs:
                           }
                         ]
                       },                      {
-                        "type": "Container",
-                        "items": [
-                          {
-                            "type": "RichTextBlock",
-                            "inlines": ${{ steps.convert.outputs.text_runs }},
+                        "type": "Container",                        "items": [
+                          {                            "type": "RichTextBlock",
+                            "inlines": ${{ steps.convert.outputs.text_runs || '[{"type":"TextRun","text":"Deze editie bevat call to actions over de laatste updates van het Platform & Services team"}]' }},
                             "wrap": true,
                             "spacing": "Medium"
                           }
