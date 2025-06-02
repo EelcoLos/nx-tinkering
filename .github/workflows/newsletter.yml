@@ -487,12 +487,27 @@ jobs:
           console.log(`NEWSLETTER_DATE=${date}`);
           console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
           console.log(`NEWSLETTER_SUMMARY=${ctaSummary}`);
-          EOF          node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}"          # Extract outputs from the conversion script
-          TITLE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
-          DATE=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
-          DATE_FORMATTED=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
-          SUMMARY=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
-          TEXT_RUNS=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)          # Handle empty TEXT_RUNS by providing a fallback
+          EOF          # Run the conversion script once and capture all outputs
+          echo "Running conversion script..."
+          CONVERT_OUTPUT=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}")
+          
+          echo "Script output:"
+          echo "$CONVERT_OUTPUT"
+          echo "--- End of script output ---"
+          
+          # Extract outputs from the single script run
+          TITLE=$(echo "$CONVERT_OUTPUT" | grep "NEWSLETTER_TITLE=" | cut -d'=' -f2-)
+          DATE=$(echo "$CONVERT_OUTPUT" | grep "NEWSLETTER_DATE=" | cut -d'=' -f2-)
+          DATE_FORMATTED=$(echo "$CONVERT_OUTPUT" | grep "NEWSLETTER_DATE_FORMATTED=" | cut -d'=' -f2-)
+          SUMMARY=$(echo "$CONVERT_OUTPUT" | grep "NEWSLETTER_SUMMARY=" | cut -d'=' -f2-)
+          TEXT_RUNS=$(echo "$CONVERT_OUTPUT" | grep "NEWSLETTER_TEXT_RUNS=" | cut -d'=' -f2-)
+          
+          echo "Extracted values:"
+          echo "TITLE='$TITLE'"
+          echo "DATE='$DATE'"
+          echo "DATE_FORMATTED='$DATE_FORMATTED'"
+          echo "SUMMARY='$SUMMARY'"
+          echo "TEXT_RUNS='$TEXT_RUNS'"# Handle empty TEXT_RUNS by providing a fallback
           if [ -z "$TEXT_RUNS" ] || [ "$TEXT_RUNS" = "[]" ]; then
             TEXT_RUNS='[{"type":"TextRun","text":"Deze editie bevat o.a. call to actions over:"},{"type":"TextRun","text":"\n\n"},{"type":"TextRun","text":"• De laatste updates van het Platform & Services team"}]'
           fi
