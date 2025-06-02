@@ -88,7 +88,48 @@ jobs:
           };          // Override link renderer for email safety
           renderer.link = function(href, title, text) {
             return `<a href="${href}" style="color: #0066cc; text-decoration: underline;" target="_blank">${text}</a>`;
-          };          // Override code block renderer with syntax highlighting
+          };
+
+          // Override image renderer to embed images as base64 for email compatibility
+          renderer.image = function(href, title, text) {
+            // Check if it's a local image in the attachments folder
+            if (href.startsWith('./attachments/') || href.startsWith('attachments/')) {
+              const imagePath = href.startsWith('./') ? href.substring(2) : href;
+              const fullImagePath = path.join('annoucements', imagePath);
+              
+              if (fs.existsSync(fullImagePath)) {
+                try {
+                  const imageBuffer = fs.readFileSync(fullImagePath);
+                  const imageBase64 = imageBuffer.toString('base64');
+                  
+                  // Determine MIME type based on file extension
+                  const ext = path.extname(fullImagePath).toLowerCase();
+                  let mimeType = 'image/png'; // default
+                  if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+                  else if (ext === '.gif') mimeType = 'image/gif';
+                  else if (ext === '.svg') mimeType = 'image/svg+xml';
+                  else if (ext === '.webp') mimeType = 'image/webp';
+                  
+                  const dataUri = `data:${mimeType};base64,${imageBase64}`;
+                  const titleAttr = title ? ` title="${title}"` : '';
+                  
+                  return `<img src="${dataUri}" alt="${text}" style="max-width: 100%; height: auto; display: block; margin: 16px auto;"${titleAttr}>`;
+                } catch (error) {
+                  console.warn(`Failed to embed image ${fullImagePath}:`, error);
+                  return `<p style="color: #999; font-style: italic;">Image not found: ${text}</p>`;
+                }
+              } else {
+                console.warn(`Image not found: ${fullImagePath}`);
+                return `<p style="color: #999; font-style: italic;">Image not found: ${text}</p>`;
+              }
+            } else {
+              // External images - keep as regular img tags
+              const titleAttr = title ? ` title="${title}"` : '';
+              return `<img src="${href}" alt="${text}" style="max-width: 100%; height: auto; display: block; margin: 16px auto;"${titleAttr}>`;
+            }
+          };
+
+          // Override code block renderer with syntax highlighting
           renderer.code = function(code, language) {
             let highlightedCode;
             let validLanguage = language;
