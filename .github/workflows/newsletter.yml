@@ -482,12 +482,12 @@ jobs:
             ];
             ctaSummary = JSON.stringify(fallbackTextRuns);
             console.log(`NEWSLETTER_TEXT_RUNS=${ctaSummary}`);
-          }
-
-          console.log(`NEWSLETTER_DATE=${date}`);
+          }          console.log(`NEWSLETTER_DATE=${date}`);
           console.log(`NEWSLETTER_DATE_FORMATTED=${formattedDate}`);
           console.log(`NEWSLETTER_SUMMARY=${ctaSummary}`);
-          EOF          # Run the conversion script once and capture all outputs
+          EOF
+
+          # Run the conversion script once and capture all outputs
           echo "Running conversion script..."
           CONVERT_OUTPUT=$(node convert.js "${{ github.event.inputs.newsletter_file }}" "${{ github.event.inputs.newsletter_title }}")
           
