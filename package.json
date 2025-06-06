@@ -76,7 +76,7 @@
   "overrides": {
     "@nx-dotnet/core": {
       "@nx/devkit": "$@nx/devkit",
-      "nx": "$nx"
+      "nx": "nx"
     }
   }
 }
