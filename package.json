@@ -26,7 +26,7 @@
     "zone.js": "0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "19.2.14",
+    "@angular-devkit/build-angular": "19.2.15",
     "@angular-devkit/core": "19.2.14",
     "@angular-devkit/schematics": "19.2.14",
     "@angular-eslint/eslint-plugin": "19.8.0",
