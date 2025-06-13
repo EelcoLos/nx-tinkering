@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Client } from '../api-integration/api';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { catchError, map } from 'rxjs';
 
@@ -53,7 +53,7 @@ import { catchError, map } from 'rxjs';
       margin-top: 20px;
     }
   `],
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     providers: [Client]
 })
 export class LoginComponent {
