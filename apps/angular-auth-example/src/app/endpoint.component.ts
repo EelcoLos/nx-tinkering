@@ -64,11 +64,13 @@ import { CommonModule } from '@angular/common';
     providers: [Client]
 })
 export class EndpointComponent {
+  private fb = inject(FormBuilder);
+
   apiService = inject(Client);
   form: FormGroup;
   data = signal<MyResponse | null>(null);
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.form = this.fb.group({
       firstName: [''],
       lastName: [''],
