@@ -57,12 +57,14 @@ import { catchError, map } from 'rxjs';
     providers: [Client]
 })
 export class LoginComponent {
+  private fb = inject(FormBuilder);
+
   loginForm: FormGroup;
   apiService = inject(Client)
   error: string | null = null;
   router = inject(Router);
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
