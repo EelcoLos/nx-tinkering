@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/apps/">
+    <Project Path="apps/api-demo.Test/ApiDemo.Test.csproj" />
+    <Project Path="apps/api-demo/ApiDemo.csproj" />
+    <Project Path="apps/dotnet-fe-auth/dotnet-fe-auth.csproj" />
+  </Folder>
+</Solution>
