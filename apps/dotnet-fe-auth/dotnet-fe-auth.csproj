@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="6.1.0" />
-    <PackageReference Include="FastEndpoints.Security" Version="6.1.0" />
-    <PackageReference Include="FastEndpoints.Swagger" Version="6.1.0" />
+    <PackageReference Include="FastEndpoints" Version="6.2.0" />
+    <PackageReference Include="FastEndpoints.Security" Version="6.2.0" />
+    <PackageReference Include="FastEndpoints.Swagger" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
     <PackageReference Include="NSwag.Core" Version="14.4.0" />
