@@ -55,9 +55,9 @@
     "@swc/helpers": "~0.5.17",
     "@types/jest": "30.0.0",
     "@types/node": "24.0.15",
-    "@typescript-eslint/eslint-plugin": "8.37.0",
-    "@typescript-eslint/parser": "8.37.0",
-    "@typescript-eslint/utils": "8.37.0",
+    "@typescript-eslint/eslint-plugin": "8.38.0",
+    "@typescript-eslint/parser": "8.38.0",
+    "@typescript-eslint/utils": "8.38.0",
     "angular-eslint": "20.1.1",
     "eslint": "~9.31.0",
     "eslint-config-prettier": "10.1.8",
@@ -71,7 +71,7 @@
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "typescript-eslint": "^8.37.0"
+    "typescript-eslint": "^8.38.0"
   },
   "overrides": {
     "@angular-devkit/build-angular": {
