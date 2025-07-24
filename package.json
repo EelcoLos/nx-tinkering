@@ -78,9 +78,6 @@
     "@angular-devkit/build-angular": {
       "jest": "$jest",
       "jest-environment-jsdom": "$jest-environment-jsdom"
-    },
-    "jest-preset-angular": {
-      "jest": "$jest"
     }
   }
 }
