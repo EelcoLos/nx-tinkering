@@ -1,3 +1,11 @@
+import { TestBed } from '@angular/core/testing';
+import {
+  BrowserTestingModule,
+  platformBrowserTesting,
+} from '@angular/platform-browser/testing';
+import '@angular/compiler';
+import 'zone.js/testing';
+
 // @ts-expect-error https://thymikee.github.io/jest-preset-angular/docs/getting-started/test-environment
 globalThis.ngJest = {
   testEnvironmentOptions: {
@@ -5,4 +13,5 @@ globalThis.ngJest = {
     errorOnUnknownProperties: true,
   },
 };
-import 'jest-preset-angular/setup-jest';
+
+TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());

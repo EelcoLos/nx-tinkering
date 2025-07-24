@@ -1,4 +1,5 @@
 export default {
+  setupFiles: ['zone.js'],
   displayName: 'nx-tinkering',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
