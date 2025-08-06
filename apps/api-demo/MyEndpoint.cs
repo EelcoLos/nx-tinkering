@@ -12,7 +12,7 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
 
   public override async Task HandleAsync(MyRequest req, CancellationToken ct)
   {
-    await SendAsync(new()
+    await Send.OkAsync(new()
     {
       FullName = req.FirstName + " " + req.LastName,
       IsOver18 = req.Age > 18

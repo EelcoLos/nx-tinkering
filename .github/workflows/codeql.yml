@@ -95,7 +95,7 @@ jobs:
 
       - name: Build dotnet
         if: contains(matrix.language, 'csharp')
-        run: dotnet build nx-tinker.sln
+        run: dotnet build nx-tinker.slnx
 
       - name: Autobuild
         if: ${{!contains(matrix.language, 'csharp')}}
