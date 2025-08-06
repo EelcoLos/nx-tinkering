@@ -16,7 +16,7 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest,
   {
     var token = tokenHandler.GenerateToken(req.Email, req.Password);
     Console.WriteLine(token);
-    await SendAsync(new() { Token = token }, cancellation: ct);
+    await Send.OkAsync(new() { Token = token }, cancellation: ct);
   }
 }
 public class LoginRequest

@@ -42,7 +42,7 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
       response.IsValid = false;
     }
 
-    await SendAsync(response, cancellation: ct);
+    await Send.OkAsync(response, cancellation: ct);
   }
 }
 
