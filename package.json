@@ -49,7 +49,7 @@
     "@nx/web": "21.3.11",
     "@nx/workspace": "21.3.11",
     "@playwright/test": "^1.54.2",
-    "@schematics/angular": "20.1.4",
+    "@schematics/angular": "20.1.5",
     "@swc-node/register": "~1.10.10",
     "@swc/core": "~1.13.3",
     "@swc/helpers": "~0.5.17",
