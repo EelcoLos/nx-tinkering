@@ -25,7 +25,7 @@ jobs:
     env:
       NX_KEY: ${{ secrets.NX_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Cache Node.js modules
@@ -70,7 +70,7 @@ jobs:
     env:
       NX_KEY: ${{ secrets.NX_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Cache Node.js modules
@@ -115,7 +115,7 @@ jobs:
     env:
       NX_KEY: ${{ secrets.NX_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Cache Node.js modules
