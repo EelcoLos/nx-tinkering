@@ -38,7 +38,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "~9.33.0",
     "@nx-dotnet/core": "3.0.0",
-    "@nx/azure-cache": "^3.0.0",
+    "@nx/azure-cache": "^3.0.1",
     "@nx/devkit": "21.3.11",
     "@nx/eslint": "21.3.11",
     "@nx/eslint-plugin": "21.3.11",
