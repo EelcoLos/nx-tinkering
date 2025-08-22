@@ -3,5 +3,7 @@
     <Project Path="apps/api-demo.Test/ApiDemo.Test.csproj" />
     <Project Path="apps/api-demo/ApiDemo.csproj" />
     <Project Path="apps/dotnet-fe-auth/dotnet-fe-auth.csproj" />
+    <Project Path="apps/fakelogger-demo.Test/fakelogger-demo.Test.csproj" />
+    <Project Path="apps/fakelogger-demo/fakelogger-demo.csproj" />
   </Folder>
 </Solution>
