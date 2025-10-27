@@ -121,6 +121,7 @@
           }
         },
         "ignorePaths": [],
+        "pack": false,
         "tags": ["nx-dotnet"]
       }
     }
