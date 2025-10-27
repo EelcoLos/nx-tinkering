@@ -48,3 +48,7 @@ Thumbs.db
 appsettings.*.json
 **/ssl/
 .cursor/rules/nx-rules.mdc
+# .NET
+**/bin/
+**/obj/
+/artifacts/
