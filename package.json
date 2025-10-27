@@ -37,9 +37,9 @@
     "@angular/language-service": "20.3.6",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "~9.38.0",
-    "@nx-dotnet/core": "3.0.2",
     "@nx/azure-cache": "^4.0.0",
     "@nx/devkit": "22.0.1",
+    "@nx/dotnet": "^22.0.1",
     "@nx/eslint": "22.0.1",
     "@nx/eslint-plugin": "22.0.1",
     "@nx/jest": "22.0.1",
@@ -66,13 +66,13 @@
     "jest-environment-jsdom": "30.2.0",
     "jest-environment-node": "^30.2.0",
     "jest-preset-angular": "15.0.3",
+    "jest-util": "30.2.0",
     "nx": "22.0.1",
     "prettier": "^3.6.2",
     "ts-jest": "29.4.5",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.46.2",
-    "jest-util": "30.2.0"
+    "typescript-eslint": "^8.46.2"
   },
   "overrides": {
     "@angular-devkit/build-angular": {

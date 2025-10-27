@@ -11,7 +11,10 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/src/test-setup.[jt]s",
-      "!{projectRoot}/test-setup.[jt]s"
+      "!{projectRoot}/test-setup.[jt]s",
+      "!{projectRoot}/**/*.Tests/**/*",
+      "!{projectRoot}/**/bin/**/*",
+      "!{projectRoot}/**/obj/**/*"
     ],
     "sharedGlobals": []
   },
@@ -66,60 +69,22 @@
       }
     },
     {
-      "plugin": "@nx-dotnet/core",
+      "plugin": "@nx/dotnet",
       "options": {
-        "solutionFile": "nx-tinker.sln",
-        "inferProjects": true,
-        "nugetPackages": {},
-        "inferredTargets": {
-          "build": {
-            "inputs": [
-              "!{workspaceRoot}/package-lock.json",
-              "!{workspaceRoot}/package.json",
-              "!{workspaceRoot}/**/packag*.*",
-              "!{workspaceRoot}/packag*.*",
-              "!{workspaceRoot}/nx.json",
-              "production",
-              "^production"
-            ],
-            "targetName": "build",
-            "configurations": {
-              "production": {
-                "runtime": "linux-x64",
-                "configuration": "Release",
-                "noDependencies": false
-              }
-            }
-          },
-          "lint": {
-            "cache": true,
-            "targetName": "lint"
-          },
-          "serve": "serve",
-          "test": {
-            "inputs": [
-              "!{workspaceRoot}/package-lock.json",
-              "!{workspaceRoot}/package.json",
-              "!{workspaceRoot}/**/packag*.*",
-              "!{workspaceRoot}/packag*.*",
-              "!{workspaceRoot}/nx.json",
-              "default",
-              "^production"
-            ],
-            "targetName": "test",
-            "cache": true,
-            "configurations": {
-              "ci": {
-                "blame": false,
-                "blameCrash": false,
-                "logger": "trx"
-              }
+        "build": {
+          "targetName": "compile",
+          "configurations": {
+            "production": {
+              "optimization": true
             }
           }
         },
-        "ignorePaths": [],
-        "tags": ["nx-dotnet"]
-      }
+        "test": {
+          "targetName": "unit-test",
+          "dependsOn": ["build"]
+        }
+      },
+      "pack": false
     }
   ],
   "generators": {
