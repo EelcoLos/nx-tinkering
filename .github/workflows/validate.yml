@@ -15,8 +15,8 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: 'lts/*'
-  DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: "lts/*"
+  DOTNET_VERSION: "9.0.x"
 
 jobs:
   build:
