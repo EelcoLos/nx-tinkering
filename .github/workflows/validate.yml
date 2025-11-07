@@ -50,6 +50,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore NuGet packages
+        run: dotnet restore nx-tinker.slnx
       - name: Log in to Azure
         uses: azure/login@v2
         with:
@@ -95,6 +97,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore NuGet packages
+        run: dotnet restore nx-tinker.slnx
       - name: Log in to Azure
         uses: azure/login@v2
         with:
@@ -140,6 +144,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore NuGet packages
+        run: dotnet restore nx-tinker.slnx
       - name: Log in to Azure
         uses: azure/login@v2
         with:
