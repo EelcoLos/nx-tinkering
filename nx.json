@@ -71,20 +71,32 @@
     {
       "plugin": "@nx/dotnet",
       "options": {
+        "solutionFile": "nx-tinker.sln",
         "build": {
-          "targetName": "compile",
+          "targetName": "build",
           "configurations": {
             "production": {
-              "optimization": true
+              "configuration": "Release",
+              "runtime": "linux-x64",
+              "noDependencies": false
             }
           }
         },
         "test": {
-          "targetName": "unit-test",
-          "dependsOn": ["build"]
+          "targetName": "test",
+          "configurations": {
+            "ci": {
+              "blame": false,
+              "blameCrash": false,
+              "logger": "trx",
+              "noBuild": false
+            }
+          }
+        },
+        "lint": {
+          "targetName": "lint"
         }
-      },
-      "pack": false
+      }
     }
   ],
   "generators": {
