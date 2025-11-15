@@ -37,7 +37,7 @@
     "@angular/language-service": "20.3.10",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "~9.39.1",
-    "@nx/azure-cache": "^4.0.0",
+    "@nx/azure-cache": "^5.0.0",
     "@nx/devkit": "22.0.3",
     "@nx/dotnet": "^22.0.3",
     "@nx/eslint": "22.0.3",
