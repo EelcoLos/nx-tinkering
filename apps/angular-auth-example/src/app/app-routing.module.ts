@@ -5,13 +5,13 @@ import { EndpointComponent } from './endpoint.component';
 import { LoginGuard } from './login.guard';
 
 export const routes: Routes = [
-	{ path: 'login', component: LoginComponent },
-	{ path: 'endpoint', component: EndpointComponent, canActivate: [LoginGuard] },
-	{ path: '**', redirectTo: 'endpoint' }
+  { path: 'login', component: LoginComponent },
+  { path: 'endpoint', component: EndpointComponent, canActivate: [LoginGuard] },
+  { path: '**', redirectTo: 'endpoint' },
 ];
 
 @NgModule({
-	imports: [RouterModule.forRoot(routes)],
-	exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

@@ -5,8 +5,8 @@ import { catchError, map } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-endpoint',
-    template: `
+  selector: 'app-endpoint',
+  template: `
     <div class="container">
       <h2>Endpoint Form</h2>
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
@@ -27,41 +27,43 @@ import { CommonModule } from '@angular/common';
       <pre>{{ data() | json }}</pre>
     </div>
   `,
-    styles: [`
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-bottom: 20px;
-    }
-    .form-group {
-      margin-bottom: 10px;
-    }
-    label {
-      margin-bottom: 5px;
-    }
-    input {
-      margin-bottom: 10px;
-      padding: 5px;
-      width: 200px;
-    }
-    button {
-      padding: 5px 10px;
-    }
-    h2 {
-      margin-bottom: 20px;
-    }
-  `],
-    imports: [CommonModule, ReactiveFormsModule],
-    providers: [Client]
+  styles: [
+    `
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 10px;
+      }
+      label {
+        margin-bottom: 5px;
+      }
+      input {
+        margin-bottom: 10px;
+        padding: 5px;
+        width: 200px;
+      }
+      button {
+        padding: 5px 10px;
+      }
+      h2 {
+        margin-bottom: 20px;
+      }
+    `,
+  ],
+  imports: [CommonModule, ReactiveFormsModule],
+  providers: [Client],
 })
 export class EndpointComponent {
   private fb = inject(FormBuilder);
@@ -74,7 +76,7 @@ export class EndpointComponent {
     this.form = this.fb.group({
       firstName: [''],
       lastName: [''],
-      age: ['']
+      age: [''],
     });
   }
 
@@ -83,17 +85,20 @@ export class EndpointComponent {
     const requestPayload: MyRequest = {
       firstName: formValue.firstName,
       lastName: formValue.lastName,
-      age: formValue.age
+      age: formValue.age,
     };
-    this.apiService.createuser(requestPayload).pipe(
-      map((response) => {
-        console.log('Response:', response);
-        this.data.update(() => response);
-      }),
-      catchError((error) => {
-        this.data.update(error);
-        throw error;
-      })
-    ).subscribe();
+    this.apiService
+      .createuser(requestPayload)
+      .pipe(
+        map((response) => {
+          console.log('Response:', response);
+          this.data.update(() => response);
+        }),
+        catchError((error) => {
+          this.data.update(error);
+          throw error;
+        }),
+      )
+      .subscribe();
   }
 }

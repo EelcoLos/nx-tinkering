@@ -1,5 +1,5 @@
 {
-  "runtime": "Net90",
+  "runtime": "Default",
   "defaultVariables": null,
   "documentGenerator": {
     "aspNetCoreToOpenApi": {
@@ -7,10 +7,10 @@
       "documentName": "v1",
       "msBuildProjectExtensionsPath": null,
       "configuration": null,
-      "runtime": "Net80",
+      "runtime": "Default",
       "targetFramework": null,
       "noBuild": true,
-      "msBuildOutputPath": "../../dist/apps/dotnet-fe-auth/net9.0",
+      "msBuildOutputPath": "../../dist/apps/dotnet-fe-auth/net10.0",
       "verbose": true,
       "workingDirectory": null,
       "aspNetCoreEnvironment": null,

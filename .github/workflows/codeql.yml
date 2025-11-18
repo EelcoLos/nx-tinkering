@@ -1,14 +1,14 @@
 #full documentation can be found here: https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning
-name: 'CodeQL'
+name: "CodeQL"
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '0 5 * * 0'
+    - cron: "0 5 * * 0"
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: "10.0.x"
 
 jobs:
   trigger:
@@ -45,7 +45,7 @@ jobs:
     needs: trigger
     if: github.event.pull_request.draft == false && needs.trigger.outputs.language != '' && needs.trigger.outputs.language != '[]'
     name: Analyze
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     timeout-minutes: 60
     permissions:
       actions: read
@@ -104,4 +104,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: '/language:${{matrix.language}}'
+          category: "/language:${{matrix.language}}"
