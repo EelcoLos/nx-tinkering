@@ -4,7 +4,7 @@
   "sourceRoot": "libs/my-dotnet-lib",
   "projectType": "library",
   "targets": {
-    "pack": {
+    "build": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
@@ -12,7 +12,21 @@
             "command": "dotnet restore"
           },
           {
-            "command": "dotnet pack -c Release -o ../../dist/packages"
+            "command": "dotnet build --no-restore"
+          }
+        ],
+        "cwd": "libs/my-dotnet-lib",
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/my-dotnet-lib"]
+    },
+    "pack": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "commands": [
+          {
+            "command": "dotnet pack -c Release -o ../../dist/packages --no-build"
           }
         ],
         "cwd": "libs/my-dotnet-lib",
@@ -22,13 +36,11 @@
     },
     "release": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build"],
       "options": {
         "commands": [
           {
-            "command": "dotnet restore"
-          },
-          {
-            "command": "dotnet pack -c Release -o ../../dist/packages"
+            "command": "dotnet pack -c Release -o ../../dist/packages --no-build"
           }
         ],
         "cwd": "libs/my-dotnet-lib",
