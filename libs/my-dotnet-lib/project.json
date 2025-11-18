@@ -1,0 +1,43 @@
+{
+  "name": "libs-my-dotnet-lib",
+  "root": "libs/my-dotnet-lib",
+  "sourceRoot": "libs/my-dotnet-lib",
+  "projectType": "library",
+  "targets": {
+    "pack": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "dotnet restore"
+          },
+          {
+            "command": "dotnet pack -c Release -o ../../dist/packages"
+          }
+        ],
+        "cwd": "libs/my-dotnet-lib",
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/dist/packages/*"]
+    },
+    "release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "dotnet restore"
+          },
+          {
+            "command": "dotnet pack -c Release -o ../../dist/packages"
+          }
+        ],
+        "cwd": "libs/my-dotnet-lib",
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/dist/packages/*"],
+      "metadata": {
+        "description": "Pack and prepare the NuGet package (alias for pack)"
+      }
+    }
+  }
+}

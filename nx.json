@@ -99,6 +99,9 @@
       }
     }
   ],
+  "release": {
+    "projects": ["libs/*"]
+  },
   "generators": {
     "@nx/angular:application": {
       "e2eTestRunner": "playwright",

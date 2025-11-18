@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <!-- Package metadata -->
+    <PackageId>MyDotNetLib</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>EelcoLos</Authors>
+    <Company>EelcoLos</Company>
+    <Description>Example .NET library packaged via Nx pack target.</Description>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\dist\packages</PackageOutputPath>
+    <RepositoryUrl>https://example.invalid/</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+</Project>
