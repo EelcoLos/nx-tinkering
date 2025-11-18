@@ -1,10 +1,9 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 
-
 @Component({
-    selector: 'app-nx-welcome',
-    imports: [],
-    template: `
+  selector: 'app-nx-welcome',
+  imports: [],
+  template: `
     <!--
      * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      This is a starter component and can be deleted.
@@ -63,7 +62,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
         text-decoration: inherit;
       }
       pre {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
           'Liberation Mono', 'Courier New', monospace;
       }
       svg {
@@ -78,7 +78,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
         background-color: rgba(55, 65, 81, 1);
         border-radius: 0.25rem;
         color: rgba(229, 231, 235, 1);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
           'Liberation Mono', 'Courier New', monospace;
         overflow: scroll;
         padding: 0.5rem 0.75rem;
@@ -977,7 +978,7 @@ nx affected:e2e</pre>
       </div>
     </div>
   `,
-    styles: [],
-    encapsulation: ViewEncapsulation.None
+  styles: [],
+  encapsulation: ViewEncapsulation.None,
 })
 export class NxWelcomeComponent {}
