@@ -22,10 +22,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- NSwag target temporarily disabled until NSwag supports .NET 10
   <Target Name="NSwag" AfterTargets="Build">
     <Copy SourceFiles="@(Reference)" DestinationFolder="$(OutDir)References" />
-    <Exec Command="$(NSwagExe_Net100) run nswag.json /variables:Configuration=$(Configuration)" />
+    <Exec Command="$(NSwagExe) run nswag.json /variables:Configuration=$(Configuration)" />
     <RemoveDir Directories="$(OutDir)References" />
   </Target>
+  -->
 
 </Project>
