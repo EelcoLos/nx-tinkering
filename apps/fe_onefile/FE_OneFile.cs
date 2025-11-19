@@ -25,7 +25,7 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
     }
 
     public override Task HandleAsync(MyRequest req, CancellationToken ct) =>
-        Send.OkAsync(new($"{req.FirstName} {req.LastName}", req.Age > 18), cancellation: ct);
+        Send.OkAsync(new($"{req.FirstName} {req.LastName}", req.Age >= 18), cancellation: ct);
 }
 
 [JsonSerializable(typeof(MyRequest)), JsonSerializable(typeof(MyResponse))]
