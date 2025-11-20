@@ -1,0 +1,10 @@
+@dotnet_fe_auth_HostAddress = http://localhost:5000
+
+POST {{dotnet_fe_auth_HostAddress}}/api/user/create
+Content-Type: application/json
+
+{
+  "firstName": "string",
+  "lastName": "string",
+  "age": 0
+}
