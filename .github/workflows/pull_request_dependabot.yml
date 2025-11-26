@@ -39,7 +39,7 @@ jobs:
       (contains(needs.dependabot-check.outputs.dependency-names, '@nx/') || contains(needs.dependabot-check.outputs.dependency-names, 'nx') || contains(needs.dependabot-check.outputs.dependency-names, '@nx-dotnet/core'))
     steps:
       - name: 'Checkout code if nx or nx-dotnet'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: 'Run npm install'
