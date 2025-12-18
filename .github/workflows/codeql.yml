@@ -68,7 +68,7 @@ jobs:
 
       - name: Restore npm cache for javascript-typescript
         id: cache-npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
@@ -86,7 +86,7 @@ jobs:
       - name: restore nuget cache for csharp
         if: contains(matrix.language, 'csharp')
         id: cache-nuget
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
