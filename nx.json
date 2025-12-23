@@ -36,19 +36,10 @@
     "@nx/jest:jest": {
       "cache": true,
       "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
-      }
+      "options": { "passWithNoTests": true },
+      "configurations": { "ci": { "ci": true, "codeCoverage": true } }
     },
-    "e2e-ci--**/*": {
-      "dependsOn": ["^build"]
-    },
+    "e2e-ci--**/*": { "dependsOn": ["^build"] },
     "@nx/js:tsc": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -56,18 +47,8 @@
     }
   },
   "plugins": [
-    {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    },
+    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } },
+    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } },
     {
       "plugin": "@nx/dotnet",
       "options": {
@@ -93,15 +74,11 @@
             }
           }
         },
-        "lint": {
-          "targetName": "lint"
-        }
+        "lint": { "targetName": "lint" }
       }
     }
   ],
-  "release": {
-    "projects": ["libs/*"]
-  },
+  "release": { "projects": ["libs/*"] },
   "generators": {
     "@nx/angular:application": {
       "e2eTestRunner": "playwright",
@@ -109,70 +86,33 @@
       "style": "scss",
       "unitTestRunner": "jest"
     },
-    "@nx/angular:component": {
-      "type": "component"
-    },
-    "@schematics/angular:component": {
-      "type": "component"
-    },
-    "@nx/angular:directive": {
-      "type": "directive"
-    },
-    "@schematics/angular:directive": {
-      "type": "directive"
-    },
-    "@nx/angular:service": {
-      "type": "service"
-    },
-    "@schematics/angular:service": {
-      "type": "service"
-    },
-    "@nx/angular:scam": {
-      "type": "component"
-    },
-    "@nx/angular:scam-directive": {
-      "type": "directive"
-    },
-    "@nx/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@nx/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@nx/angular:module": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:module": {
-      "typeSeparator": "."
-    },
-    "@nx/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@nx/angular:resolver": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:resolver": {
-      "typeSeparator": "."
-    }
+    "@nx/angular:component": { "type": "component" },
+    "@schematics/angular:component": { "type": "component" },
+    "@nx/angular:directive": { "type": "directive" },
+    "@schematics/angular:directive": { "type": "directive" },
+    "@nx/angular:service": { "type": "service" },
+    "@schematics/angular:service": { "type": "service" },
+    "@nx/angular:scam": { "type": "component" },
+    "@nx/angular:scam-directive": { "type": "directive" },
+    "@nx/angular:guard": { "typeSeparator": "." },
+    "@schematics/angular:guard": { "typeSeparator": "." },
+    "@nx/angular:interceptor": { "typeSeparator": "." },
+    "@schematics/angular:interceptor": { "typeSeparator": "." },
+    "@nx/angular:module": { "typeSeparator": "." },
+    "@schematics/angular:module": { "typeSeparator": "." },
+    "@nx/angular:pipe": { "typeSeparator": "." },
+    "@schematics/angular:pipe": { "typeSeparator": "." },
+    "@nx/angular:resolver": { "typeSeparator": "." },
+    "@schematics/angular:resolver": { "typeSeparator": "." }
   },
   "pluginsConfig": {
-    "@nx/js": {
-      "projectsAffectedByDependencyUpdates": "auto"
-    }
+    "@nx/js": { "projectsAffectedByDependencyUpdates": "auto" }
   },
   "azure": {
     "container": "nx-cache",
     "localMode": "read-write",
     "ciMode": "read-write",
     "accountName": "stgithubnxtinkering"
-  }
+  },
+  "nxCloudId": "6694da22cdabbf516b88253d"
 }
