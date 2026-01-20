@@ -11,7 +11,7 @@
     <PackageReference Include="FastEndpoints" Version="7.1.1" />
     <PackageReference Include="FastEndpoints.Security" Version="7.1.1" />
     <PackageReference Include="FastEndpoints.Swagger" Version="7.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
     <PackageReference Include="NSwag.Core" Version="14.6.3" />
     <PackageReference Include="NSwag.Core.Yaml" Version="14.6.3" />
