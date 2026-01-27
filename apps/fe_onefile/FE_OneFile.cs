@@ -28,5 +28,7 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
         Send.OkAsync(new($"{req.FirstName} {req.LastName}", req.Age >= 18), cancellation: ct);
 }
 
-[JsonSerializable(typeof(MyRequest)), JsonSerializable(typeof(MyResponse))]
+[JsonSerializable(typeof(MyRequest)),
+ JsonSerializable(typeof(MyResponse)),
+ JsonSerializable(typeof(IEnumerable<string>))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext;
