@@ -89,7 +89,8 @@
               "blame": false,
               "blameCrash": false,
               "logger": "trx",
-              "noBuild": false
+              "noBuild": true,
+              "noRestore": true
             }
           }
         },
