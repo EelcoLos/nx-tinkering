@@ -1,0 +1,30 @@
+{
+  "name": "ApiDemo.Test",
+  "root": "apps/api-demo.Test",
+  "sourceRoot": "apps/api-demo.Test",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^build"],
+      "options": {
+        "commands": [
+          {
+            "command": "dotnet test ApiDemo.Test.csproj --no-build --no-restore"
+          }
+        ],
+        "cwd": "apps/api-demo.Test",
+        "parallel": false
+      },
+      "configurations": {
+        "ci": {
+          "commands": [
+            {
+              "command": "dotnet test ApiDemo.Test.csproj --no-build --no-restore --logger trx"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

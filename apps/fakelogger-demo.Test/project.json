@@ -1,0 +1,30 @@
+{
+  "name": "fakelogger-demo.Test",
+  "root": "apps/fakelogger-demo.Test",
+  "sourceRoot": "apps/fakelogger-demo.Test",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^build"],
+      "options": {
+        "commands": [
+          {
+            "command": "dotnet test fakelogger-demo.Test.csproj --no-build --no-restore"
+          }
+        ],
+        "cwd": "apps/fakelogger-demo.Test",
+        "parallel": false
+      },
+      "configurations": {
+        "ci": {
+          "commands": [
+            {
+              "command": "dotnet test fakelogger-demo.Test.csproj --no-build --no-restore --logger trx"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
