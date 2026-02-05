@@ -83,16 +83,7 @@
           }
         },
         "test": {
-          "targetName": "test",
-          "configurations": {
-            "ci": {
-              "blame": false,
-              "blameCrash": false,
-              "logger": "trx",
-              "noBuild": true,
-              "noRestore": true
-            }
-          }
+          "targetName": "test"
         },
         "lint": {
           "targetName": "lint"

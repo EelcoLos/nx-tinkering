@@ -6,24 +6,10 @@
   "targets": {
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", "^build"],
+      "dependsOn": ["build"],
       "options": {
-        "commands": [
-          {
-            "command": "dotnet test fakelogger-demo.Test.csproj --no-build --no-restore"
-          }
-        ],
-        "cwd": "apps/fakelogger-demo.Test",
-        "parallel": false
-      },
-      "configurations": {
-        "ci": {
-          "commands": [
-            {
-              "command": "dotnet test fakelogger-demo.Test.csproj --no-build --no-restore --logger trx"
-            }
-          ]
-        }
+        "command": "dotnet test --no-restore",
+        "cwd": "apps/fakelogger-demo.Test"
       }
     }
   }
