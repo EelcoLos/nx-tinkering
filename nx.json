@@ -169,10 +169,10 @@
       "projectsAffectedByDependencyUpdates": "auto"
     }
   },
-  "azure": {
-    "container": "nx-cache",
+  "aws": {
+    "bucket": "nx-prod-euw1-cache",
+    "region": "eu-west-1",
     "localMode": "read-write",
-    "ciMode": "read-write",
-    "accountName": "stgithubnxtinkering"
+    "ciMode": "read-write"
   }
 }
