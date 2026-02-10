@@ -1,0 +1,16 @@
+{
+  "name": "fakelogger-demo.Test",
+  "root": "apps/fakelogger-demo.Test",
+  "sourceRoot": "apps/fakelogger-demo.Test",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "dotnet test --no-restore",
+        "cwd": "apps/fakelogger-demo.Test"
+      }
+    }
+  }
+}

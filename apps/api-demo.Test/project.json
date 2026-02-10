@@ -1,0 +1,16 @@
+{
+  "name": "ApiDemo.Test",
+  "root": "apps/api-demo.Test",
+  "sourceRoot": "apps/api-demo.Test",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "dotnet test --no-restore",
+        "cwd": "apps/api-demo.Test"
+      }
+    }
+  }
+}
