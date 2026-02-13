@@ -36,7 +36,7 @@
     "@angular/compiler-cli": "21.1.4",
     "@angular/language-service": "21.1.4",
     "@eslint/eslintrc": "^3.3.3",
-    "@eslint/js": "~9.39.2",
+    "@eslint/js": "~10.0.1",
     "@nx/azure-cache": "^5.0.0",
     "@nx/devkit": "22.5.0",
     "@nx/dotnet": "22.5.0",
