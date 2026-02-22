@@ -5,5 +5,7 @@
     <Project Path="apps/dotnet-fe-auth/dotnet-fe-auth.csproj" />
     <Project Path="apps/fakelogger-demo.Test/fakelogger-demo.Test.csproj" />
     <Project Path="apps/fakelogger-demo/fakelogger-demo.csproj" />
+    <Project Path="apps/ms-graph-demo.Test/MsGraphDemo.Test.csproj" />
+    <Project Path="apps/ms-graph-demo/MsGraphDemo.csproj" />
   </Folder>
 </Solution>
