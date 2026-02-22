@@ -21,3 +21,7 @@
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## .NET — Central Package Management
+
+See [`.github/instructions/dotnet.instructions.md`](.github/instructions/dotnet.instructions.md).
