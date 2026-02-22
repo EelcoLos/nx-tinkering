@@ -169,12 +169,6 @@
       "projectsAffectedByDependencyUpdates": "auto"
     }
   },
-  "azure": {
-    "container": "nx-cache",
-    "localMode": "read-write",
-    "ciMode": "read-write",
-    "accountName": "stgithubnxtinkering"
-  },
   "tui": {
     "enabled": false
   }
