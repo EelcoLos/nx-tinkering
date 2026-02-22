@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="7.2.0" />
-    <PackageReference Include="FastEndpoints.Security" Version="7.2.0" />
-    <PackageReference Include="FastEndpoints.Swagger" Version="7.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
-    <PackageReference Include="NSwag.Core" Version="14.6.3" />
-    <PackageReference Include="NSwag.Core.Yaml" Version="14.6.3" />
-    <PackageReference Include="NSwag.Generation.AspNetCore" Version="14.6.3" />
-    <PackageReference Include="NSwag.MSBuild" Version="14.6.3">
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Security" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="NSwag.Core" />
+    <PackageReference Include="NSwag.Core.Yaml" />
+    <PackageReference Include="NSwag.Generation.AspNetCore" />
+    <PackageReference Include="NSwag.MSBuild">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
