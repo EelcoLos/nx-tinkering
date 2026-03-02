@@ -19,7 +19,7 @@
     <!-- Microsoft.Identity -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.3.0" />
     <!-- Testing -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <!-- NSwag -->
     <PackageVersion Include="NSwag.Core" Version="14.6.3" />
     <PackageVersion Include="NSwag.Core.Yaml" Version="14.6.3" />
