@@ -57,15 +57,12 @@ jobs:
       - name: 'Get nx version'
         id: nx-version
         run: |
-          NX_VERSION="${{ needs.dependabot-check.outputs.dependency-versions }}"
-          if [ -z "$NX_VERSION" ]; then
-            echo "Failed to get nx version: dependency-versions output is empty" >&2
+          NX_VERSION=$(jq -r '.devDependencies.nx // .dependencies.nx' package.json)
+          if [ -z "$NX_VERSION" ] || [ "$NX_VERSION" = "null" ]; then
+            echo "Failed to get nx version from package.json (checked devDependencies.nx and dependencies.nx)" >&2
             exit 1
           fi
           echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
-      - name: 'Set nx version in package.json'
-        run: |
-          jq --arg version "${{ steps.nx-version.outputs['nx-version'] }}" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
       - name: 'Run nx migrate and create commits'
         run: |
           npx nx migrate ${{ steps.nx-version.outputs['nx-version'] }}
