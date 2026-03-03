@@ -13,6 +13,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   dependabot-check:
     name: 'Dependabot Check'
@@ -53,7 +57,11 @@ jobs:
       - name: 'Get nx version'
         id: nx-version
         run: |
-          NX_VERSION= ${{ needs.dependabot-check.outputs.dependency-versions }} || { echo "Failed to get nx version" >&2; exit 1; }
+          NX_VERSION="${{ needs.dependabot-check.outputs.dependency-versions }}"
+          if [ -z "$NX_VERSION" ]; then
+            echo "Failed to get nx version: dependency-versions output is empty" >&2
+            exit 1
+          fi
           echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
       - name: 'Set nx version in package.json'
         run: |
