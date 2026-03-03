@@ -25,6 +25,7 @@ jobs:
       dependency-names: ${{ steps.metadata.outputs.dependency-names }}
       update-type: ${{ steps.metadata.outputs.update-type }}
       dependency-versions: ${{ steps.metadata.outputs.new-version }}
+      updated-dependencies-json: ${{ steps.metadata.outputs.updated-dependencies-json }}
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]'}}
     steps:
       - name: Fetch dependabot metadata
@@ -56,10 +57,13 @@ jobs:
           git config --global user.name "dependabot[bot]"
       - name: 'Get nx version'
         id: nx-version
+        env:
+          UPDATED_DEPS: ${{ needs.dependabot-check.outputs.updated-dependencies-json }}
         run: |
-          NX_VERSION=$(jq -r '.devDependencies.nx // .dependencies.nx' package.json)
+          # For grouped updates, new-version is empty; parse per-package data from updated-dependencies-json
+          NX_VERSION=$(echo "$UPDATED_DEPS" | jq -r '.[] | select(."dependency-name" | test("^(nx|@nx/.+)$")) | ."new-version"' | head -1)
           if [ -z "$NX_VERSION" ] || [ "$NX_VERSION" = "null" ]; then
-            echo "Failed to get nx version from package.json (checked devDependencies.nx and dependencies.nx)" >&2
+            echo "Failed to get nx version from dependabot metadata (checked updated-dependencies-json for nx and @nx/* packages)" >&2
             exit 1
           fi
           echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
