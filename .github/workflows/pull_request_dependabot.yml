@@ -63,6 +63,9 @@ jobs:
             exit 1
           fi
           echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
+      - name: 'Set nx version in package.json'
+        run: |
+          jq --arg version "${{ steps.nx-version.outputs['nx-version'] }}" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
       - name: 'Run nx migrate and create commits'
         run: |
           npx nx migrate ${{ steps.nx-version.outputs['nx-version'] }}
