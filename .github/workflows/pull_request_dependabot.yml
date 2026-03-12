@@ -60,8 +60,7 @@ jobs:
         env:
           UPDATED_DEPS: ${{ needs.dependabot-check.outputs.updated-dependencies-json }}
         run: |
-          chmod +x .github/get-nx-migrate-target.sh
-          .github/get-nx-migrate-target.sh
+          node .github/get-nx-migrate-target.js
       - name: 'Set package.json version to NX version (if determined)'
         if: ${{ steps.nx-target.outputs.skip != 'true' }}
         run: |
