@@ -55,25 +55,32 @@ jobs:
         run: |
           git config --global user.email "dependabot[bot]@users.noreply.github.com"
           git config --global user.name "dependabot[bot]"
-      - name: 'Get nx version'
-        id: nx-version
+      - name: 'Determine nx migrate target'
+        id: nx-target
         env:
           UPDATED_DEPS: ${{ needs.dependabot-check.outputs.updated-dependencies-json }}
         run: |
-          # For grouped updates, new-version is empty; parse per-package data from updated-dependencies-json
-          NX_VERSION=$(echo "$UPDATED_DEPS" | jq -r '.[] | select(."dependency-name" | test("^(nx|@nx/.+)$")) | ."new-version"' | head -1)
-          if [ -z "$NX_VERSION" ] || [ "$NX_VERSION" = "null" ]; then
-            echo "Failed to get nx version from dependabot metadata (checked updated-dependencies-json for nx and @nx/* packages)" >&2
-            exit 1
-          fi
-          echo "nx-version=$NX_VERSION" >> $GITHUB_OUTPUT
-      - name: 'Set nx version in package.json'
+          chmod +x .github/get-nx-migrate-target.sh
+          .github/get-nx-migrate-target.sh
+      - name: 'Set package.json version to NX version (if determined)'
+        if: ${{ steps.nx-target.outputs.skip != 'true' }}
         run: |
-          jq --arg version "${{ steps.nx-version.outputs['nx-version'] }}" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json || echo "Failed to update package.json version" >&2
+          chmod +x .github/set-package-version.sh
+          .github/set-package-version.sh "${{ steps.nx-target.outputs['nx-version'] }}"
+      - name: 'Commit package.json version change'
+        if: ${{ steps.nx-target.outputs.skip != 'true' }}
+        run: |
+          git add package.json
+          git commit -m "chore: sync package.json version to nx@${{ steps.nx-target.outputs['nx-version'] }}" || echo "no changes to commit"
+          git push origin ${{ github.event.pull_request.head.ref }} --force
       - name: 'Run nx migrate and create commits'
+        if: ${{ steps.nx-target.outputs.skip != 'true' }}
         run: |
-          npx nx migrate ${{ steps.nx-version.outputs['nx-version'] }}
+          npx nx migrate ${{ steps.nx-target.outputs['migrate-target'] }}
           npx nx migrate --run-migrations --create-commits --if-exists
+          npx nx migrate @nx-dotnet/core || true
+          npx nx migrate --run-migrations --create-commits --if-exists || true
+          if [ -f migrations.json ]; then rm -rf migrations.json; fi
           npx nx migrate @nx-dotnet/core
           npx nx migrate --run-migrations --create-commits --if-exists
           if [ -f migrations.json ]; then rm -rf migrations.json; fi
