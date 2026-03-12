@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
 
 # Script to determine nx migrate target and NX_VERSION from Dependabot metadata or package.json
