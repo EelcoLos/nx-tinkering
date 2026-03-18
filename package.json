@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.slnx && npx nx affected -t lint --fix --base=origin/main",
-    "dev-cert": "dotnet dev-certs https -ep apps/angular-auth-example/ssl/localhost.pem -np --format pem"
+    "dev-cert": "dotnet dev-certs https -ep apps/angular-auth-example/ssl/localhost.pem -np --format pem",
+    "test": "jest --runInBand"
   },
   "private": true,
   "dependencies": {
