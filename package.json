@@ -80,6 +80,12 @@
     },
     "@nx/webpack": {
       "serialize-javascript": "7.0.4"
+    },
+    "@nx/angular": {
+      "koa": "3.1.2"
+    },
+    "@nx/module-federation": {
+      "koa": "3.1.2"
     }
   }
 }
