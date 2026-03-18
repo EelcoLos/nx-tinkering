@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "overrides": {
-    "undici": "5.7.1"
+    "undici": "5.7.1",
+    "hono": "4.12.8"
   }
 }
