@@ -1,0 +1,34 @@
+name: Dependabot override batch - Integration Test
+
+on:
+  push:
+    branches:
+      - feat/monitor-overrides-prototype
+  pull_request:
+    branches:
+      - feat/monitor-overrides-prototype
+  workflow_dispatch:
+
+jobs:
+  batch-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run dependabot batch DRY_RUN
+        run: |
+          set -e
+          node scripts/process-dependabot-alerts.js --dry-run=true
+          node -e "const p=require('./scripts/process-dependabot-alerts'); const fs=require('fs'); const entries=JSON.parse(fs.readFileSync('dependabot-override-plan.json','utf8')||'[]'); p.generateDraftPrsDryRun(entries,'pr-previews',process.cwd()); console.log('Generated previews');"
+
+      - name: Upload previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependabot-override-previews
+          path: pr-previews/**
