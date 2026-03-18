@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "overrides": {
+    "vite": "8.0.0",
     "undici": "5.7.1"
   }
 }
