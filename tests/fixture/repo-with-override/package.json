@@ -4,6 +4,6 @@
   "private": true,
   "overrides": {
     "vite": "8.0.0",
-    "undici": "5.7.1"
+    "undici": "7.24.4"
   }
 }
