@@ -155,6 +155,63 @@ function writeReports(entries, root) {
   return { jsonPath, txtPath };
 }
 
+function trialRemoveOverride(entry, options) {
+  const os = require('os');
+  const tmpBase = (options && options.tmpBase) ? options.tmpBase : os.tmpdir();
+  const mkd = fs.mkdtempSync(path.join(tmpBase, 'override-trial-'));
+  const candidatePkg = entry && entry.candidate_path;
+  if (!candidatePkg || !fs.existsSync(candidatePkg)) {
+    return { ok: false, reason: 'candidate-missing', entry };
+  }
+  const original = JSON.parse(fs.readFileSync(candidatePkg, 'utf8'));
+  const pkgName = entry && entry.package;
+  if (!pkgName) return { ok: false, reason: 'package-missing' };
+
+  // If there is no override entry, nothing to trial-remove
+  if (!original.overrides || !Object.prototype.hasOwnProperty.call(original.overrides, pkgName)) {
+    return { ok: false, reason: 'no-override-present', entry };
+  }
+
+  const modified = JSON.parse(JSON.stringify(original));
+  delete modified.overrides[pkgName];
+  if (Object.keys(modified.overrides).length === 0) delete modified.overrides;
+
+  // write modified package.json to temp dir
+  fs.writeFileSync(path.join(mkd, 'package.json'), JSON.stringify(modified, null, 2), 'utf8');
+
+  const result = { tmpdir: mkd, logs: '', ok: false, lockfile: null };
+  try {
+    const installCmd = 'npm install --package-lock-only';
+    result.logs += `Running: ${installCmd}\n`;
+    const out = cp.execSync(installCmd, { cwd: mkd, encoding: 'utf8' });
+    result.logs += out || '';
+    const lockPath = path.join(mkd, 'package-lock.json');
+    if (fs.existsSync(lockPath)) {
+      result.lockfile = fs.readFileSync(lockPath, 'utf8');
+      result.ok = true;
+    } else {
+      result.ok = false;
+    }
+
+    // run smoke tests if package.json declares a test script
+    if (modified.scripts && modified.scripts.test) {
+      try {
+        const testOut = cp.execSync('npm test --silent', { cwd: mkd, encoding: 'utf8' });
+        result.logs += '\nTESTS:\n' + (testOut || '');
+      } catch (err) {
+        result.logs += '\nTESTS_FAILED:\n' + (err && err.message) + '\n' + (err && err.stdout ? err.stdout : '') + '\n' + (err && err.stderr ? err.stderr : '');
+        result.ok = false;
+      }
+    }
+  } catch (err) {
+    result.logs += '\nERROR:\n' + (err && err.message) + '\n';
+    if (err && err.stdout) result.logs += '\n' + String(err.stdout);
+    if (err && err.stderr) result.logs += '\n' + String(err.stderr);
+    result.ok = false;
+  }
+  return result;
+}
+
 async function main() {
   const args = parseArgs();
   const dryRun = (typeof args['dry-run'] !== 'undefined') ? (String(args['dry-run']).toLowerCase() === 'true') : true;
@@ -188,6 +245,26 @@ async function main() {
     console.log('DRY_RUN mode — no branches or PRs created.');
   }
 
+  // Trial-removal mode: attempt to remove overrides and regenerate lockfiles
+  if (args['trial']) {
+    const limit = parseInt(args['limit'] || args['trial-limit'] || '5', 10);
+    const trialDir = path.join(repoRoot, 'trial-results');
+    fs.mkdirSync(trialDir, { recursive: true });
+    const trialSummary = [];
+    let count = 0;
+    for (const e of entries) {
+      if (count >= limit) break;
+      console.log(`Trial removing override for ${e.package} (candidate: ${e.candidate_path})`);
+      const res = trialRemoveOverride(e, {});
+      const outFile = path.join(trialDir, (e.package || 'unknown').replace(/[\/\\:@]/g, '-') + '.json');
+      fs.writeFileSync(outFile, JSON.stringify(res, null, 2), 'utf8');
+      trialSummary.push({ package: e.package, candidate: e.candidate_path, ok: !!res.ok, reason: res.reason || null, tmpdir: res.tmpdir || null });
+      count += 1;
+    }
+    fs.writeFileSync(path.join(trialDir, 'summary.json'), JSON.stringify(trialSummary, null, 2), 'utf8');
+    console.log(`Wrote trial results to ${trialDir} (limit ${limit})`);
+  }
+
   return 0;
 }
 
@@ -197,6 +274,7 @@ if (require.main === module) {
     process.exit(2);
   });
 } else {
+
   function generateDraftPrsDryRun(entries, outDir, repoRoot) {
     const root = repoRoot || process.cwd();
     const base = path.join(root, outDir || 'pr-previews');
@@ -226,6 +304,7 @@ if (require.main === module) {
     fetchDependabotAlerts,
     writeReports,
     generateDraftPrsDryRun,
+    trialRemoveOverride,
     main
   };
 }
