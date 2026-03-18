@@ -1,0 +1,41 @@
+name: Monitor overrides - Integration Tests
+
+on:
+  push:
+    branches:
+      - feat/monitor-overrides-prototype
+  pull_request:
+    branches:
+      - feat/monitor-overrides-prototype
+  workflow_dispatch:
+
+jobs:
+  integration:
+    name: Integration test (DRY_RUN)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run integration DRY_RUN checks
+        run: |
+          set -e
+          cd tests/fixture/repo-with-override
+          for ev in pr-body.json pr-comment.json issue-body.json issue-comment.json; do
+            echo "=== Running with event $ev ==="
+            node ../../../scripts/remove-override.js --event-path="$ev" --dry-run=true
+            echo "--- report content ---"
+            cat monitor-report.txt || true
+            echo "======================"
+          done
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-monitor-reports
+          path: tests/fixture/repo-with-override/monitor-report.txt
