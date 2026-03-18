@@ -75,6 +75,9 @@
     "typescript-eslint": "^8.57.1"
   },
   "overrides": {
+    "@angular/build": {
+      "undici": "7.24.4"
+    },
     "@nx/webpack": {
       "serialize-javascript": "7.0.4"
     }
