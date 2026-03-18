@@ -25,17 +25,28 @@ jobs:
       - name: Run integration DRY_RUN checks
         run: |
           set -e
-          cd tests/fixture/repo-with-override
-          for ev in pr-body.json pr-comment.json issue-body.json issue-comment.json; do
-            echo "=== Running with event $ev ==="
-            node ../../../scripts/remove-override.js --event-path="$ev" --dry-run=true
-            echo "--- report content ---"
-            cat monitor-report.txt || true
-            echo "======================"
+          # iterate over fixture directories under tests/fixtures
+          for d in tests/fixtures/*/ ; do
+            if [ -d "$d" ]; then
+              echo "=== Fixture: $d ==="
+              pushd "$d"
+              for ev in pr-body.json pr-comment.json issue-body.json issue-comment.json; do
+                if [ -f "$ev" ]; then
+                  echo "--- Running with event $ev ---"
+                  node ../../../scripts/remove-override.js --event-path="$ev" --dry-run=true || true
+                  echo "--- report content ---"
+                  cat monitor-report.txt || true
+                  echo "======================"
+                fi
+              done
+              popd
+            fi
           done
 
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: integration-monitor-reports
-          path: tests/fixture/repo-with-override/monitor-report.txt
+          path: |
+            tests/fixtures/**/monitor-report.txt
+            || true

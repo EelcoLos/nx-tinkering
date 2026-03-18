@@ -46,6 +46,32 @@ function extractDirectiveFromEvent(event) {
   return null;
 }
 
+function findPackageJsons(root) {
+  const results = [];
+  const skip = new Set(['node_modules', '.git', 'dist', 'out', '.next', 'build']);
+
+  function walk(dir) {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+      return;
+    }
+    for (const e of entries) {
+      if (skip.has(e.name)) continue;
+      const full = path.join(dir, e.name);
+      if (e.isFile() && e.name === 'package.json') {
+        results.push(full);
+      } else if (e.isDirectory()) {
+        walk(full);
+      }
+    }
+  }
+
+  walk(root);
+  return results;
+}
+
 async function main() {
   const args = parseArgs();
   const eventPath = args['event-path'] || process.env.GITHUB_EVENT_PATH || null;
@@ -53,10 +79,10 @@ async function main() {
   const explicitPkg = args['pkg'] || null;
 
   const repoRoot = process.cwd();
-  const pkgPath = path.join(repoRoot, 'package.json');
   const reportPath = path.join(repoRoot, 'monitor-report.txt');
   const out = [];
 
+  out.push(`Repo root: ${repoRoot}`);
   out.push(`Event path: ${eventPath || '(none)'}`);
   out.push(`Dry run: ${dryRun}`);
 
@@ -70,24 +96,22 @@ async function main() {
     }
   }
 
-  if (!fs.existsSync(pkgPath)) {
-    out.push(`No package.json found at ${pkgPath}`);
-    fs.writeFileSync(reportPath, out.join('\n'), 'utf8');
-    console.log(out.join('\n'));
-    return 0;
+  const pkgPaths = findPackageJsons(repoRoot);
+  out.push(`Scanned ${pkgPaths.length} package.json file(s)`);
+
+  const packagesWithOverrides = [];
+  for (const p of pkgPaths) {
+    try {
+      const pj = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (pj.overrides && Object.keys(pj.overrides).length > 0) {
+        packagesWithOverrides.push({ pkgJsonPath: p, overrides: pj.overrides });
+      }
+    } catch (err) {
+      out.push(`Failed to parse ${p}: ${err && err.message}`);
+    }
   }
 
-  let pkg;
-  try {
-    pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-  } catch (err) {
-    console.error('Failed to parse package.json:', err && err.message);
-    return 2;
-  }
-
-  const overrides = pkg.overrides || {};
-  const allPkgs = Object.keys(overrides);
-  out.push(`Found ${allPkgs.length} override(s)`);
+  out.push(`Found ${packagesWithOverrides.length} package.json(s) with overrides`);
 
   let directive = null;
   if (explicitPkg) {
@@ -100,17 +124,33 @@ async function main() {
     out.push('No explicit package and no event JSON provided; defaulting to all overrides');
   }
 
-  let targets = allPkgs.slice();
-  if (directive && directive.type === 'monitor-override') {
-    targets = targets.filter(t => t === directive.pkg);
-  } else if (directive && directive.type === 'monitor-all-overrides') {
-    // keep all
+  const results = [];
+  for (const pkgInfo of packagesWithOverrides) {
+    const dir = path.dirname(pkgInfo.pkgJsonPath);
+    const ovKeys = Object.keys(pkgInfo.overrides);
+    let targets = ovKeys.slice();
+    if (directive) {
+      if (directive.type === 'monitor-override') {
+        targets = targets.filter(t => t === directive.pkg);
+      } else if (directive.type === 'monitor-all-overrides') {
+        // keep all
+      }
+    }
+
+    if (targets.length === 0) {
+      out.push(`Skipping ${pkgInfo.pkgJsonPath} (no matching targets)`);
+      continue;
+    }
+
+    out.push(`Checking ${pkgInfo.pkgJsonPath} in ${dir} => targets: ${targets.join(',')}`);
+    // Placeholder for trial removal logic; in the prototype we just record targets
+    results.push({ pkgJsonPath: pkgInfo.pkgJsonPath, targets });
   }
 
-  out.push(`Targets to check: ${targets.length > 0 ? targets.join(', ') : '(none)'}`);
-  targets.forEach(t => out.push(`${t}: ${JSON.stringify(overrides[t])}`));
-
   out.push('Note: trial removal and PR creation not implemented in this prototype.');
+  for (const r of results) {
+    out.push(`Result: ${r.pkgJsonPath} -> ${r.targets.join(',')}`);
+  }
 
   fs.writeFileSync(reportPath, out.join('\n'), 'utf8');
   console.log(`Wrote report to ${reportPath}`);
@@ -127,6 +167,7 @@ if (require.main === module) {
     parseArgs,
     parseDirective,
     extractDirectiveFromEvent,
+    findPackageJsons,
     main,
   };
 }
