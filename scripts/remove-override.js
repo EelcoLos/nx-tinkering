@@ -23,13 +23,10 @@ function parseArgs() {
 
 function parseDirective(text) {
   if (!text) return null;
-  // monitor-override: <pkg>
   const m = text.match(/monitor-override:\s*(\S+)/i);
   if (m) return { type: 'monitor-override', pkg: m[1] };
-  // @override-bot check <pkg>
   const m2 = text.match(/@override-bot\s+check\s+(\S+)/i);
   if (m2) return { type: 'monitor-override', pkg: m2[1] };
-  // monitor: overrides
   if (/monitor:\s*overrides/i.test(text)) return { type: 'monitor-all-overrides' };
   return null;
 }
@@ -40,12 +37,11 @@ function extractDirectiveFromEvent(event) {
     if (event.comment && event.comment.body) return parseDirective(event.comment.body);
     if (event.issue && event.issue.body) return parseDirective(event.issue.body);
     if (event.pull_request && event.pull_request.body) return parseDirective(event.pull_request.body);
-    // workflow_dispatch inputs may be present under event.inputs
     if (event.inputs && event.inputs['monitor-override']) {
       return { type: 'monitor-override', pkg: event.inputs['monitor-override'] };
     }
   } catch (err) {
-    // fallthrough
+    // ignore
   }
   return null;
 }
@@ -78,7 +74,7 @@ async function main() {
     out.push(`No package.json found at ${pkgPath}`);
     fs.writeFileSync(reportPath, out.join('\n'), 'utf8');
     console.log(out.join('\n'));
-    process.exit(0);
+    return 0;
   }
 
   let pkg;
@@ -86,7 +82,7 @@ async function main() {
     pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   } catch (err) {
     console.error('Failed to parse package.json:', err && err.message);
-    process.exit(2);
+    return 2;
   }
 
   const overrides = pkg.overrides || {};
@@ -118,10 +114,19 @@ async function main() {
 
   fs.writeFileSync(reportPath, out.join('\n'), 'utf8');
   console.log(`Wrote report to ${reportPath}`);
-  process.exit(0);
+  return 0;
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(2);
-});
+if (require.main === module) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(2);
+  });
+} else {
+  module.exports = {
+    parseArgs,
+    parseDirective,
+    extractDirectiveFromEvent,
+    main,
+  };
+}
