@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies (if present)
         run: |
           if [ -f package.json ]; then
-            npm ci --no-audit --no-fund
+            echo "Skipping npm install during monitor (script doesn't need dependencies)."
           else
             echo "No package.json at repo root; skipping npm install"
           fi
