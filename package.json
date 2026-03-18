@@ -74,5 +74,9 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.57.1"
   },
-  "overrides": {}
+  "overrides": {
+    "@angular/build": {
+      "undici": "7.24.4"
+    }
+  }
 }
