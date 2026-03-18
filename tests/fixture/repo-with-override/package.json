@@ -1,0 +1,8 @@
+{
+  "name": "fixture-repo",
+  "version": "1.0.0",
+  "private": true,
+  "overrides": {
+    "undici": "5.7.1"
+  }
+}
