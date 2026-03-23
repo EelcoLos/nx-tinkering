@@ -53,7 +53,7 @@ jobs:
         run: dotnet restore nx-tinker.slnx
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
       - name: Install dependencies
         run: npm ci
       - name: Build
@@ -94,7 +94,7 @@ jobs:
         run: dotnet restore nx-tinker.slnx
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
       - name: Install dependencies
         run: npm ci
       - name: Test
@@ -135,7 +135,7 @@ jobs:
         run: dotnet restore nx-tinker.slnx
       - name: Derive appropriate SHAs for base and head for `nx affected` commands
         id: setSHAs
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
       - name: Install dependencies
         run: npm ci
       - name: Lint
