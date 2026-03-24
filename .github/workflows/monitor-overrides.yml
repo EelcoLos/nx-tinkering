@@ -2,13 +2,13 @@ name: Monitor overrides
 
 on:
   schedule:
-    - cron: '0 6 * * *' # daily at 06:00 UTC
+    - cron: "0 6 * * *" # daily at 06:00 UTC
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Run in dry-run mode (no PR creation)'
+        description: "Run in dry-run mode (no PR creation)"
         required: false
-        default: 'true'
+        default: "true"
   issues:
     types: [opened, edited]
   issue_comment:
@@ -33,8 +33,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "lts/*"
+          cache: "npm"
 
       - name: Install dependencies (if present)
         run: |
