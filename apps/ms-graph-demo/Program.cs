@@ -44,11 +44,11 @@ builder.Services
     .AddFastEndpoints()
     .SwaggerDocument(o =>
     {
-        o.DocumentSettings = s =>
-        {
-            s.Title = "MS Graph Demo API";
-            s.Version = "v1";
-        };
+      o.DocumentSettings = s =>
+      {
+        s.Title = "MS Graph Demo API";
+        s.Version = "v1";
+      };
     });
 
 var app = builder.Build();
@@ -65,8 +65,8 @@ app.UseAuthorization();
 // ---------------------------------------------------------------------------
 app.UseFastEndpoints(c =>
 {
-    c.Security.ScopeClaimType = "scp";
-    c.Security.PermissionsClaimType = "roles";
+  c.Security.ScopeClaimType = "scp";
+  c.Security.PermissionsClaimType = "roles";
 })
 .UseSwaggerGen();
 
@@ -78,6 +78,6 @@ app.Run();
 // ---------------------------------------------------------------------------
 static void AddPermissionPolicies(AuthorizationOptions options, IEnumerable<string> permissions)
 {
-    foreach (var permission in permissions)
-        options.AddPolicy(permission, policy => policy.Requirements.Add(new PermissionRequirement(permission)));
+  foreach (var permission in permissions)
+    options.AddPolicy(permission, policy => policy.Requirements.Add(new PermissionRequirement(permission)));
 }

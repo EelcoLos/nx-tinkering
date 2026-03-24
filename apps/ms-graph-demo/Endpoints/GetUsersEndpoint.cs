@@ -12,18 +12,18 @@ namespace MsGraphDemo;
 /// </summary>
 public class GetUsersEndpoint : EndpointWithoutRequest<UsersResponse>
 {
-    public override void Configure()
-    {
-        Get("/users");
-        Policies("User.ReadWrite.All");
-        Description(d => d.WithName("GetUsers").WithTags("Graph"));
-    }
+  public override void Configure()
+  {
+    Get("/users");
+    Policies("User.ReadWrite.All");
+    Description(d => d.WithName("GetUsers").WithTags("Graph"));
+  }
 
-    public override Task HandleAsync(CancellationToken ct)
-        => Send.OkAsync(new UsersResponse { Users = [] }, ct);
+  public override Task HandleAsync(CancellationToken ct)
+      => Send.OkAsync(new UsersResponse { Users = [] }, ct);
 }
 
 public class UsersResponse
 {
-    public IReadOnlyList<string> Users { get; set; } = [];
+  public IReadOnlyList<string> Users { get; set; } = [];
 }
