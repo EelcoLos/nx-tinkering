@@ -11,6 +11,7 @@ module.exports = [
   { plugins: { '@nx': nxEslintPlugin } },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    ignores: ['**/eslint.config.js'],
     rules: {
       '@nx/enforce-module-boundaries': [
         'error',
