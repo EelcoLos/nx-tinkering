@@ -1,6 +1,6 @@
 {
   "name": "nx-tinkering",
-  "version": "22.5.4",
+  "version": "22.6.3",
   "license": "MIT",
   "scripts": {
     "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.slnx && npx nx affected -t lint --fix --base=origin/main",
