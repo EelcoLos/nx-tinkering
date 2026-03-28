@@ -16,12 +16,6 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: 'ng-packagr'
         update-types: ['version-update:semver-major']
-      - dependency-name: 'nx'
-        update-types:
-          ['version-update:semver-major', 'version-update:semver-minor']
-      - dependency-name: '@nx/*'
-        update-types:
-          ['version-update:semver-major', 'version-update:semver-minor']
     groups:
       client-angular:
         patterns:
