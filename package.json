@@ -75,17 +75,12 @@
     "typescript-eslint": "^8.57.2"
   },
   "overrides": {
-    "@angular/build": {
-      "undici": "7.24.4"
-    },
-    "@nx/webpack": {
-      "serialize-javascript": "7.0.4"
-    },
     "@nx/angular": {
-      "koa": "3.1.2"
+      "picomatch": "^4.0.4"
     },
     "@nx/module-federation": {
-      "koa": "3.1.2"
-    }
+      "picomatch": "^4.0.4"
+    },
+    "serialize-javascript": "^7.0.5"
   }
 }
