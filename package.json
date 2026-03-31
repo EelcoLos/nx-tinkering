@@ -65,7 +65,7 @@
     "jest": "30.3.0",
     "jest-environment-jsdom": "30.3.0",
     "jest-environment-node": "^30.3.0",
-    "jest-preset-angular": "16.1.1",
+    "jest-preset-angular": "16.1.2",
     "jest-util": "30.3.0",
     "nx": "22.6.3",
     "prettier": "^3.8.1",
