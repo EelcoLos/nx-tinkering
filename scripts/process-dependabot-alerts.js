@@ -364,6 +364,58 @@ function writeReports(entries, root) {
   return { jsonPath, txtPath };
 }
 
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function formatOverridePath(pathSegments) {
+  if (!Array.isArray(pathSegments) || pathSegments.length === 0) {
+    return null;
+  }
+  const [head, ...tail] = pathSegments;
+  let out = String(head);
+  for (const segment of tail) {
+    out += `[${JSON.stringify(segment)}]`;
+  }
+  return out;
+}
+
+function removeNestedOverrideByPackageName(overrides, pkgName) {
+  if (!isPlainObject(overrides) || !pkgName) {
+    return { removed: false, removedPath: null };
+  }
+
+  function visit(node, trail) {
+    if (!isPlainObject(node)) return null;
+
+    if (Object.prototype.hasOwnProperty.call(node, pkgName)) {
+      delete node[pkgName];
+      return [...trail, pkgName];
+    }
+
+    for (const key of Object.keys(node)) {
+      const child = node[key];
+      if (!isPlainObject(child)) continue;
+
+      const removedTrail = visit(child, [...trail, key]);
+      if (removedTrail) {
+        if (isPlainObject(child) && Object.keys(child).length === 0) {
+          delete node[key];
+        }
+        return removedTrail;
+      }
+    }
+
+    return null;
+  }
+
+  const removedPath = visit(overrides, ['overrides']);
+  return {
+    removed: !!removedPath,
+    removedPath: formatOverridePath(removedPath),
+  };
+}
+
 function trialRemoveOverride(entry, options) {
   const os = require('os');
   const tmpBase = options && options.tmpBase ? options.tmpBase : os.tmpdir();
@@ -376,17 +428,17 @@ function trialRemoveOverride(entry, options) {
   const pkgName = entry && entry.package;
   if (!pkgName) return { ok: false, reason: 'package-missing' };
 
-  // If there is no override entry, nothing to trial-remove
-  if (
-    !original.overrides ||
-    !Object.prototype.hasOwnProperty.call(original.overrides, pkgName)
-  ) {
+  const modified = JSON.parse(JSON.stringify(original));
+  const removal = removeNestedOverrideByPackageName(
+    modified.overrides,
+    pkgName,
+  );
+  if (!removal.removed) {
     return { ok: false, reason: 'no-override-present', entry };
   }
-
-  const modified = JSON.parse(JSON.stringify(original));
-  delete modified.overrides[pkgName];
-  if (Object.keys(modified.overrides).length === 0) delete modified.overrides;
+  if (modified.overrides && Object.keys(modified.overrides).length === 0) {
+    delete modified.overrides;
+  }
 
   // write modified package.json to temp dir
   fs.writeFileSync(
@@ -409,6 +461,7 @@ function trialRemoveOverride(entry, options) {
     },
     dependency_kind:
       entry && entry.dependency_kind ? entry.dependency_kind : 'unknown',
+    removed_override_path: removal.removedPath,
   };
   try {
     const installCmd = 'npm install --package-lock-only';
@@ -446,6 +499,19 @@ function trialRemoveOverride(entry, options) {
     if (npmLsRes.problems.length > 0) {
       result.logs +=
         '\nNPM_LS_PROBLEMS:\n' + npmLsRes.problems.join('\n') + '\n';
+      result.ok = false;
+    }
+    if (!npmLsRes.ok) {
+      if (npmLsRes.error || npmLsRes.stdout || npmLsRes.stderr) {
+        result.logs +=
+          '\nNPM_LS_FAILED:\n' +
+          (npmLsRes.error || 'npm ls failed') +
+          '\n' +
+          (npmLsRes.stdout || '') +
+          '\n' +
+          (npmLsRes.stderr || '') +
+          '\n';
+      }
       result.ok = false;
     }
 
@@ -556,7 +622,7 @@ async function main() {
       const res = trialRemoveOverride(e, {});
       const outFile = path.join(
         trialDir,
-        (e.package || 'unknown').replace(/[\/\\:@]/g, '-') + '.json',
+        (e.package || 'unknown').replace(/[/\\:@]/g, '-') + '.json',
       );
       fs.writeFileSync(outFile, JSON.stringify(res, null, 2), 'utf8');
       trialSummary.push({
@@ -564,6 +630,22 @@ async function main() {
         candidate: e.candidate_path,
         ok: !!res.ok,
         reason: res.reason || null,
+        dependency_kind: res.dependency_kind || e.dependency_kind || 'unknown',
+        removed_override_path: res.removed_override_path || null,
+        checks: {
+          install: !!(
+            res.checks &&
+            res.checks.install &&
+            res.checks.install.ok
+          ),
+          dedup: !!(res.checks && res.checks.dedup && res.checks.dedup.ok),
+          npmLs: !!(res.checks && res.checks.npmLs && res.checks.npmLs.ok),
+          tests: res.checks && res.checks.tests ? !!res.checks.tests.ok : null,
+          version_conflicts:
+            res.checks && res.checks.versionConflicts
+              ? res.checks.versionConflicts.total_conflicts
+              : null,
+        },
         tmpdir: res.tmpdir || null,
       });
       count += 1;
@@ -591,7 +673,7 @@ if (require.main === module) {
     fs.mkdirSync(base, { recursive: true });
     for (const e of entries) {
       const pkg = e.package || 'unknown-package';
-      const safeName = pkg.replace(/[\/\\:@]/g, '-');
+      const safeName = pkg.replace(/[/\\:@]/g, '-');
       const dir = path.join(base, `${safeName}`);
       fs.mkdirSync(dir, { recursive: true });
       const title = `chore(security): temporary override for ${pkg}`;
@@ -621,6 +703,7 @@ if (require.main === module) {
     mapAlertToCandidate,
     determineDependencyKind,
     detectHigherVersionSelectionWarnings,
+    removeNestedOverrideByPackageName,
     buildPlanEntries,
     fetchDependabotAlerts,
     writeReports,

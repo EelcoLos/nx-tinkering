@@ -2,6 +2,59 @@ const path = require('path');
 const processor = require('../../scripts/process-dependabot-alerts');
 
 describe('process-dependabot-alerts mapping', () => {
+  test('removeNestedOverrideByPackageName removes top-level override key', () => {
+    const overrides = {
+      undici: '5.7.1',
+      '@nx/angular': {
+        picomatch: '4.0.0',
+      },
+    };
+
+    const res = processor.removeNestedOverrideByPackageName(
+      overrides,
+      'undici',
+    );
+
+    expect(res.removed).toBe(true);
+    expect(res.removedPath).toBe('overrides["undici"]');
+    expect(overrides.undici).toBeUndefined();
+    expect(overrides['@nx/angular'].picomatch).toBe('4.0.0');
+  });
+
+  test('removeNestedOverrideByPackageName removes nested override key and reports path', () => {
+    const overrides = {
+      '@nx/angular': {
+        picomatch: '4.0.0',
+      },
+    };
+
+    const res = processor.removeNestedOverrideByPackageName(
+      overrides,
+      'picomatch',
+    );
+
+    expect(res.removed).toBe(true);
+    expect(res.removedPath).toBe('overrides["@nx/angular"]["picomatch"]');
+    expect(overrides['@nx/angular']).toBeUndefined();
+  });
+
+  test('removeNestedOverrideByPackageName returns not removed when key is absent', () => {
+    const overrides = {
+      '@nx/angular': {
+        picomatch: '4.0.0',
+      },
+    };
+
+    const res = processor.removeNestedOverrideByPackageName(
+      overrides,
+      'undici',
+    );
+
+    expect(res.removed).toBe(false);
+    expect(res.removedPath).toBeNull();
+    expect(overrides['@nx/angular'].picomatch).toBe('4.0.0');
+  });
+
   test('warns when multiple versions exist and higher top-level version is selected', () => {
     const lock = {
       lockfileVersion: 3,
