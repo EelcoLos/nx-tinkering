@@ -34,6 +34,8 @@ steps:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 strict: false
+sandbox:
+  agent: false
 timeout-minutes: 20
 network:
   allowed: [defaults, node, github]
@@ -47,8 +49,7 @@ safe-outputs:
   mentions: false
   allowed-github-references: []
   max-bot-mentions: 1
-  threat-detection:
-    enabled: true
+  threat-detection: false
   create-issue:
     title-prefix: "[override-security] "
     labels: [security, dependencies, agentic]
