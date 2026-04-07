@@ -18,7 +18,7 @@ permissions:
   security-events: read
 engine:
   id: gemini
-  model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
+  model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.5-flash' }}
   env:
     HOME: ${{ github.workspace }}
     GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
