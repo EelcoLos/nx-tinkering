@@ -16,7 +16,9 @@ permissions:
   issues: read
   pull-requests: read
   security-events: read
-engine: copilot
+engine:
+  id: gemini
+  model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
 strict: true
 timeout-minutes: 20
 network:
