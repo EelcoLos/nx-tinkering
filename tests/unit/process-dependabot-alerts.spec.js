@@ -2,6 +2,39 @@ const path = require('path');
 const processor = require('../../scripts/process-dependabot-alerts');
 
 describe('process-dependabot-alerts mapping', () => {
+  test('warns when multiple versions exist and higher top-level version is selected', () => {
+    const lock = {
+      lockfileVersion: 3,
+      packages: {
+        '': { name: 'fixture', version: '1.0.0' },
+        'node_modules/foo': { version: '2.0.0' },
+        'node_modules/bar/node_modules/foo': { version: '1.5.0' },
+      },
+    };
+
+    const res = processor.detectHigherVersionSelectionWarnings(lock);
+    expect(res.ok).toBe(true);
+    expect(res.total_conflicts).toBe(1);
+    expect(res.warnings[0].package).toBe('foo');
+    expect(res.warnings[0].selected_version).toBe('2.0.0');
+    expect(res.warnings[0].lower_versions).toContain('1.5.0');
+  });
+
+  test('does not warn when only one version exists', () => {
+    const lock = {
+      lockfileVersion: 3,
+      packages: {
+        '': { name: 'fixture', version: '1.0.0' },
+        'node_modules/foo': { version: '2.0.0' },
+      },
+    };
+
+    const res = processor.detectHigherVersionSelectionWarnings(lock);
+    expect(res.ok).toBe(true);
+    expect(res.total_conflicts).toBe(0);
+    expect(res.warnings).toHaveLength(0);
+  });
+
   test('marks transitive dependency when package only appears in overrides', () => {
     const fixturePkg = path.resolve(
       __dirname,

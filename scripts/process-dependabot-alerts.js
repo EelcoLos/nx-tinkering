@@ -256,6 +256,101 @@ function runNpmLsCheck(cwd) {
   };
 }
 
+function compareVersionStrings(a, b) {
+  const clean = (v) =>
+    String(v || '')
+      .split('+')[0]
+      .split('-')[0];
+  const pa = clean(a)
+    .split('.')
+    .map((n) => Number.parseInt(n, 10));
+  const pb = clean(b)
+    .split('.')
+    .map((n) => Number.parseInt(n, 10));
+  const len = Math.max(pa.length, pb.length);
+
+  for (let i = 0; i < len; i += 1) {
+    const av = Number.isFinite(pa[i]) ? pa[i] : 0;
+    const bv = Number.isFinite(pb[i]) ? pb[i] : 0;
+    if (av > bv) return 1;
+    if (av < bv) return -1;
+  }
+
+  // Keep ordering stable for non-standard versions.
+  if (String(a) > String(b)) return 1;
+  if (String(a) < String(b)) return -1;
+  return 0;
+}
+
+function extractPackageNameFromLockPath(pkgPath) {
+  if (!pkgPath || typeof pkgPath !== 'string') return null;
+  const marker = 'node_modules/';
+  const idx = pkgPath.lastIndexOf(marker);
+  if (idx === -1) return null;
+  const rest = pkgPath.slice(idx + marker.length);
+  if (!rest) return null;
+
+  const parts = rest.split('/');
+  if (parts[0] && parts[0].startsWith('@') && parts.length > 1) {
+    return `${parts[0]}/${parts[1]}`;
+  }
+  return parts[0] || null;
+}
+
+function detectHigherVersionSelectionWarnings(lockJson) {
+  if (!lockJson || typeof lockJson !== 'object') {
+    return { ok: true, total_conflicts: 0, warnings: [] };
+  }
+
+  const versionsByName = new Map();
+  const selectedTopLevelVersion = new Map();
+
+  if (lockJson.packages && typeof lockJson.packages === 'object') {
+    for (const [pkgPath, meta] of Object.entries(lockJson.packages)) {
+      if (!meta || typeof meta !== 'object' || !meta.version) continue;
+      const name = extractPackageNameFromLockPath(pkgPath);
+      if (!name) continue;
+
+      if (!versionsByName.has(name)) versionsByName.set(name, new Set());
+      versionsByName.get(name).add(String(meta.version));
+
+      if (/^node_modules\/(?:@[^/]+\/)?[^/]+$/.test(pkgPath)) {
+        selectedTopLevelVersion.set(name, String(meta.version));
+      }
+    }
+  }
+
+  const warnings = [];
+  for (const [name, versionsSet] of versionsByName.entries()) {
+    const versions = Array.from(versionsSet);
+    if (versions.length < 2) continue;
+
+    versions.sort((a, b) => compareVersionStrings(a, b));
+    const lowest = versions[0];
+    const highest = versions[versions.length - 1];
+    const selected = selectedTopLevelVersion.get(name) || highest;
+    const higherPicked = compareVersionStrings(selected, lowest) > 0;
+
+    if (higherPicked && compareVersionStrings(selected, highest) === 0) {
+      warnings.push({
+        package: name,
+        selected_version: selected,
+        lower_versions: versions.filter(
+          (v) => compareVersionStrings(v, selected) < 0,
+        ),
+        all_versions: versions,
+        message: `Conflicting versions detected for ${name}; higher version ${selected} selected.`,
+      });
+    }
+  }
+
+  return {
+    ok: true,
+    total_conflicts: warnings.length,
+    warnings,
+  };
+}
+
 function writeReports(entries, root) {
   const repoRoot = root || process.cwd();
   const jsonPath = path.join(repoRoot, 'dependabot-override-plan.json');
@@ -309,6 +404,7 @@ function trialRemoveOverride(entry, options) {
       install: { ok: false, command: 'npm install --package-lock-only' },
       dedup: { ok: false, command: 'npm dedup' },
       npmLs: { ok: false, command: 'npm ls --all --json', problems: [] },
+      versionConflicts: { ok: true, total_conflicts: 0, warnings: [] },
       tests: { ok: true, skipped: true },
     },
     dependency_kind:
@@ -356,6 +452,15 @@ function trialRemoveOverride(entry, options) {
     const lockPath = path.join(mkd, 'package-lock.json');
     if (fs.existsSync(lockPath)) {
       result.lockfile = fs.readFileSync(lockPath, 'utf8');
+      const parsedLock = tryParseJson(result.lockfile);
+      const conflictCheck = detectHigherVersionSelectionWarnings(parsedLock);
+      result.checks.versionConflicts = conflictCheck;
+      if (conflictCheck.total_conflicts > 0) {
+        result.logs += '\nVERSION_CONFLICT_WARNINGS:\n';
+        for (const warning of conflictCheck.warnings) {
+          result.logs += `- ${warning.message} Lower versions: ${warning.lower_versions.join(', ')}\n`;
+        }
+      }
     } else {
       result.ok = false;
     }
@@ -515,6 +620,7 @@ if (require.main === module) {
   module.exports = {
     mapAlertToCandidate,
     determineDependencyKind,
+    detectHigherVersionSelectionWarnings,
     buildPlanEntries,
     fetchDependabotAlerts,
     writeReports,

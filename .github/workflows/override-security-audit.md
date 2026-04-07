@@ -79,6 +79,7 @@ Determine, for each candidate package, one of these outcomes:
    - install status
    - dedup status
    - npm ls dependency-tree status and problems (if any)
+   - conflicting version warnings (lower and higher versions) and whether higher version was selected
    - test status (if test script exists)
 
 ## Output Rules
