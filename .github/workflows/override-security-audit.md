@@ -22,11 +22,12 @@ engine:
   env:
     HOME: ${{ github.workspace }}
     GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
+    XDG_CONFIG_HOME: ${{ github.workspace }}/.gemini
+    XDG_CACHE_HOME: ${{ github.workspace }}/.gemini/cache
 steps:
   - run: |
-      sudo mkdir -p /home/runner/.gemini
-      sudo chmod 777 /home/runner/.gemini
-    name: Prepare Gemini registry directory
+      mkdir -p "$GITHUB_WORKSPACE/.gemini/cache"
+    name: Prepare Gemini config directories
 strict: true
 timeout-minutes: 20
 network:
