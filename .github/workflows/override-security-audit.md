@@ -21,13 +21,12 @@ engine:
   model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
   env:
     HOME: ${{ github.workspace }}
-    GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
-    XDG_CONFIG_HOME: ${{ github.workspace }}/.gemini
-    XDG_CACHE_HOME: ${{ github.workspace }}/.gemini/cache
 steps:
   - run: |
-      mkdir -p "$GITHUB_WORKSPACE/.gemini/cache"
-    name: Prepare Gemini config directories
+      mkdir -p "$GITHUB_WORKSPACE/.gemini"
+      rm -f /home/runner/.gemini
+      ln -s "$GITHUB_WORKSPACE/.gemini" /home/runner/.gemini
+    name: Setup Gemini config symlink
 strict: true
 timeout-minutes: 20
 network:

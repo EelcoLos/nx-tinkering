@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"4ab784c0d3b013900da5348c7677eb933bd034a9a01ddf24f8c7a646078c0af9","compiler_version":"v0.67.0","strict":true,"agent_id":"gemini","agent_model":"${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"d44b8519f2d981b0c6c5095d7ff7b3c95a40b6cfca34f26f5b31bd2dfe0b506b","compiler_version":"v0.67.0","strict":true,"agent_id":"gemini","agent_model":"${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}"}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -179,19 +179,19 @@ jobs:
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
           {
-          cat << 'GH_AW_PROMPT_431b31a294b4d910_EOF'
+          cat << 'GH_AW_PROMPT_64e4ae09f80d6156_EOF'
           <system>
-          GH_AW_PROMPT_431b31a294b4d910_EOF
+          GH_AW_PROMPT_64e4ae09f80d6156_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_431b31a294b4d910_EOF'
+          cat << 'GH_AW_PROMPT_64e4ae09f80d6156_EOF'
           <safe-output-tools>
           Tools: create_issue, create_pull_request(max:2), missing_tool, missing_data, noop
-          GH_AW_PROMPT_431b31a294b4d910_EOF
+          GH_AW_PROMPT_64e4ae09f80d6156_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_create_pull_request.md"
-          cat << 'GH_AW_PROMPT_431b31a294b4d910_EOF'
+          cat << 'GH_AW_PROMPT_64e4ae09f80d6156_EOF'
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -221,12 +221,12 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_431b31a294b4d910_EOF
+          GH_AW_PROMPT_64e4ae09f80d6156_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_431b31a294b4d910_EOF'
+          cat << 'GH_AW_PROMPT_64e4ae09f80d6156_EOF'
           </system>
           {{#runtime-import .github/workflows/override-security-audit.md}}
-          GH_AW_PROMPT_431b31a294b4d910_EOF
+          GH_AW_PROMPT_64e4ae09f80d6156_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -344,8 +344,11 @@ jobs:
         run: bash ${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Prepare Gemini config directories
-        run: mkdir -p "$GITHUB_WORKSPACE/.gemini/cache"
+      - name: Setup Gemini config symlink
+        run: |-
+          mkdir -p "$GITHUB_WORKSPACE/.gemini"
+          rm -f /home/runner/.gemini
+          ln -s "$GITHUB_WORKSPACE/.gemini" /home/runner/.gemini
 
       - name: Configure Git credentials
         env:
@@ -399,12 +402,12 @@ jobs:
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_c0ddfe781c9bdb67_EOF'
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_848ecea6e4db9a31_EOF'
           {"create_issue":{"close_older_issues":true,"expires":336,"labels":["security","dependencies","agentic"],"max":1,"title_prefix":"[override-security] "},"create_pull_request":{"draft":true,"if_no_changes":"warn","labels":["security","dependencies","agentic"],"max":2,"max_patch_size":1024,"protected_files":["package.json","bun.lockb","bunfig.toml","deno.json","deno.jsonc","deno.lock","global.json","NuGet.Config","Directory.Packages.props","mix.exs","mix.lock","go.mod","go.sum","stack.yaml","stack.yaml.lock","pom.xml","build.gradle","build.gradle.kts","settings.gradle","settings.gradle.kts","gradle.properties","package-lock.json","yarn.lock","pnpm-lock.yaml","npm-shrinkwrap.json","requirements.txt","Pipfile","Pipfile.lock","pyproject.toml","setup.py","setup.cfg","Gemfile","Gemfile.lock","uv.lock","CODEOWNERS"],"protected_path_prefixes":[".github/",".agents/"],"title_prefix":"chore(security): "},"max_bot_mentions":1,"mentions":{"enabled":false},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_c0ddfe781c9bdb67_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_848ecea6e4db9a31_EOF
       - name: Write Safe Outputs Tools
         run: |
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_93e449657b466747_EOF'
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_956a58734ebb9419_EOF'
           {
             "description_suffixes": {
               "create_issue": " CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[override-security] \". Labels [\"security\" \"dependencies\" \"agentic\"] will be automatically added.",
@@ -413,8 +416,8 @@ jobs:
             "repo_params": {},
             "dynamic_tools": []
           }
-          GH_AW_SAFE_OUTPUTS_TOOLS_META_93e449657b466747_EOF
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_e52471ae517db295_EOF'
+          GH_AW_SAFE_OUTPUTS_TOOLS_META_956a58734ebb9419_EOF
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_a8e6ee513b3a41ee_EOF'
           {
             "create_issue": {
               "defaultMax": 1,
@@ -543,7 +546,7 @@ jobs:
               }
             }
           }
-          GH_AW_SAFE_OUTPUTS_VALIDATION_e52471ae517db295_EOF
+          GH_AW_SAFE_OUTPUTS_VALIDATION_a8e6ee513b3a41ee_EOF
           node ${RUNNER_TEMP}/gh-aw/actions/generate_safe_outputs_tools.cjs
       - name: Generate Safe Outputs MCP Server Config
         id: safe-outputs-config
@@ -612,7 +615,7 @@ jobs:
           export GH_AW_ENGINE="gemini"
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.12'
           
-          cat << GH_AW_MCP_CONFIG_828fa96e87170b5e_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
+          cat << GH_AW_MCP_CONFIG_25c6ae8f25d5f7b4_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
               "github": {
@@ -652,7 +655,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_828fa96e87170b5e_EOF
+          GH_AW_MCP_CONFIG_25c6ae8f25d5f7b4_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -686,7 +689,6 @@ jobs:
           DEBUG: gemini-cli:*
           GEMINI_API_BASE_URL: http://host.docker.internal:10003
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
           GEMINI_MODEL: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
           GH_AW_MCP_CONFIG: ${{ github.workspace }}/.gemini/settings.json
           GH_AW_PHASE: agent
@@ -702,8 +704,6 @@ jobs:
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           HOME: ${{ github.workspace }}
-          XDG_CACHE_HOME: ${{ github.workspace }}/.gemini/cache
-          XDG_CONFIG_HOME: ${{ github.workspace }}/.gemini
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}
@@ -1077,7 +1077,6 @@ jobs:
           DEBUG: gemini-cli:*
           GEMINI_API_BASE_URL: http://host.docker.internal:10003
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
           GEMINI_MODEL: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
           GH_AW_PHASE: detection
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
@@ -1090,8 +1089,6 @@ jobs:
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           HOME: ${{ github.workspace }}
-          XDG_CACHE_HOME: ${{ github.workspace }}/.gemini/cache
-          XDG_CONFIG_HOME: ${{ github.workspace }}/.gemini
       - name: Upload threat detection log
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
