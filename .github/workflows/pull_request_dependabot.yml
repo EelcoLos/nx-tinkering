@@ -8,6 +8,10 @@ on:
         description: "Pull Request number"
         required: false
         default: ""
+      nx_update:
+        description: "Whether to run nx migrate (true/false)"
+        required: false
+        default: "false"
 
 permissions:
   contents: write
@@ -41,7 +45,7 @@ jobs:
     needs: dependabot-check
     if: always() &&
       (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) &&
-      (contains(needs.dependabot-check.outputs.dependency-names, '@nx/') || contains(needs.dependabot-check.outputs.dependency-names, 'nx'))
+      (contains(needs.dependabot-check.outputs.dependency-names, '@nx/') || contains(needs.dependabot-check.outputs.dependency-names, 'nx')) || (inputs.nx_update == 'true')
     steps:
       - name: "Checkout code for Nx updates"
         uses: actions/checkout@v6
