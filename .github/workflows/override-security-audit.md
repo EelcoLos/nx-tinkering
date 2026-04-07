@@ -22,6 +22,11 @@ engine:
   env:
     HOME: ${{ github.workspace }}
     GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
+steps:
+  - run: |
+      sudo mkdir -p /home/runner/.gemini
+      sudo chmod 777 /home/runner/.gemini
+    name: Prepare Gemini registry directory
 strict: true
 timeout-minutes: 20
 network:
