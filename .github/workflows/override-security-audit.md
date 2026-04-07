@@ -21,13 +21,19 @@ engine:
   model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
   env:
     HOME: ${{ github.workspace }}
+    GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 steps:
   - run: |
       mkdir -p "$GITHUB_WORKSPACE/.gemini"
-      rm -f /home/runner/.gemini
-      ln -s "$GITHUB_WORKSPACE/.gemini" /home/runner/.gemini
-    name: Setup Gemini config symlink
-strict: true
+      mkdir -p "/home/runner/.gemini"
+      SETTINGS="$GITHUB_WORKSPACE/.gemini/settings.json"
+      if [ ! -f "$SETTINGS" ]; then
+        printf '{"auth":{"apiKey":"%s"}}\n' "$GEMINI_API_KEY" > "$SETTINGS"
+      fi
+    name: Setup Gemini config
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+strict: false
 timeout-minutes: 20
 network:
   allowed: [defaults, node, github]
