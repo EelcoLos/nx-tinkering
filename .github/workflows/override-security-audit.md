@@ -21,6 +21,7 @@ engine:
   model: ${{ vars.GH_AW_MODEL_AGENT_GEMINI || 'gemini-2.0-flash' }}
   env:
     HOME: ${{ github.workspace }}
+    GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini
 strict: true
 timeout-minutes: 20
 network:
