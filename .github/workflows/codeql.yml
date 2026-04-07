@@ -75,7 +75,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install npm dependencies
-        run: npm ci
+        shell: bash
+        run: |
+          npm ci || {
+            echo "npm ci failed due to lockfile drift; falling back to npm install for CodeQL analysis context."
+            npm install --no-audit --no-fund
+          }
 
       - name: Set up .NET
         if: contains(matrix.language, 'csharp')
