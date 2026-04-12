@@ -76,11 +76,15 @@
   },
   "overrides": {
     "@nx/angular": {
-      "picomatch": "^4.0.4"
+      "picomatch": "^4.0.4",
+      "axios": "^1.15.0"
     },
     "@nx/module-federation": {
-      "picomatch": "^4.0.4"
+      "picomatch": "^4.0.4",
+      "axios": "^1.15.0"
     },
+    "axios": "^1.15.0",
+    "sass": "^1.97.3",
     "serialize-javascript": "^7.0.5"
   }
 }
