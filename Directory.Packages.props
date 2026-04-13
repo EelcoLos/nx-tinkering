@@ -21,10 +21,10 @@
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <!-- NSwag -->
-    <PackageVersion Include="NSwag.Core" Version="14.6.3" />
-    <PackageVersion Include="NSwag.Core.Yaml" Version="14.6.3" />
-    <PackageVersion Include="NSwag.Generation.AspNetCore" Version="14.6.3" />
-    <PackageVersion Include="NSwag.MSBuild" Version="14.6.3" />
+    <PackageVersion Include="NSwag.Core" Version="14.7.0" />
+    <PackageVersion Include="NSwag.Core.Yaml" Version="14.7.0" />
+    <PackageVersion Include="NSwag.Generation.AspNetCore" Version="14.7.0" />
+    <PackageVersion Include="NSwag.MSBuild" Version="14.7.0" />
     <!-- Swashbuckle -->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.7" />
     <!-- xunit -->
