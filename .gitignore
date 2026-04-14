@@ -52,3 +52,5 @@ appsettings.*.json
 **/bin/
 **/obj/
 /artifacts/
+
+vite.config.*.timestamp*

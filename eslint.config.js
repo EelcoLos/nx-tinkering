@@ -49,4 +49,7 @@ module.exports = [
       ...config.rules,
     },
   })),
+  {
+    ignores: ['**/vite.config.*.timestamp*'],
+  },
 ];
