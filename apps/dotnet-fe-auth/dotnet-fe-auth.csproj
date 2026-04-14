@@ -22,12 +22,17 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- NSwag target temporarily disabled until NSwag supports .NET 10
-  <Target Name="NSwag" AfterTargets="Build">
+  <PropertyGroup>
+    <NormalizedOutDir>$([System.String]::Copy('$(OutDir)').Replace('\', '/'))</NormalizedOutDir>
+    <RunNSwagOnBuild Condition="$([System.String]::Copy('$(NormalizedOutDir)').Contains('/dist/apps/dotnet-fe-auth/'))">true</RunNSwagOnBuild>
+  </PropertyGroup>
+
+  <!-- Use the .NET 10 NSwag launcher so project metadata resolves correctly. -->
+  <Target Name="NSwag" AfterTargets="Build" Condition="'$(RunNSwagOnBuild)' == 'true'">
     <Copy SourceFiles="@(Reference)" DestinationFolder="$(OutDir)References" />
-    <Exec Command="$(NSwagExe) run nswag.json /variables:Configuration=$(Configuration)" />
+    <Exec Command="$(NSwagExe_Net100) run nswag.json /variables:Configuration=$(Configuration)" />
     <RemoveDir Directories="$(OutDir)References" />
   </Target>
-  -->
+
 
 </Project>
