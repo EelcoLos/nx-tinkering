@@ -3,6 +3,7 @@
     <Project Path="apps/api-demo.Test/ApiDemo.Test.csproj" />
     <Project Path="apps/api-demo/ApiDemo.csproj" />
     <Project Path="apps/dotnet-fe-auth/dotnet-fe-auth.csproj" />
+    <Project Path="apps/fastendpoints-react-api/fastendpoints-react-api.csproj" />
     <Project Path="apps/fakelogger-demo.Test/fakelogger-demo.Test.csproj" />
     <Project Path="apps/fakelogger-demo/fakelogger-demo.csproj" />
     <Project Path="apps/ms-graph-demo.Test/MsGraphDemo.Test.csproj" />

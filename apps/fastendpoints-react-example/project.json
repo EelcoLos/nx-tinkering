@@ -1,0 +1,16 @@
+{
+  "name": "fastendpoints-react-example",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/fastendpoints-react-example/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/fastendpoints-react-example/jest.config.cts"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "fastendpoints-react-example-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/fastendpoints-react-example-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["fastendpoints-react-example"],
+  "// targets": "to see all targets run: nx show project fastendpoints-react-example-e2e --web",
+  "targets": {}
+}

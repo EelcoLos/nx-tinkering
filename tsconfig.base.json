@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "swagger": ["libs/swagger/src/index.ts"]
+      "swagger": ["libs/swagger/src/index.ts"],
+      "fastendpoints-react-state": [
+        "libs/fastendpoints-react-state/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
