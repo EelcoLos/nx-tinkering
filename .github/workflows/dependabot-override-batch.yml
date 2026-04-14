@@ -28,7 +28,7 @@ jobs:
           node -e "const p=require('./scripts/process-dependabot-alerts'); const fs=require('fs'); const entries=JSON.parse(fs.readFileSync('dependabot-override-plan.json','utf8')||'[]'); p.generateDraftPrsDryRun(entries,'pr-previews',process.cwd()); console.log('Generated previews');"
 
       - name: Upload previews
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: dependabot-override-previews
           path: pr-previews/**
