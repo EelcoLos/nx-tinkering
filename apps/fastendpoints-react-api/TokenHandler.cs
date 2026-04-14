@@ -6,9 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FastEndpointsReactApi;
 
-public class AuthTokenHandler
+public class AuthTokenHandler(IConfiguration configuration)
 {
   // Ensure the secret key is at least 32 bytes (256 bits) long
+  private readonly SymmetricSecurityKey signingKey =
+    AuthTokenSettings.CreateSigningKey(configuration);
 
   public string GenerateToken(string email, string password)
   {
@@ -31,7 +33,7 @@ public class AuthTokenHandler
       Expires = DateTime.UtcNow.AddHours(1),
       Issuer = AuthTokenSettings.Issuer,
       Audience = AuthTokenSettings.Audience,
-      SigningCredentials = new SigningCredentials(AuthTokenSettings.SigningKey, SecurityAlgorithms.HmacSha256Signature)
+      SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
     };
 
     var token = tokenHandler.CreateToken(tokenDescriptor);

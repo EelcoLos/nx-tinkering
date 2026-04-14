@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace FastEndpointsReactApi;
 
-public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateTokenResponse>
+public class ValidateTokenEndpoint(IConfiguration configuration) : Endpoint<ValidateTokenRequest, ValidateTokenResponse>
 {
   public override void Configure()
   {
@@ -21,7 +21,7 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
       tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
       {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = AuthTokenSettings.SigningKey,
+        IssuerSigningKey = AuthTokenSettings.CreateSigningKey(configuration),
         ValidateIssuer = true,
         ValidIssuer = AuthTokenSettings.Issuer,
         ValidateAudience = true,

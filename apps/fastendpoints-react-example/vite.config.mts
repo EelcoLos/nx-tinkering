@@ -1,11 +1,15 @@
 /// <reference types='vitest' />
-import { defineConfig } from 'vite';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { defineConfig } from 'vite';
+
+const appRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => ({
-  root: import.meta.dirname,
+  root: appRoot,
   cacheDir: '../../node_modules/.vite/apps/fastendpoints-react-example',
   server: {
     port: 4300,
@@ -28,7 +32,7 @@ export default defineConfig(() => ({
   //   plugins: () => [ nxViteTsPaths() ],
   // },
   build: {
-    outDir: '../../dist/apps/fastendpoints-react-example',
+    outDir: resolve(appRoot, '../../dist/apps/fastendpoints-react-example'),
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {
