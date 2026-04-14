@@ -71,7 +71,7 @@
     {
       "plugin": "@nx/dotnet",
       "options": {
-        "solutionFile": "nx-tinker.sln",
+        "solutionFile": "nx-tinker.slnx",
         "build": {
           "targetName": "build",
           "configurations": {
