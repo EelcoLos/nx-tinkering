@@ -46,6 +46,7 @@ Thumbs.db
 .angular
 
 appsettings.*.json
+apps/x402-demo/app.run.local.json
 **/ssl/
 .cursor/rules/nx-rules.mdc
 # .NET

@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "X402:Network": "eip155:84532",
+        "X402:PayTo": "",
+        "X402:Asset": "",
+        "X402:FacilitatorUrl": "https://x402.org/facilitator",
+        "X402:MaxTimeoutSeconds": "300",
+        "X402:SettlementMode": "AfterSuccess"
+      }
+    }
+  }
+}
