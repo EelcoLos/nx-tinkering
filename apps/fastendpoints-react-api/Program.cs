@@ -1,9 +1,11 @@
 using FastEndpoints;
 using FastEndpoints.Security;
-using FastEndpoints.Swagger;
+using FastEndpoints.OpenApi;
+using FastEndpoints.OpenApi.Kiota;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using FastEndpointsReactApi;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,18 +27,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization()
                 .AddFastEndpoints()
-                .SwaggerDocument(p =>
+                .OpenApiDocument(p =>
 {
+  p.DocumentSettings = s =>
+  {
+    s.DocumentName = "v1";
+    s.Title = "FastEndpoints React API";
+    s.Version = "v1";
+  };
   p.ShortSchemaNames = true;
   p.MaxEndpointVersion = 1;
-
-  p.NewtonsoftSettings = s =>
-  {
-    s.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver
-    {
-      NamingStrategy = new Newtonsoft.Json.Serialization.CamelCaseNamingStrategy()
-    };
-  };
 });
 var app = builder.Build();
 
@@ -44,14 +44,23 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
   app.UseDeveloperExceptionPage();
-  app.UseSwaggerGen();
-  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFastEndpoints();
+app.MapOpenApi();
+
+if (app.Environment.IsDevelopment())
+{
+  app.MapScalarApiReference(o => o.AddDocuments("v1"));
+}
+
+await app.ExportOpenApiJsonAndExitAsync(
+    "v1",
+    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "api"),
+    "specification.json");
 
 
 app.Run();

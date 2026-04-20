@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />
-    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="FastEndpoints.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Microsoft.Identity.Web" />
   </ItemGroup>
 

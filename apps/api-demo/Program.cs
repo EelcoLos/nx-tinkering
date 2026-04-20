@@ -1,7 +1,8 @@
 using FastEndpoints;
-using FastEndpoints.Swagger; //add this
-using FastEndpoints.ClientGen.Kiota;
+using FastEndpoints.OpenApi;
+using FastEndpoints.OpenApi.Kiota;
 using Kiota.Builder;
+using Scalar.AspNetCore;
 
 var bld = WebApplication.CreateBuilder(args);
 bld.Services.AddOutputCache(options =>
@@ -10,10 +11,12 @@ bld.Services.AddOutputCache(options =>
 });
 bld.Services
    .AddFastEndpoints()
-   .SwaggerDocument(o =>
+   .OpenApiDocument(o =>
 {
+  o.ShortSchemaNames = true;
   o.DocumentSettings = s =>
   {
+    s.DocumentName = "v1";
     s.Title = "My API";
     s.Version = "v1";
   };
@@ -21,8 +24,13 @@ bld.Services
 
 
 var app = bld.Build();
-app.UseFastEndpoints()
-   .UseSwaggerGen(); //add this
+app.UseFastEndpoints();
+app.MapOpenApi();
+
+if (app.Environment.IsDevelopment())
+{
+  app.MapScalarApiReference(o => o.AddDocuments("v1"));
+}
 
 var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "libs", "swagger", "src", "lib");
 
@@ -34,7 +42,7 @@ if (!Directory.Exists(outputPath))
 await app.GenerateApiClientsAndExitAsync(
     c =>
     {
-      c.SwaggerDocumentName = "v1";
+      c.OpenApiDocumentName = "v1";
       c.Language = GenerationLanguage.TypeScript;
       c.OutputPath = outputPath;
       c.ClientNamespaceName = "MyCompanyName";

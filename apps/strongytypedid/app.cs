@@ -1,19 +1,31 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.0.1
-#:package FastEndpoints.Swagger@8.0.1
+#:package FastEndpoints@8.2.0-beta.13
+#:package FastEndpoints.OpenApi@8.2.0-beta.13
+#:package Scalar.AspNetCore@2.14.1
 #:package StronglyTypedId@1.0.0-beta08
 #:property ManagePackageVersionsCentrally=false
 #:property PublishAot=false
 
 using FastEndpoints;
-using FastEndpoints.Swagger;
+using FastEndpoints.OpenApi;
 using StronglyTypedIds;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder();
-builder.Services.AddFastEndpoints().SwaggerDocument();
+builder.Services.AddFastEndpoints().OpenApiDocument(o =>
+{
+    o.DocumentSettings = s =>
+    {
+        s.DocumentName = "v1";
+        s.Title = "Strongly Typed Id Demo";
+        s.Version = "v1";
+    };
+});
 
 var app = builder.Build();
-app.UseFastEndpoints().UseSwaggerGen();
+app.UseFastEndpoints();
+app.MapOpenApi();
+app.MapScalarApiReference(o => o.AddDocuments("v1"));
 app.Run();
 
 [StronglyTypedId]

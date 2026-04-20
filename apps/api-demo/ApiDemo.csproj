@@ -8,8 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />
-    <PackageReference Include="FastEndpoints.ClientGen.Kiota" />
-    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="FastEndpoints.OpenApi" />
+    <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
+    <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
 </Project>
