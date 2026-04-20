@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "swagger": ["libs/swagger/src/index.ts"],
+      "api-client": ["libs/api-client/src/index.ts"],
       "fastendpoints-react-state": [
         "libs/fastendpoints-react-state/src/index.ts"
       ]

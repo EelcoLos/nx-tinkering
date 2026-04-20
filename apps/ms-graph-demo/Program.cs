@@ -1,8 +1,9 @@
 using FastEndpoints;
-using FastEndpoints.Swagger;
+using FastEndpoints.OpenApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 using MsGraphDemo;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,10 +43,11 @@ var graphPermissions = new[]
 builder.Services
     .AddAuthorization(options => AddPermissionPolicies(options, graphPermissions))
     .AddFastEndpoints()
-    .SwaggerDocument(o =>
+    .OpenApiDocument(o =>
     {
       o.DocumentSettings = s =>
       {
+        s.DocumentName = "v1";
         s.Title = "MS Graph Demo API";
         s.Version = "v1";
       };
@@ -67,8 +69,13 @@ app.UseFastEndpoints(c =>
 {
   c.Security.ScopeClaimType = "scp";
   c.Security.PermissionsClaimType = "roles";
-})
-.UseSwaggerGen();
+});
+app.MapOpenApi();
+
+if (app.Environment.IsDevelopment())
+{
+  app.MapScalarApiReference(o => o.AddDocuments("v1"));
+}
 
 app.Run();
 

@@ -6,10 +6,10 @@
     <!-- Code coverage -->
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
     <!-- FastEndpoints -->
-    <PackageVersion Include="FastEndpoints" Version="8.1.0" />
-    <PackageVersion Include="FastEndpoints.ClientGen.Kiota" Version="8.1.0" />
-    <PackageVersion Include="FastEndpoints.Security" Version="8.1.0" />
-    <PackageVersion Include="FastEndpoints.Swagger" Version="8.1.0" />
+    <PackageVersion Include="FastEndpoints" Version="8.2.0-beta.13" />
+    <PackageVersion Include="FastEndpoints.OpenApi" Version="8.2.0-beta.13" />
+    <PackageVersion Include="FastEndpoints.OpenApi.Kiota" Version="8.2.0-beta.13" />
+    <PackageVersion Include="FastEndpoints.Security" Version="8.2.0-beta.13" />
     <!-- Microsoft.AspNetCore -->
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
@@ -18,15 +18,10 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
     <!-- Microsoft.Identity -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.7.0" />
+    <!-- Scalar -->
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.14.1" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-    <!-- NSwag -->
-    <PackageVersion Include="NSwag.Core" Version="14.7.0" />
-    <PackageVersion Include="NSwag.Core.Yaml" Version="14.7.0" />
-    <PackageVersion Include="NSwag.Generation.AspNetCore" Version="14.7.0" />
-    <PackageVersion Include="NSwag.MSBuild" Version="14.7.0" />
-    <!-- Swashbuckle -->
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.7" />
     <!-- xunit -->
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

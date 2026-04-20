@@ -6,11 +6,11 @@ tokens and Microsoft Graph permissions.
 
 ## What this shows
 
-| Problem | Solution |
-|---|---|
-| `Policies("User.Read")` always returns 403 | Register `PermissionRequirementHandler` in DI |
+| Problem                                                                | Solution                                                                                |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| `Policies("User.Read")` always returns 403                             | Register `PermissionRequirementHandler` in DI                                           |
 | FastEndpoints `Scopes()` / `Permissions()` never match Azure AD tokens | Set `ScopeClaimType = "scp"` and `PermissionsClaimType = "roles"` in `UseFastEndpoints` |
-| Adding a new Graph permission requires a lot of boilerplate | `AddPermissionPolicies()` registers one named policy per permission in a loop |
+| Adding a new Graph permission requires a lot of boilerplate            | `AddPermissionPolicies()` registers one named policy per permission in a loop           |
 
 ## Configuration
 
@@ -50,11 +50,11 @@ Load secrets via `builder.Configuration.AddAzureKeyVault(...)` or
 dotnet run --project apps/ms-graph-demo/MsGraphDemo.csproj
 ```
 
-Swagger UI is available at `https://localhost:<port>/swagger`.
+Scalar is available in development alongside the OpenAPI document at `/openapi/v1.json`.
 
 ## Endpoints
 
-| Method | Route | Required permission |
-|---|---|---|
-| GET | `/me` | `User.Read` (delegated or app) |
-| GET | `/users` | `User.ReadWrite.All` (delegated or app) |
+| Method | Route    | Required permission                     |
+|--------|----------|-----------------------------------------|
+| GET    | `/me`    | `User.Read` (delegated or app)          |
+| GET    | `/users` | `User.ReadWrite.All` (delegated or app) |

@@ -10,28 +10,23 @@
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Security" />
-    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="FastEndpoints.OpenApi" />
+    <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
+    <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Swashbuckle.AspNetCore" />
-    <PackageReference Include="NSwag.Core" />
-    <PackageReference Include="NSwag.Core.Yaml" />
-    <PackageReference Include="NSwag.Generation.AspNetCore" />
-    <PackageReference Include="NSwag.MSBuild">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>
     <NormalizedOutDir>$([System.String]::Copy('$(OutDir)').Replace('\', '/'))</NormalizedOutDir>
-    <RunNSwagOnBuild Condition="$([System.String]::Copy('$(NormalizedOutDir)').Contains('/dist/apps/fastendpoints-react-api/'))">true</RunNSwagOnBuild>
+    <RunOpenApiExportOnBuild Condition="$([System.String]::Copy('$(NormalizedOutDir)').Contains('/dist/apps/fastendpoints-react-api/'))">true</RunOpenApiExportOnBuild>
   </PropertyGroup>
 
-  <!-- Use the .NET 10 NSwag launcher so project metadata resolves correctly. -->
-  <Target Name="NSwag" AfterTargets="Build" Condition="'$(RunNSwagOnBuild)' == 'true'">
-    <Copy SourceFiles="@(Reference)" DestinationFolder="$(OutDir)References" />
-    <Exec Command="$(NSwagExe_Net100) run nswag.json /variables:Configuration=$(Configuration)" />
-    <RemoveDir Directories="$(OutDir)References" />
+  <Target Name="ExportOpenApiJson" AfterTargets="Build" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --exportopenapijson true" />
+  </Target>
+
+  <Target Name="GenerateKiotaClients" AfterTargets="ExportOpenApiJson" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --generateclients true" />
   </Target>
 
 
