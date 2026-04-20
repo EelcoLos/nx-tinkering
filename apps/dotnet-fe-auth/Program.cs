@@ -51,10 +51,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFastEndpoints();
-app.MapOpenApi();
 
 if (app.Environment.IsDevelopment())
 {
+  app.MapOpenApi();
   app.MapScalarApiReference(o => o.AddDocuments("v1"));
 }
 
