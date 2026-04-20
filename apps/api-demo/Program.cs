@@ -32,7 +32,7 @@ if (app.Environment.IsDevelopment())
   app.MapScalarApiReference(o => o.AddDocuments("v1"));
 }
 
-var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "libs", "swagger", "src", "lib");
+var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "libs", "api-client", "src", "lib");
 
 // Ensure the directory exists
 if (!Directory.Exists(outputPath))

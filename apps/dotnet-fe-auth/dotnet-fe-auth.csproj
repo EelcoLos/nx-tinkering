@@ -25,5 +25,9 @@
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --exportopenapijson true" />
   </Target>
 
+  <Target Name="GenerateKiotaClients" AfterTargets="ExportOpenApiJson" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --generateclients true" />
+  </Target>
+
 
 </Project>

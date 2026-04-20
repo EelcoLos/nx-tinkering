@@ -2,6 +2,7 @@ using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
 using FastEndpoints.OpenApi.Kiota;
+using Kiota.Builder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using FastEndpointsReactApi;
@@ -61,6 +62,16 @@ await app.ExportOpenApiJsonAndExitAsync(
     "v1",
     Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "api"),
     "specification.json");
+
+await app.GenerateApiClientsAndExitAsync(
+    c =>
+    {
+      c.OpenApiDocumentName = "v1";
+      c.Language = GenerationLanguage.TypeScript;
+      c.OutputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "fastendpoints-react-example", "src", "generated", "kiota");
+      c.ClientNamespaceName = "FastEndpointsReactApi";
+      c.ClientClassName = "FastEndpointsReactApiClient";
+    });
 
 
 app.Run();
