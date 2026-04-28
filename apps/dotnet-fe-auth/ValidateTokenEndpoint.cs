@@ -24,7 +24,7 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
       var tokenHandler = new JwtSecurityTokenHandler();
       var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
 
-      tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
+      await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
       {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
