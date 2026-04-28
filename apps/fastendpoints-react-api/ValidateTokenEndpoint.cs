@@ -18,7 +18,7 @@ public class ValidateTokenEndpoint(IConfiguration configuration) : Endpoint<Vali
     try
     {
       var tokenHandler = new JwtSecurityTokenHandler();
-      await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
+      var validationResult = await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
       {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = AuthTokenSettings.CreateSigningKey(configuration),
@@ -27,9 +27,9 @@ public class ValidateTokenEndpoint(IConfiguration configuration) : Endpoint<Vali
         ValidateAudience = true,
         ValidAudience = AuthTokenSettings.Audience,
         ClockSkew = TimeSpan.Zero
-      }, out _);
+      });
 
-      await Send.OkAsync(new ValidateTokenResponse { IsValid = true }, cancellation: ct);
+      await Send.OkAsync(new ValidateTokenResponse { IsValid = validationResult.IsValid }, cancellation: ct);
     }
     catch (SecurityTokenException)
     {

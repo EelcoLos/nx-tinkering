@@ -31,12 +31,9 @@ builder.Services.AddAuthorization()
                 .AddFastEndpoints()
                 .OpenApiDocument(p =>
 {
-  p.DocumentSettings = s =>
-  {
-    s.DocumentName = "v1";
-    s.Title = "Dotnet FE Auth";
-    s.Version = "v1";
-  };
+  p.DocumentName = "v1";
+  p.Title = "Dotnet FE Auth";
+  p.Version = "v1";
   p.ShortSchemaNames = true;
   p.MaxEndpointVersion = 1;
 });

@@ -30,12 +30,9 @@ builder.Services.AddAuthorization()
                 .AddFastEndpoints()
                 .OpenApiDocument(p =>
 {
-  p.DocumentSettings = s =>
-  {
-    s.DocumentName = "v1";
-    s.Title = "FastEndpoints React API";
-    s.Version = "v1";
-  };
+  p.DocumentName = "v1";
+  p.Title = "FastEndpoints React API";
+  p.Version = "v1";
   p.ShortSchemaNames = true;
   p.MaxEndpointVersion = 1;
 });

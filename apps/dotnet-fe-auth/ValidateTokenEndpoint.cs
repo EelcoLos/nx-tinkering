@@ -17,30 +17,22 @@ public class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
 
   public override async Task HandleAsync(ValidateTokenRequest req, CancellationToken ct)
   {
-    var response = new ValidateTokenResponse();
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
 
-    try
+    var validationResult = await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
     {
-      var tokenHandler = new JwtSecurityTokenHandler();
-      var key = Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"); // Replace with your actual secret key
+      ValidateIssuerSigningKey = true,
+      IssuerSigningKey = new SymmetricSecurityKey(key),
+      ValidateIssuer = false,
+      ValidateAudience = false,
+      ClockSkew = TimeSpan.Zero
+    });
 
-      await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
-      {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ClockSkew = TimeSpan.Zero
-      }, out SecurityToken validatedToken);
-
-      var jwtToken = (JwtSecurityToken)validatedToken;
-
-      response.IsValid = true;
-    }
-    catch
+    var response = new ValidateTokenResponse
     {
-      response.IsValid = false;
-    }
+      IsValid = validationResult.IsValid,
+    };
 
     await Send.OkAsync(response, cancellation: ct);
   }
