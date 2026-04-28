@@ -10,6 +10,7 @@
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.OpenApi" />
     <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
+  <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
