@@ -6,7 +6,10 @@ const appRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   'fastendpoints-react-example': {
-    input: resolve(appRoot, '../fastendpoints-react-api/wwwroot/api/specification.json'),
+    input: resolve(
+      appRoot,
+      '../fastendpoints-react-api/wwwroot/api/specification.json',
+    ),
     output: {
       target: resolve(appRoot, './src/generated/orval/index.ts'),
       client: 'react-query',

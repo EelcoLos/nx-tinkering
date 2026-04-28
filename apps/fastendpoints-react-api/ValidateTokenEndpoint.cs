@@ -18,7 +18,7 @@ public class ValidateTokenEndpoint(IConfiguration configuration) : Endpoint<Vali
     try
     {
       var tokenHandler = new JwtSecurityTokenHandler();
-      tokenHandler.ValidateToken(req.Token, new TokenValidationParameters
+      await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
       {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = AuthTokenSettings.CreateSigningKey(configuration),
