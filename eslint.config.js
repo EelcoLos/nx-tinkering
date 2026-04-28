@@ -50,6 +50,11 @@ module.exports = [
     },
   })),
   {
-    ignores: ['**/vite.config.*.timestamp*'],
+    ignores: [
+      '**/*.config.*',
+      '**/eslint.config.*',
+      '**/jest.config.*',
+      '**/vite.config.*.timestamp*',
+    ],
   },
 ];
