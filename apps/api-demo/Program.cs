@@ -13,13 +13,10 @@ bld.Services
    .AddFastEndpoints()
    .OpenApiDocument(o =>
 {
+  o.DocumentName = "v1";
+  o.Title = "My API";
+  o.Version = "v1";
   o.ShortSchemaNames = true;
-  o.DocumentSettings = s =>
-  {
-    s.DocumentName = "v1";
-    s.Title = "My API";
-    s.Version = "v1";
-  };
 });
 
 
