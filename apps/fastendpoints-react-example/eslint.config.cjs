@@ -1,12 +1,18 @@
-const nx = require('@nx/eslint-plugin');
 const baseConfig = require('../../eslint.config.js');
 
-module.exports = [
-  ...nx.configs['flat/react'],
-  ...baseConfig,
-  {
-    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
-    // Override or add rules here
-    rules: {},
-  },
-];
+module.exports = (async () => {
+  const { default: eslintReact } = await import('@eslint-react/eslint-plugin');
+
+  return [
+    {
+      ...eslintReact.configs['recommended-typescript'],
+      files: ['src/**/*.{ts,tsx,js,jsx}'],
+    },
+    ...baseConfig,
+    {
+      files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+      // Override or add rules here
+      rules: {},
+    },
+  ];
+})();

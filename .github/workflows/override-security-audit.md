@@ -33,6 +33,7 @@ steps:
     name: Setup Gemini config
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_CLI_TRUST_WORKSPACE: true
 strict: false
 sandbox:
   agent: false

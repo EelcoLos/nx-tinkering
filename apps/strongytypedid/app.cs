@@ -14,12 +14,9 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder();
 builder.Services.AddFastEndpoints().OpenApiDocument(o =>
 {
-    o.DocumentSettings = s =>
-    {
-        s.DocumentName = "v1";
-        s.Title = "Strongly Typed Id Demo";
-        s.Version = "v1";
-    };
+    o.DocumentName = "v1";
+    o.Title = "Strongly Typed Id Demo";
+    o.Version = "v1";
 });
 
 var app = builder.Build();

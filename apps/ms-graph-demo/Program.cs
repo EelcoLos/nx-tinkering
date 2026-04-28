@@ -45,12 +45,9 @@ builder.Services
     .AddFastEndpoints()
     .OpenApiDocument(o =>
     {
-      o.DocumentSettings = s =>
-      {
-        s.DocumentName = "v1";
-        s.Title = "MS Graph Demo API";
-        s.Version = "v1";
-      };
+      o.DocumentName = "v1";
+      o.Title = "MS Graph Demo API";
+      o.Version = "v1";
     });
 
 var app = builder.Build();

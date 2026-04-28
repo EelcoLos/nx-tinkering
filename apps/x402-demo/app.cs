@@ -21,12 +21,9 @@ builder.Services
     .AddX402()
     .OpenApiDocument(o =>
     {
-        o.DocumentSettings = s =>
-        {
-            s.DocumentName = "v1";
-            s.Title = "x402 demo API";
-            s.Version = "v1";
-        };
+        o.DocumentName = "v1";
+        o.Title = "x402 demo API";
+        o.Version = "v1";
 
         o.ExcludeNonFastEndpoints = true;
         o.ShortSchemaNames = true;
