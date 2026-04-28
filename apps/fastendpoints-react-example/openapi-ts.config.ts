@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 const appRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  input: resolve(appRoot, '../fastendpoints-react-api/wwwroot/api/specification.json'),
+  input: resolve(
+    appRoot,
+    '../fastendpoints-react-api/wwwroot/api/specification.json',
+  ),
   output: resolve(appRoot, './src/generated/hey-api'),
   plugins: [
     {
