@@ -105,14 +105,18 @@
   "overrides": {
     "@nx/angular": {
       "picomatch": "^4.0.4",
-      "axios": "^1.15.0"
+      "axios": "1.15.2"
     },
     "@nx/module-federation": {
       "picomatch": "^4.0.4",
-      "axios": "^1.15.0"
+      "axios": "1.15.2"
     },
-    "axios": "^1.15.0",
+    "axios": "1.15.2",
+    "brace-expansion": "5.0.5",
+    "follow-redirects": "1.16.0",
+    "postcss": "8.5.10",
     "sass": "^1.97.3",
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "yaml": "2.8.3"
   }
 }
