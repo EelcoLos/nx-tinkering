@@ -34,7 +34,7 @@
 #   - actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
 #   - actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-#   - github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+#   - github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
 
 name: "Override Security Audit"
 "on":
@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+        uses: github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -323,7 +323,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+        uses: github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -823,7 +823,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+        uses: github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -910,7 +910,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+        uses: github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -957,7 +957,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@cde65c546c2b0f6d3f3a9492a04e6687887c4fe8 # v0.67.0
+        uses: github/gh-aw-actions/setup@f8495a686e66770ae977f82732f34d7340ee42a4 # v0.67.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
