@@ -50,7 +50,7 @@
     "@eslint-react/eslint-plugin": "^5.6.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "10.0.1",
-    "@hey-api/openapi-ts": "^0.97.0",
+    "@hey-api/openapi-ts": "^0.97.1",
     "@nx/devkit": "22.7.1",
     "@nx/dotnet": "22.7.1",
     "@nx/eslint": "22.7.1",
