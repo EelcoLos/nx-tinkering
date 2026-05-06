@@ -1,6 +1,6 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.2.0-beta.9
-#:package FastEndpoints.OpenApi@8.2.0-beta.9
+#:package FastEndpoints@8.2.0-beta.33
+#:package FastEndpoints.OpenApi@8.2.0-beta.33
 #:property ManagePackageVersionsCentrally=false
 #:property PublishAot=false
 
