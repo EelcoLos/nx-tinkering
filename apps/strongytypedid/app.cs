@@ -1,7 +1,7 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.2.0-beta.13
-#:package FastEndpoints.OpenApi@8.2.0-beta.13
-#:package Scalar.AspNetCore@2.14.1
+#:package FastEndpoints@8.2.0-beta.33
+#:package FastEndpoints.OpenApi@8.2.0-beta.33
+#:package Scalar.AspNetCore@2.14.11
 #:package StronglyTypedId@1.0.0-beta08
 #:property ManagePackageVersionsCentrally=false
 #:property PublishAot=false
