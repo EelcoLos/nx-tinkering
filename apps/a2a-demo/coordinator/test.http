@@ -1,0 +1,7 @@
+@host = http://localhost:5063
+
+### Server info
+GET {{host}}/
+
+### Well-known agent card
+GET {{host}}/.well-known/agent-card.json
