@@ -18,6 +18,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
     <!-- Microsoft.Identity -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.9.0" />
+    <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="1.22.0" />
     <!-- Scalar -->
     <PackageVersion Include="Scalar.AspNetCore" Version="2.14.11" />
     <!-- Testing -->

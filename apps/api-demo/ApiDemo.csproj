@@ -11,6 +11,7 @@
     <PackageReference Include="FastEndpoints.OpenApi" />
     <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
   <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  <PackageReference Include="Microsoft.Kiota.Abstractions" />
     <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
