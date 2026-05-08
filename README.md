@@ -1,5 +1,12 @@
 # Projects in this Workspace
 
+## A2A demo
+
+- Location: `apps/a2a-demo`.
+- Purpose: local keyless proof-of-concept for A2A v1 interoperability using stable `A2A` + `A2A.AspNetCore` primitives.
+- Runbook: see `apps/a2a-demo/README.md` for start order, commands, and expected output.
+- Scope: standalone single-file apps; intentionally not wired into Nx project graph or `nx-tinker.slnx`.
+
 ## FakeLogger demo
 
 - Location: `apps/fakelogger-demo` (app) and `apps/fakelogger-demo.Test` (tests).
