@@ -7,6 +7,13 @@
 - Runbook: see `apps/a2a-demo/README.md` for start order, commands, and expected output.
 - Scope: standalone single-file apps; intentionally not wired into Nx project graph or `nx-tinker.slnx`.
 
+## A2A demo (FastEndpoints)
+
+- Location: `apps/a2a-demo-fastendpoints`.
+- Purpose: local keyless proof-of-concept with the same specialist/coordinator design, implemented with `FastEndpoints.A2A` skill opt-in and dispatcher routes.
+- Runbook: see `apps/a2a-demo-fastendpoints/README.md`.
+- Scope: standalone single-file apps; intentionally not wired into Nx project graph or `nx-tinker.slnx`.
+
 ## FakeLogger demo
 
 - Location: `apps/fakelogger-demo` (app) and `apps/fakelogger-demo.Test` (tests).
