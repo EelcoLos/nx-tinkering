@@ -1,0 +1,33 @@
+@host = http://localhost:5163
+
+### Server info
+GET {{host}}/
+
+### Well-known agent card
+GET {{host}}/.well-known/agent-card.json
+
+### Direct A2A JSON-RPC call to coordinator skill (delegates to specialist)
+POST {{host}}/a2a
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "local-client-2",
+      "role": "user",
+      "parts": [
+        {
+          "data": {
+            "Input": "delegate this"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "skill": "coordinator_delegate"
+    }
+  }
+}
