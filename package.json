@@ -88,7 +88,7 @@
     "eslint-plugin-playwright": "^2.10.2",
     "jest": "30.3.0",
     "jest-environment-jsdom": "30.3.0",
-    "jest-environment-node": "^30.3.0",
+    "jest-environment-node": "^30.4.1",
     "jest-preset-angular": "16.1.5",
     "jest-util": "30.4.1",
     "jiti": "2.7.0",
