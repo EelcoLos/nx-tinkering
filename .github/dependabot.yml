@@ -72,6 +72,12 @@ updates:
         patterns:
           - 'eslint'
           - '@eslint/js'
+      client-react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - 'react-redux'
+          - 'react-router-dom'
     labels:
       # Use our labels instead of default dependabot labels (we like consistency)
       - 'type: dependencies'
