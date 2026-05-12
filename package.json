@@ -90,7 +90,7 @@
     "jest-environment-jsdom": "30.3.0",
     "jest-environment-node": "^30.3.0",
     "jest-preset-angular": "16.1.4",
-    "jest-util": "30.3.0",
+    "jest-util": "30.4.1",
     "jiti": "2.7.0",
     "nx": "22.7.1",
     "orval": "^8.9.1",
