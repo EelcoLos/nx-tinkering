@@ -110,6 +110,8 @@
     "follow-redirects": "^1.16.0",
     "hono": "^4.12.18",
     "ip-address": "^10.1.1",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.3",
+    "webpack-dev-server": "^5.2.4",
+    "ws": "^8.20.1"
   }
 }
