@@ -173,14 +173,17 @@
     </div>
 
     <script>
-        // Dynamically determine API host
+        // Dynamically determine API host and protocol
         // If accessing from 10.0.0.3:8080, use 10.0.0.3:5056
         // Otherwise use the same host
+        // Use the same protocol (HTTP/HTTPS) as the website
         const API_HOST = window.location.hostname === '10.0.0.3' ? '10.0.0.3' : window.location.hostname;
-        const API_URL = `http://${API_HOST}:5056`;
+        const API_PROTOCOL = window.location.protocol === 'https:' ? 'https' : 'http';
+        const API_URL = `${API_PROTOCOL}//${API_HOST}:5056`;
         
         console.log('Website Debug Info:');
         console.log('- Hostname:', window.location.hostname);
+        console.log('- Protocol:', window.location.protocol);
         console.log('- Full URL:', window.location.href);
         console.log('- API_HOST:', API_HOST);
         console.log('- API_URL:', API_URL);

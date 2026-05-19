@@ -50,7 +50,7 @@ app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
     
-    if (path == "/health" || path.StartsWith("/.well-known") || path == "/api/triage")
+    if (path == "/health" || path.StartsWith("/.well-known") || path == "/api/triage" || path == "/auth/login")
     {
         await next();
         return;
@@ -71,6 +71,27 @@ app.Use(async (context, next) =>
 });
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "api-backend" }));
+
+app.MapPost("/auth/login", (LoginRequest req) =>
+{
+    if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
+    {
+        return Results.BadRequest(new { error = "Username and password required" });
+    }
+
+    if ((req.Username == "demo" && req.Password == "demo123") || 
+        (req.Username == "admin" && req.Password == "admin123"))
+    {
+        return Results.Ok(new 
+        { 
+            token = "demo-user-token", 
+            user_id = req.Username,
+            message = "Login successful" 
+        });
+    }
+
+    return Results.Unauthorized();
+});
 
 app.MapPost("/api/triage", async (TriageRequest req, IHttpClientFactory httpClientFactory, ServiceSettings svc, CancellationToken ct) =>
 {
@@ -132,6 +153,8 @@ app.UseA2A();
 app.Run();
 
 record TriageRequest(string? Input);
+
+record LoginRequest(string? Username, string? Password);
 
 record StepResult(string Service, string Result);
 

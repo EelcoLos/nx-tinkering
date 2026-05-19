@@ -7,7 +7,7 @@ services:
       - "5050:5050"
     environment:
       - ASPNETCORE_URLS=http://+:5050
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
     networks:
       - a2a-network
@@ -24,7 +24,7 @@ services:
       - "5052:5052"
     environment:
       - ASPNETCORE_URLS=http://+:5052
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
       - CLASSIFIER_AGENT_ID=classifier-agent
@@ -43,7 +43,7 @@ services:
       - "5053:5053"
     environment:
       - ASPNETCORE_URLS=http://+:5053
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - ASSESSOR_SERVICE_URL=http://assessor:5053
       - ASSESSOR_AGENT_ID=assessor-agent
@@ -62,7 +62,7 @@ services:
       - "5054:5054"
     environment:
       - ASPNETCORE_URLS=http://+:5054
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - ROUTER_SERVICE_URL=http://router:5054
       - ROUTER_AGENT_ID=router-agent
@@ -81,7 +81,7 @@ services:
       - "5055:5055"
     environment:
       - ASPNETCORE_URLS=http://+:5055
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - HANDLER_SERVICE_URL=http://handler:5055
       - HANDLER_AGENT_ID=handler-agent
@@ -95,12 +95,12 @@ services:
       start_period: 10s
 
   api-backend:
-    image: a2a-api-backend:v8-a2a
+    image: a2a-api-backend:v9-a2a
     ports:
       - "5056:5056"
     environment:
       - ASPNETCORE_URLS=http://+:5056
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
       - ASSESSOR_SERVICE_URL=http://assessor:5053
@@ -118,7 +118,7 @@ services:
       start_period: 10s
 
   website:
-    image: a2a-website:v11
+    image: a2a-website:v12
     ports:
       - "8080:80"
     networks:
