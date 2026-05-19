@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>A2A Triage Protocol Demo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -176,10 +179,18 @@
         const API_HOST = window.location.hostname === '10.0.0.3' ? '10.0.0.3' : window.location.hostname;
         const API_URL = `http://${API_HOST}:5056`;
         
+        console.log('Website Debug Info:');
+        console.log('- Hostname:', window.location.hostname);
+        console.log('- Full URL:', window.location.href);
+        console.log('- API_HOST:', API_HOST);
+        console.log('- API_URL:', API_URL);
+        
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            
+            console.log('Login attempt to:', API_URL + '/auth/login');
             
             try {
                 const response = await fetch(`${API_URL}/auth/login`, {
@@ -197,9 +208,11 @@
                     document.getElementById('dashboard').style.display = 'block';
                     loadServices();
                 } else {
+                    console.error('Login failed:', data);
                     showError('loginError', 'Invalid credentials');
                 }
             } catch (err) {
+                console.error('Login error:', err.message, err);
                 showError('loginError', 'Login failed: ' + err.message);
             }
         });
