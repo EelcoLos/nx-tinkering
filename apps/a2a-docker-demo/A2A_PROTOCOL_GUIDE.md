@@ -33,7 +33,9 @@ classifier/
    - JWT secret validation at startup (fail-fast if <32 chars)
    - Agent claims in JWT (agent_id, type)
 
-## How to Call (via JSON-RPC)
+## How to Call (via JSON-RPC) - VERIFIED WORKING
+
+The skill is invoked via the `SendMessage` JSON-RPC 2.0 method, NOT direct method names.
 
 ```bash
 curl -X POST http://classifier:5052/a2a \
@@ -42,22 +44,47 @@ curl -X POST http://classifier:5052/a2a \
   -d '{
     "jsonrpc": "2.0",
     "id": "1",
-    "method": "classify-text",
+    "method": "SendMessage",
     "params": {
-      "text": "System is down"
+      "message": {
+        "messageId": "msg-123",
+        "role": "ROLE_USER",
+        "parts": [
+          {
+            "data": {
+              "text": "System is down"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "classify-text"
+      }
     }
   }'
 ```
 
-Response:
+**Successful Response:**
 ```json
 {
   "jsonrpc": "2.0",
   "id": "1",
   "result": {
-    "classification": "incident",
-    "confidence": 0.95,
-    "description": "Text classified as 'incident' with 95% confidence"
+    "message": {
+      "messageId": "8386a6621dc845bca17b30470dfb78aa",
+      "contextId": "f8e5a1f2d43b40d5afe94a59c4f73ef2",
+      "role": "ROLE_AGENT",
+      "parts": [
+        {
+          "data": {
+            "classification": "incident",
+            "confidence": 0.95,
+            "description": "Text classified as 'incident' with 95 % confidence"
+          },
+          "mediaType": "application/json"
+        }
+      ]
+    }
   }
 }
 ```
