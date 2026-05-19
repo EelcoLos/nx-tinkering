@@ -38,9 +38,6 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     networks:
       - a2a-network
-    depends_on:
-      identity:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5051/health"]
       interval: 10s
@@ -64,9 +61,6 @@ services:
       - CLASSIFIER_AGENT_SECRET=${CLASSIFIER_AGENT_SECRET}
     networks:
       - a2a-network
-    depends_on:
-      identity:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5052/health"]
       interval: 10s
@@ -90,9 +84,6 @@ services:
       - ASSESSOR_AGENT_SECRET=${ASSESSOR_AGENT_SECRET}
     networks:
       - a2a-network
-    depends_on:
-      identity:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5053/health"]
       interval: 10s
@@ -116,9 +107,6 @@ services:
       - ROUTER_AGENT_SECRET=${ROUTER_AGENT_SECRET}
     networks:
       - a2a-network
-    depends_on:
-      identity:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5054/health"]
       interval: 10s
@@ -142,9 +130,6 @@ services:
       - HANDLER_AGENT_SECRET=${HANDLER_AGENT_SECRET}
     networks:
       - a2a-network
-    depends_on:
-      identity:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5055/health"]
       interval: 10s
@@ -166,13 +151,6 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     networks:
       - a2a-network
-    depends_on:
-      - identity
-      - discovery
-      - classifier
-      - assessor
-      - router
-      - handler
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5056/health"]
       interval: 10s
@@ -192,14 +170,12 @@ services:
       - "8080:8080"
     networks:
       - a2a-network
-    depends_on:
-      - api
     deploy:
       replicas: 1
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 256M
 
 networks:
   a2a-network:

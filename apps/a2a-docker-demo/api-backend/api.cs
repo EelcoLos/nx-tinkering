@@ -4,6 +4,7 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
+
 using A2A;
 using FastEndpoints;
 using Microsoft.IdentityModel.Tokens;
@@ -14,76 +15,7 @@ using System.Text.Json.Serialization;
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
-
-
-const string ApiHostUrl = "http://localhost:5056";
-const string IdentityServiceUrl = "http://localhost:5050";
-const string ClassifierServiceUrl = "http://localhost:5052";
-const string AssessorServiceUrl = "http://localhost:5053";
-const string RouterServiceUrl = "http://localhost:5054";
-const string HandlerServiceUrl = "http://localhost:5055";
-
-var bld = WebApplication.CreateBuilder(args);
-bld.WebHost.UseUrls(ApiHostUrl);
-
-var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY not configured");
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
-var jwtValidator = new JwtValidator(signingKey);
-
-bld.Services.AddSingleton(jwtValidator);
-bld.Services.AddCors(o => o.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-bld.Services.AddFastEndpoints();
-
-var app = bld.Build();
-app.UseCors("AllowAll");
-
-// JWT validation middleware
-app.Use(async (context, next) =>
-{
-    var path = context.Request.Path.ToString();
-
-    if (path == "/health" || path == "/api/auth/login")
-    {
-        await next();
-        return;
-    }
-
-    var authHeader = context.Request.Headers["Authorization"].ToString();
-    if (string.IsNullOrWhiteSpace(authHeader))
-    {
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsJsonAsync(new { error = "Missing authorization header" });
-        return;
-    }
-
-    var token = authHeader.Replace("Bearer ", "").Trim();
-    var claims = jwtValidator.ValidateToken(token);
-
-    if (claims == null)
-    {
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" });
-        return;
-    }
-
-    context.Items["jwt_claims"] = claims;
-    await next();
-});
-
-app.UseFastEndpoints();
-
-// ============ Endpoints ============
-
-
-
-
-
-
-
-
-
-
-// ============ Services ============
+// ============ Domain Models & Services ============
 
 sealed class LoginRequest
 {
@@ -93,7 +25,6 @@ sealed class LoginRequest
     [JsonPropertyName("password")]
     public string? Password { get; set; }
 }
-
 sealed class LoginResponse
 {
     [JsonPropertyName("token")]
@@ -102,13 +33,11 @@ sealed class LoginResponse
     [JsonPropertyName("expiresIn")]
     public int ExpiresIn { get; set; }
 }
-
 sealed class TriageRequest
 {
     [JsonPropertyName("input")]
     public string? Input { get; set; }
 }
-
 sealed class TriageResponse
 {
     [JsonPropertyName("ticketId")]
@@ -126,7 +55,6 @@ sealed class TriageResponse
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 }
-
 sealed class TriageStep
 {
     [JsonPropertyName("service")]
@@ -144,7 +72,6 @@ sealed class TriageStep
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; set; }
 }
-
 sealed class HealthResponse
 {
     [JsonPropertyName("status")]
@@ -153,7 +80,6 @@ sealed class HealthResponse
     [JsonPropertyName("service")]
     public string Service { get; set; } = "api";
 }
-
 sealed class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 {
     public override void Configure()
@@ -176,7 +102,6 @@ sealed class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
         await SendAsync(result, cancellation: ct);
     }
 }
-
 sealed class SubmitTriageEndpoint : Endpoint<TriageRequest, TriageResponse>
 {
     public override void Configure()
@@ -365,7 +290,6 @@ sealed class SubmitTriageEndpoint : Endpoint<TriageRequest, TriageResponse>
         return step;
     }
 }
-
 sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
 {
     public override void Configure()
@@ -379,7 +303,6 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
         await SendAsync(new HealthResponse(), cancellation: ct);
     }
 }
-
 sealed class JwtValidator
 {
     private readonly SymmetricSecurityKey _signingKey;
@@ -414,5 +337,61 @@ sealed class JwtValidator
     }
 }
 
+// ============ Application Setup ============
+
+const string ApiHostUrl = "http://localhost:5056";
+const string IdentityServiceUrl = "http://localhost:5050";
+const string ClassifierServiceUrl = "http://localhost:5052";
+const string AssessorServiceUrl = "http://localhost:5053";
+const string RouterServiceUrl = "http://localhost:5054";
+const string HandlerServiceUrl = "http://localhost:5055";
+var bld = WebApplication.CreateBuilder(args);
+bld.WebHost.UseUrls(ApiHostUrl);
+var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY not configured");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+var jwtValidator = new JwtValidator(signingKey);
+bld.Services.AddSingleton(jwtValidator);
+bld.Services.AddCors(o => o.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+bld.Services.AddFastEndpoints();
+var app = bld.Build();
+app.UseCors("AllowAll");
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.ToString();
+
+    if (path == "/health" || path == "/api/auth/login")
+    {
+        await next();
+        return;
+    }
+
+    var authHeader = context.Request.Headers["Authorization"].ToString();
+    if (string.IsNullOrWhiteSpace(authHeader))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsJsonAsync(new { error = "Missing authorization header" });
+        return;
+    }
+
+    var token = authHeader.Replace("Bearer ", "").Trim();
+    var claims = jwtValidator.ValidateToken(token);
+
+    if (claims == null)
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" });
+        return;
+    }
+
+    context.Items["jwt_claims"] = claims;
+    await next();
+});
+app.UseFastEndpoints();
+
+app.Run();
+// JWT validation middleware
+// ============ Endpoints ============
+// ============ Services ============
 
 app.Run();

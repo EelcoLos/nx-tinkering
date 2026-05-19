@@ -10,59 +10,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 
-
-
-static string GenerateSecretKey()
-{
-    var key = new byte[32];
-    using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
-    {
-        rng.GetBytes(key);
-    }
-    return Convert.ToBase64String(key);
-}
-
-const string IdentityHostUrl = "http://localhost:5050";
-
-var bld = WebApplication.CreateBuilder(args);
-bld.WebHost.UseUrls(IdentityHostUrl);
-
-var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? GenerateSecretKey();
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
-
-// Initialize in-memory user database with demo users
-var userDb = new UserDatabase();
-userDb.SeedDemoUsers();
-
-// Initialize agent database from configuration
-var agentDb = new AgentDatabase();
-agentDb.SeedAgentsFromConfig(bld.Configuration);
-
-bld.Services.AddSingleton(userDb);
-bld.Services.AddSingleton(agentDb);
-bld.Services.AddSingleton(new JwtService(signingKey, jwtSecret));
-bld.Services.AddFastEndpoints();
-
-var app = bld.Build();
-app.UseFastEndpoints();
-
-// ============ Endpoints ============
-
-
-
-
-
-
-
-
-
-
-
-
-// ============ Domain Models ============
-
-// ============ Services ============
-
 sealed class LoginRequest
 {
     [JsonPropertyName("username")]
@@ -77,19 +24,19 @@ sealed class LoginResponse
     [JsonPropertyName("token")]
     public string? Token { get; set; }
 
-    [JsonPropertyName("expiresIn")]
-    public int ExpiresIn { get; set; } = 3600;
+    [JsonPropertyName("user_id")]
+    public string? UserId { get; set; }
 
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = "Bearer";
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
 }
 
 sealed class AgentTokenRequest
 {
-    [JsonPropertyName("agentId")]
+    [JsonPropertyName("agent_id")]
     public string? AgentId { get; set; }
 
-    [JsonPropertyName("agentSecret")]
+    [JsonPropertyName("agent_secret")]
     public string? AgentSecret { get; set; }
 }
 
@@ -98,11 +45,14 @@ sealed class TokenResponse
     [JsonPropertyName("token")]
     public string? Token { get; set; }
 
-    [JsonPropertyName("expiresIn")]
+    [JsonPropertyName("agent_id")]
+    public string? AgentId { get; set; }
+
+    [JsonPropertyName("expires_in")]
     public int ExpiresIn { get; set; } = 3600;
 
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = "Bearer";
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
 }
 
 sealed class ValidateTokenRequest
@@ -117,29 +67,20 @@ sealed class ValidateTokenResponse
     public bool Valid { get; set; }
 
     [JsonPropertyName("claims")]
-    public Dictionary<string, object>? Claims { get; set; }
+    public Dictionary<string, string>? Claims { get; set; }
 }
 
 sealed class HealthResponse
 {
     [JsonPropertyName("status")]
-    public string Status { get; set; } = "healthy";
+    public string? Status { get; set; }
 
-    [JsonPropertyName("service")]
-    public string Service { get; set; } = "identity";
+    [JsonPropertyName("timestamp")]
+    public DateTime Timestamp { get; set; }
 }
 
 sealed class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 {
-    private readonly UserDatabase _userDb;
-    private readonly JwtService _jwtService;
-
-    public LoginEndpoint(UserDatabase userDb, JwtService jwtService)
-    {
-        _userDb = userDb;
-        _jwtService = jwtService;
-    }
-
     public override void Configure()
     {
         Post("/auth/login");
@@ -148,35 +89,42 @@ sealed class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
+        var userDb = HttpContext.RequestServices.GetRequiredService<UserDatabase>();
+        var jwtService = HttpContext.RequestServices.GetRequiredService<JwtService>();
+
+        if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password))
         {
-            ThrowError(r => r.Problem = "Username and password required", statusCode: 400);
+            ThrowError(r =>
+            {
+                r.StatusCode = StatusCodes.Status400BadRequest;
+                r.Message = "Username and password required";
+            });
             return;
         }
 
-        var user = _userDb.GetUser(req.Username, req.Password);
+        var user = userDb.ValidateUser(req.Username, req.Password);
         if (user == null)
         {
-            await SendAsync(new { error = "Invalid credentials" }, statusCode: 401, cancellation: ct);
+            ThrowError(r =>
+            {
+                r.StatusCode = StatusCodes.Status401Unauthorized;
+                r.Message = "Invalid credentials";
+            });
             return;
         }
 
-        var token = _jwtService.GenerateUserToken(user);
-        await SendAsync(new LoginResponse { Token = token }, cancellation: ct);
+        var token = jwtService.GenerateUserToken(user.UserId, user.Username);
+        await SendAsync(new LoginResponse
+        {
+            Token = token,
+            UserId = user.UserId,
+            Message = "Login successful"
+        });
     }
 }
 
 sealed class AgentTokenEndpoint : Endpoint<AgentTokenRequest, TokenResponse>
 {
-    private readonly AgentDatabase _agentDb;
-    private readonly JwtService _jwtService;
-
-    public AgentTokenEndpoint(AgentDatabase agentDb, JwtService jwtService)
-    {
-        _agentDb = agentDb;
-        _jwtService = jwtService;
-    }
-
     public override void Configure()
     {
         Get("/auth/agent/token");
@@ -185,41 +133,42 @@ sealed class AgentTokenEndpoint : Endpoint<AgentTokenRequest, TokenResponse>
 
     public override async Task HandleAsync(AgentTokenRequest req, CancellationToken ct)
     {
-        // Get credentials from query string or body
-        var agentId = HttpContext.Request.Query["agentId"].ToString() 
-            ?? req.AgentId 
-            ?? HttpContext.Request.Query["agent_id"].ToString();
-        var agentSecret = HttpContext.Request.Query["agentSecret"].ToString() 
-            ?? req.AgentSecret 
-            ?? HttpContext.Request.Query["agent_secret"].ToString();
+        var agentDb = HttpContext.RequestServices.GetRequiredService<AgentDatabase>();
+        var jwtService = HttpContext.RequestServices.GetRequiredService<JwtService>();
 
-        if (string.IsNullOrWhiteSpace(agentId) || string.IsNullOrWhiteSpace(agentSecret))
+        if (string.IsNullOrEmpty(req.AgentId) || string.IsNullOrEmpty(req.AgentSecret))
         {
-            await SendAsync(new { error = "agentId and agentSecret required" }, statusCode: 400, cancellation: ct);
+            ThrowError(r =>
+            {
+                r.StatusCode = StatusCodes.Status400BadRequest;
+                r.Message = "Agent ID and secret required";
+            });
             return;
         }
 
-        var agent = _agentDb.GetAgent(agentId, agentSecret);
+        var agent = agentDb.ValidateAgent(req.AgentId, req.AgentSecret);
         if (agent == null)
         {
-            await SendAsync(new { error = "Invalid agent credentials" }, statusCode: 401, cancellation: ct);
+            ThrowError(r =>
+            {
+                r.StatusCode = StatusCodes.Status401Unauthorized;
+                r.Message = "Invalid agent credentials";
+            });
             return;
         }
 
-        var token = _jwtService.GenerateAgentToken(agent);
-        await SendAsync(new TokenResponse { Token = token }, cancellation: ct);
+        var token = jwtService.GenerateAgentToken(agent.AgentId, agent.AgentType);
+        await SendAsync(new TokenResponse
+        {
+            Token = token,
+            AgentId = agent.AgentId,
+            Message = "Agent token generated"
+        });
     }
 }
 
 sealed class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateTokenResponse>
 {
-    private readonly JwtService _jwtService;
-
-    public ValidateTokenEndpoint(JwtService jwtService)
-    {
-        _jwtService = jwtService;
-    }
-
     public override void Configure()
     {
         Post("/auth/validate");
@@ -228,29 +177,30 @@ sealed class ValidateTokenEndpoint : Endpoint<ValidateTokenRequest, ValidateToke
 
     public override async Task HandleAsync(ValidateTokenRequest req, CancellationToken ct)
     {
-        var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
-        var token = authHeader?.Replace("Bearer ", "").Trim() ?? req.Token;
+        var jwtService = HttpContext.RequestServices.GetRequiredService<JwtService>();
 
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrEmpty(req.Token))
         {
-            await SendAsync(new ValidateTokenResponse { Valid = false }, statusCode: 401, cancellation: ct);
+            ThrowError(r =>
+            {
+                r.StatusCode = StatusCodes.Status400BadRequest;
+                r.Message = "Token required";
+            });
             return;
         }
 
-        var claims = _jwtService.ValidateToken(token);
+        var claims = jwtService.ValidateToken(req.Token);
         if (claims == null)
         {
-            await SendAsync(new ValidateTokenResponse { Valid = false }, statusCode: 401, cancellation: ct);
+            await SendAsync(new ValidateTokenResponse { Valid = false });
             return;
         }
 
-        var claimsDict = new Dictionary<string, object>();
-        foreach (var claim in claims)
+        await SendAsync(new ValidateTokenResponse
         {
-            claimsDict[claim.Type] = claim.Value ?? "";
-        }
-
-        await SendAsync(new ValidateTokenResponse { Valid = true, Claims = claimsDict }, cancellation: ct);
+            Valid = true,
+            Claims = claims.ToDictionary(c => c.Type, c => c.Value)
+        });
     }
 }
 
@@ -264,7 +214,11 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        await SendAsync(new HealthResponse(), cancellation: ct);
+        await SendAsync(new HealthResponse
+        {
+            Status = "healthy",
+            Timestamp = DateTime.UtcNow
+        });
     }
 }
 
@@ -272,27 +226,27 @@ sealed record Agent(string AgentId, string AgentSecret, string AgentType);
 
 sealed class UserDatabase
 {
+    private sealed record User(string UserId, string Username, string PasswordHash);
+
     private readonly List<User> _users = new();
 
     public void SeedDemoUsers()
     {
-        _users.Clear();
-        _users.Add(new User("user_1", "admin", HashPassword("demo123")));
-        _users.Add(new User("user_2", "user", HashPassword("user456")));
+        _users.Add(new User("user1", "admin", HashPassword("demo123")));
+        _users.Add(new User("user2", "user", HashPassword("user456")));
     }
 
-    public User? GetUser(string username, string password)
+    public (string UserId, string Username)? ValidateUser(string username, string password)
     {
         var user = _users.FirstOrDefault(u => u.Username == username);
-        if (user == null) return null;
-
-        if (!VerifyPassword(password, user.PasswordHash)) return null;
-
-        return user;
+        return user != null && VerifyPassword(password, user.PasswordHash)
+            ? (user.UserId, user.Username)
+            : null;
     }
 
     private static string HashPassword(string password)
     {
+        using var sha256 = SHA256.Create();
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
@@ -310,33 +264,31 @@ sealed class AgentDatabase
 
     public void SeedAgentsFromConfig(IConfiguration config)
     {
-        _agents.Clear();
-
         var agents = new[]
         {
-            ("CLASSIFIER_AGENT_ID", "CLASSIFIER_AGENT_SECRET", "specialist"),
-            ("ASSESSOR_AGENT_ID", "ASSESSOR_AGENT_SECRET", "specialist"),
-            ("ROUTER_AGENT_ID", "ROUTER_AGENT_SECRET", "specialist"),
-            ("HANDLER_AGENT_ID", "HANDLER_AGENT_SECRET", "specialist"),
+            (config["CLASSIFIER_AGENT_ID"], config["CLASSIFIER_AGENT_SECRET"], "classifier"),
+            (config["ASSESSOR_AGENT_ID"], config["ASSESSOR_AGENT_SECRET"], "assessor"),
+            (config["ROUTER_AGENT_ID"], config["ROUTER_AGENT_SECRET"], "router"),
+            (config["HANDLER_AGENT_ID"], config["HANDLER_AGENT_SECRET"], "handler"),
         };
 
-        foreach (var (idKey, secretKey, agentType) in agents)
+        foreach (var (id, secret, type) in agents)
         {
-            var agentId = config[idKey] ?? idKey.Replace("_AGENT_ID", "").ToLowerInvariant();
-            var agentSecret = config[secretKey] ?? "default-secret-" + agentId;
-
-            _agents.Add(new Agent(agentId, agentSecret, agentType));
+            if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(secret))
+            {
+                _agents.Add(new Agent(id, secret, type));
+            }
         }
     }
 
-    public Agent? GetAgent(string agentId, string agentSecret)
+    public Agent? ValidateAgent(string agentId, string agentSecret)
     {
-        var agent = _agents.FirstOrDefault(a => a.AgentId == agentId);
-        if (agent == null) return null;
+        return _agents.FirstOrDefault(a => a.AgentId == agentId && a.AgentSecret == agentSecret);
+    }
 
-        if (agent.AgentSecret != agentSecret) return null;
-
-        return agent;
+    public IEnumerable<Agent> GetAllAgents()
+    {
+        return _agents.AsReadOnly();
     }
 }
 
@@ -352,48 +304,71 @@ sealed class JwtService
         _jwtSecret = jwtSecret;
     }
 
-    public string GenerateUserToken(User user)
+    public string GenerateUserToken(string userId, string username)
     {
-        var claims = new List<System.Security.Claims.Claim>
+        var credentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+        var claims = new[]
         {
-            new("sub", user.UserId),
-            new("username", user.Username),
-            new("type", "user"),
+            new System.Security.Claims.Claim("sub", userId),
+            new System.Security.Claims.Claim("username", username),
+            new System.Security.Claims.Claim("type", "user"),
         };
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new System.Security.Claims.ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature),
-        };
+        var token = new JwtSecurityToken(
+            issuer: "IdentityService",
+            audience: "All",
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: credentials);
 
-        var token = _tokenHandler.CreateToken(tokenDescriptor);
         return _tokenHandler.WriteToken(token);
     }
 
-    public string GenerateAgentToken(Agent agent)
+    public string GenerateAgentToken(string agentId, string agentType)
     {
-        var claims = new List<System.Security.Claims.Claim>
+        var credentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+        var claims = new[]
         {
-            new("sub", agent.AgentId),
-            new("agent_id", agent.AgentId),
-            new("agent_type", agent.AgentType),
-            new("type", "agent"),
+            new System.Security.Claims.Claim("sub", agentId),
+            new System.Security.Claims.Claim("agent_id", agentId),
+            new System.Security.Claims.Claim("agent_type", agentType),
+            new System.Security.Claims.Claim("type", "agent"),
         };
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new System.Security.Claims.ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature),
-        };
+        var token = new JwtSecurityToken(
+            issuer: "IdentityService",
+            audience: "All",
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(24),
+            signingCredentials: credentials);
 
-        var token = _tokenHandler.CreateToken(tokenDescriptor);
         return _tokenHandler.WriteToken(token);
     }
 
-    public IEnumerable<System.Security.Claims.Claim>? ValidateToken(string token)
+    public System.Security.Claims.ClaimsPrincipal? ValidateTokenInternal(string token)
+    {
+        try
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = _signingKey,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            };
+
+            var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
+            return principal;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public System.Security.Claims.ClaimCollection? ValidateToken(string token)
     {
         try
         {
@@ -417,7 +392,36 @@ sealed class JwtService
     }
 }
 
+const string IdentityHostUrl = "http://localhost:5050";
 
+string GenerateSecretKey()
+{
+    var key = new byte[32];
+    using (var rng = RandomNumberGenerator.Create())
+    {
+        rng.GetBytes(key);
+    }
+    return Convert.ToBase64String(key);
+}
 
+var bld = WebApplication.CreateBuilder(args);
+bld.WebHost.UseUrls(IdentityHostUrl);
+
+var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? GenerateSecretKey();
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+
+var userDb = new UserDatabase();
+userDb.SeedDemoUsers();
+
+var agentDb = new AgentDatabase();
+agentDb.SeedAgentsFromConfig(bld.Configuration);
+
+bld.Services.AddSingleton(userDb);
+bld.Services.AddSingleton(agentDb);
+bld.Services.AddSingleton(new JwtService(signingKey, jwtSecret));
+bld.Services.AddFastEndpoints();
+
+var app = bld.Build();
+app.UseFastEndpoints();
 
 app.Run();

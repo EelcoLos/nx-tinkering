@@ -5,6 +5,7 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
+
 using A2A;
 using FastEndpoints;
 using FastEndpoints.A2A;
@@ -14,29 +15,22 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             using var doc = JsonDocument.Parse(json);
-
-
-
 const string AssessorHostUrl = "http://localhost:5053";
 const string IdentityServiceUrl = "http://localhost:5050";
-
 var bld = WebApplication.CreateBuilder(args);
 bld.WebHost.UseUrls(AssessorHostUrl);
 bld.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver()));
-
 var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY not configured");
 var agentId = bld.Configuration["ASSESSOR_AGENT_ID"] ?? "assessor_agent";
 var agentSecret = bld.Configuration["ASSESSOR_AGENT_SECRET"] ?? "default-secret-assessor";
-
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 var jwtValidator = new JwtValidator(signingKey);
 var agentJwtProvider = new AgentJwtProvider(agentId, agentSecret, IdentityServiceUrl);
-
 bld.Services.AddSingleton(jwtValidator);
 bld.Services.AddSingleton(agentJwtProvider);
-
 bld.Services
    .AddFastEndpoints()
    .AddA2A(o =>
@@ -46,19 +40,15 @@ bld.Services
        o.Version = "1.0.0";
        o.SkillVisibilityFilter = (_, _, _) => true;
    });
-
 var app = bld.Build();
-
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.ToString();
-
     if (path == "/health" || path == "/.well-known/agent-card.json")
     {
         await next();
         return;
     }
-
     if (!path.StartsWith("/a2a"))
     {
         var authHeader = context.Request.Headers["Authorization"].ToString();
@@ -66,77 +56,54 @@ app.Use(async (context, next) =>
         {
             var token = authHeader.Replace("Bearer ", "").Trim();
             var claims = jwtValidator.ValidateToken(token);
-
             if (claims == null)
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" });
                 return;
             }
-
             context.Items["jwt_claims"] = claims;
         }
     }
-
     await next();
 });
-
 app.UseFastEndpoints()
     .UseA2A(rpcPattern: "/a2a", agentCardPattern: "/.well-known/agent-card.json");
-
-
 // ============ Endpoints ============
-
-
-
-
-
-
 // ============ Services ============
-
 sealed class AssessorRequest
 {
     [JsonPropertyName("input")]
     public string? Input { get; set; }
-
     [JsonPropertyName("classification")]
     public string? Classification { get; set; }
-
     [JsonPropertyName("urgency")]
     public string? Urgency { get; set; }
 }
-
 sealed class AssessorResponse
 {
     [JsonPropertyName("result")]
     public string? Result { get; set; }
-
     [JsonPropertyName("priority")]
     public int Priority { get; set; }
-
     [JsonPropertyName("priorityLabel")]
     public string? PriorityLabel { get; set; }
-
     [JsonPropertyName("assignedTo")]
     public string? AssignedTo { get; set; }
 }
-
 sealed class HealthResponse
 {
     [JsonPropertyName("status")]
     public string Status { get; set; } = "healthy";
-
     [JsonPropertyName("service")]
     public string Service { get; set; } = "assessor";
 }
-
 sealed class AssessorSkillEndpoint : Endpoint<AssessorRequest, AssessorResponse>
 {
     public override void Configure()
     {
         Post("/skills/assess");
         AllowAnonymous();
-
         this.A2ASkill(
             id: "assessor_skill",
             tags: ["triage", "assess"],
@@ -149,12 +116,10 @@ sealed class AssessorSkillEndpoint : Endpoint<AssessorRequest, AssessorResponse>
                 skill.OutputModes = ["application/json"];
             });
     }
-
     public override async Task HandleAsync(AssessorRequest req, CancellationToken ct)
     {
         var urgency = req.Urgency ?? "normal";
         var classification = req.Classification ?? "general";
-
         // Convert urgency to priority level (1=lowest, 5=highest)
         int priority = urgency switch
         {
@@ -164,10 +129,8 @@ sealed class AssessorSkillEndpoint : Endpoint<AssessorRequest, AssessorResponse>
             "low" => 2,
             _ => 3,
         };
-
         // Determine handler assignment
         string assignedTo = priority >= 4 ? "urgent_handler" : "standard_handler";
-
         var response = new AssessorResponse
         {
             Result = $"Priority assessed: {priority} ({GetPriorityLabel(priority)}), Assign to {assignedTo}",
@@ -175,10 +138,8 @@ sealed class AssessorSkillEndpoint : Endpoint<AssessorRequest, AssessorResponse>
             PriorityLabel = GetPriorityLabel(priority),
             AssignedTo = assignedTo,
         };
-
         await Send.OkAsync(response, ct);
     }
-
     private static string GetPriorityLabel(int priority) => priority switch
     {
         5 => "Critical",
@@ -188,7 +149,6 @@ sealed class AssessorSkillEndpoint : Endpoint<AssessorRequest, AssessorResponse>
         _ => "Unknown",
     };
 }
-
 sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
 {
     public override void Configure()
@@ -196,23 +156,19 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
         Get("/health");
         AllowAnonymous();
     }
-
     public override async Task HandleAsync(CancellationToken ct)
     {
         await SendAsync(new HealthResponse(), cancellation: ct);
     }
 }
-
 sealed class JwtValidator
 {
     private readonly SymmetricSecurityKey _signingKey;
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
-
     public JwtValidator(SymmetricSecurityKey signingKey)
     {
         _signingKey = signingKey;
     }
-
     public IEnumerable<System.Security.Claims.Claim>? ValidateToken(string token)
     {
         try
@@ -226,7 +182,6 @@ sealed class JwtValidator
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
             };
-
             var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
             return principal.Claims;
         }
@@ -236,7 +191,6 @@ sealed class JwtValidator
         }
     }
 }
-
 sealed class AgentJwtProvider
 {
     private readonly string _agentId;
@@ -244,37 +198,30 @@ sealed class AgentJwtProvider
     private readonly string _identityServiceUrl;
     private string? _cachedToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
-
     public AgentJwtProvider(string agentId, string agentSecret, string identityServiceUrl)
     {
         _agentId = agentId;
         _agentSecret = agentSecret;
         _identityServiceUrl = identityServiceUrl;
     }
-
     public async Task<string> GetTokenAsync()
     {
         if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiry.AddMinutes(-5))
         {
             return _cachedToken;
         }
-
         try
         {
             var url = $"{_identityServiceUrl}/auth/agent/token?agentId={_agentId}&agentSecret={_agentSecret}";
             var response = await client.GetAsync(url);
-
             if (!response.IsSuccessStatusCode)
             {
                 return string.Empty;
             }
-
             var json = await response.Content.ReadAsStringAsync();
             var token = doc.RootElement.GetProperty("token").GetString();
-
             _cachedToken = token;
             _tokenExpiry = DateTime.UtcNow.AddHours(1);
-
             return token ?? string.Empty;
         }
         catch
@@ -283,6 +230,4 @@ sealed class AgentJwtProvider
         }
     }
 }
-
-
 app.Run();

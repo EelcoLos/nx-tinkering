@@ -1,0 +1,7 @@
+#:sdk Microsoft.NET.Sdk.Web
+#:package FastEndpoints@8.*-*
+#:package FastEndpoints.A2A@1.0.0-beta.1
+#:package A2A@1.*-*
+#:package System.IdentityModel.Tokens.Jwt@7.*
+#:package Microsoft.IdentityModel.Tokens@7.*
+#:property ManagePackageVersionsCentrally=false
