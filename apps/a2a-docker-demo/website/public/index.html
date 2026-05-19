@@ -295,33 +295,19 @@
             const item = document.createElement('div');
             item.className = 'request-item';
             
-            // Build trace HTML
-            let traceHtml = '';
-            if (request.trace && request.trace.length > 0) {
-                traceHtml = '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
-                traceHtml += '<strong>📊 Service Trace:</strong><br>';
-                request.trace.forEach((entry, idx) => {
-                    traceHtml += `<div style="margin: 5px 0; font-size: 13px;">
-                        ${idx + 1}. <strong>${entry.service}</strong>: ${entry.result} (${entry.timestamp_ms}ms) ✓
-                    </div>`;
-                });
-                traceHtml += '</div>';
-            }
-            
             item.innerHTML = `
                 <h4>Request #${Math.random().toString(36).substr(2, 9).toUpperCase()}</h4>
                 <p><strong>Input:</strong> ${request.input || 'Processing...'}</p>
-                <p><strong>Classification:</strong> ${request.classification || 'Pending'}</p>
-                <p><strong>Priority:</strong> ${request.priority || 'Pending'}</p>
+                <p><strong>Summary:</strong> ${request.summary || 'Processing...'}</p>
                 <p><strong>Status:</strong> ${request.status || 'In Progress'}</p>
-                <p><strong>Ticket ID:</strong> ${request.ticket_id || 'N/A'}</p>
-                <div class="flow">
-                    Classifier <span class="flow-arrow">→</span>
-                    Assessor <span class="flow-arrow">→</span>
-                    Router <span class="flow-arrow">→</span>
-                    Handler
+                <div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                    <strong>📊 Workflow Steps:</strong>
+                    ${request.steps && request.steps.length > 0 ? request.steps.map((step, idx) => `
+                        <div style="margin: 5px 0; font-size: 13px;">
+                            ${idx + 1}. <strong>${step.service}</strong>: ${step.result} ✓
+                        </div>
+                    `).join('') : '<p style="color: #999;">No steps available</p>'}
                 </div>
-                ${traceHtml}
             `;
             historyList.insertBefore(item, historyList.firstChild);
         }
