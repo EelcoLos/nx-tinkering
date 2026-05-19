@@ -218,18 +218,26 @@ All services should show `1/1` replicas in the REPLICAS column.
 
 ### 3. Access Services
 
-- **Website**: http://localhost:8080
-- **API Backend**: http://localhost:5056/health
-- **Identity**: http://localhost:5050/health
-- **Discovery**: http://localhost:5051/health
-- **Classifier**: http://localhost:5052/health
-- **Assessor**: http://localhost:5053/health
-- **Router**: http://localhost:5054/health
-- **Handler**: http://localhost:5055/health
+**From Docker Host (127.0.0.1):**
+- **Website**: http://127.0.0.1:8080
+- **API Backend**: http://127.0.0.1:5056/health
+- **Identity**: http://127.0.0.1:5050/health
+
+**From Network (10.0.0.1 to 10.0.0.3):**
+- **Website**: http://10.0.0.3:8080
+- **API Backend**: http://10.0.0.3:5056/health
+- **Identity**: http://10.0.0.3:5050/health
 
 ### 4. Run End-to-End Tests
 
 ```bash
+# From host machine (10.0.0.1) to Docker Swarm (10.0.0.3)
+bash test-e2e.sh 10.0.0.3
+
+# From Docker host (127.0.0.1)
+bash test-e2e.sh 127.0.0.1
+
+# Uses default 10.0.0.3
 bash test-e2e.sh
 ```
 
@@ -241,21 +249,27 @@ docker stack rm a2a-demo
 
 ## Testing the A2A Protocol
 
+### Quick Network Test
+```bash
+# Test from 10.0.0.1 to 10.0.0.3
+curl http://10.0.0.3:5050/health
+```
+
 ### 1. User Login
 ```bash
-curl -X POST http://localhost:5050/auth/login \
+curl -X POST http://10.0.0.3:5050/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"demo123"}'
 ```
 
 ### 2. Get Agent Token
 ```bash
-curl -X GET "http://localhost:5050/auth/agent/token?agentId=classifier_agent&agentSecret=classifier-secret-change-this"
+curl -X GET "http://10.0.0.3:5050/auth/agent/token?agentId=classifier_agent&agentSecret=classifier-secret-change-this"
 ```
 
 ### 3. Submit Triage Request
 ```bash
-curl -X POST http://localhost:5056/api/triage \
+curl -X POST http://10.0.0.3:5056/api/triage \
   -H "Authorization: Bearer <USER_JWT>" \
   -H "Content-Type: application/json" \
   -d '{"input":"Server is down - critical issue"}'
@@ -263,7 +277,7 @@ curl -X POST http://localhost:5056/api/triage \
 
 ### 4. List Services
 ```bash
-curl http://localhost:5051/discovery/services \
+curl http://10.0.0.3:5051/services \
   -H "Authorization: Bearer <USER_JWT>"
 ```
 
