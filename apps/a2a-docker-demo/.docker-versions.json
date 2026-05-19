@@ -5,6 +5,6 @@
   "assessor": 2,
   "router": 2,
   "handler": 2,
-  "api-backend": 2,
+  "api": 3,
   "website": 2
 }

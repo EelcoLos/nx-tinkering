@@ -11,6 +11,16 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 var settings = ServiceSettings.Create();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddSingleton(settings);
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton(new JwtService(settings.JwtSecretKey));
@@ -22,6 +32,7 @@ builder.Services.AddSingleton<DownstreamGateway>();
 builder.Services.AddFastEndpoints();
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 
 app.Use(async (context, next) =>
 {
