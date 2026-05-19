@@ -2,13 +2,15 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <Implicit UsingsEnabled="true" />
-    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RuntimeIdentifier>linux-musl-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="5.30.0" />
-    <PackageReference Include="FastEndpoints.A2A" Version="1.0.0-beta.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.0" />
+    <PackageReference Include="FastEndpoints" Version="8.*" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.*" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.*" />
   </ItemGroup>
 </Project>
