@@ -170,7 +170,11 @@
     </div>
 
     <script>
-        const API_URL = 'http://127.0.0.1:5056';
+        // Dynamically determine API host
+        // If accessing from 10.0.0.3:8080, use 10.0.0.3:5056
+        // Otherwise use the same host
+        const API_HOST = window.location.hostname === '10.0.0.3' ? '10.0.0.3' : window.location.hostname;
+        const API_URL = `http://${API_HOST}:5056`;
         
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -299,7 +303,7 @@
         });
 
         // CORS handling
-        fetch('http://localhost:5056', { 
+        fetch(`${API_URL}`, { 
             mode: 'no-cors',
             headers: { 'Origin': window.location.origin }
         }).catch(() => {
