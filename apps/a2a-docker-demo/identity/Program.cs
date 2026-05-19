@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-const string JwtSecret = "your-256-bit-secret-key-must-be-min-32-chars-1234567890123";
+const string JwtSecret = "your-256-bit-secret-key-must-be-min-32-chars";
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecret));
 
 builder.Services.AddSingleton<JwtService>(new JwtService(signingKey));
@@ -17,10 +17,9 @@ builder.Services.AddFastEndpoints();
 var app = builder.Build();
 app.Services.GetRequiredService<UserDatabase>().SeedDemoUsers();
 app.UseFastEndpoints();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.Run();
 
-// ==================================================================
 
 class UserDatabase
 {
@@ -118,16 +117,17 @@ class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
     {
         var db = Resolve<UserDatabase>();
         var user = db.GetByUsername(req.Username ?? "");
-        
+
         if (user == null || user.PasswordHash != req.Password)
         {
             HttpContext.Response.StatusCode = 401;
-            await HttpContext.Response.WriteAsJsonAsync(new { error = "Invalid credentials" }, cancellationToken: ct);
+            await HttpContext.Response.WriteAsJsonAsync(new LoginResponse { Token = "", UserId = "" }, cancellationToken: ct);
             return;
         }
 
         var jwt = Resolve<JwtService>();
         var token = jwt.GenerateUserToken(user.UserId, user.Username);
+        HttpContext.Response.StatusCode = 200;
         await HttpContext.Response.WriteAsJsonAsync(new LoginResponse { Token = token, UserId = user.UserId }, cancellationToken: ct);
     }
 }

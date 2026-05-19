@@ -1,0 +1,10 @@
+{
+  "identity": 2,
+  "discovery": 2,
+  "classifier": 2,
+  "assessor": 2,
+  "router": 2,
+  "handler": 2,
+  "api": 2,
+  "website": 2
+}
