@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:11.0-preview-alpine AS build
 WORKDIR /build
 COPY api-backend.csproj .
 COPY Program.cs .
+COPY appsettings.json .
 COPY Infrastructure/ Infrastructure/
 COPY Services/ Services/
 COPY Skills/ Skills/

@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   identity:
-    image: a2a-identity:v7-a2a
+    image: a2a-identity:v8-a2a
     ports:
       - "5050:5050"
     environment:
@@ -19,7 +19,7 @@ services:
       start_period: 10s
 
   classifier:
-    image: a2a-classifier:v6-a2a
+    image: a2a-classifier:v8-a2a
     ports:
       - "5052:5052"
     environment:
@@ -38,7 +38,7 @@ services:
       start_period: 10s
 
   assessor:
-    image: a2a-assessor:v6-a2a
+    image: a2a-assessor:v8-a2a
     ports:
       - "5053:5053"
     environment:
@@ -57,7 +57,7 @@ services:
       start_period: 10s
 
   router:
-    image: a2a-router:v6-a2a
+    image: a2a-router:v8-a2a
     ports:
       - "5054:5054"
     environment:
@@ -76,7 +76,7 @@ services:
       start_period: 10s
 
   handler:
-    image: a2a-handler:v6-a2a
+    image: a2a-handler:v8-a2a
     ports:
       - "5055:5055"
     environment:
@@ -95,7 +95,7 @@ services:
       start_period: 10s
 
   api-backend:
-    image: a2a-api-backend:v7.1-a2a
+    image: a2a-api-backend:v8-a2a
     ports:
       - "5056:5056"
     environment:
@@ -118,7 +118,7 @@ services:
       start_period: 10s
 
   website:
-    image: a2a-website:v10
+    image: a2a-website:v11
     ports:
       - "8080:80"
     networks:
