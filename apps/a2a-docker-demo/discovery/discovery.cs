@@ -1,0 +1,369 @@
+#:sdk Microsoft.NET.Sdk.Web
+#:package FastEndpoints@8.*-*
+#:package FastEndpoints.A2A@1.0.0-beta.1
+#:package A2A@1.*-*
+#:package System.IdentityModel.Tokens.Jwt@7.*
+#:package Microsoft.IdentityModel.Tokens@7.*
+#:property ManagePackageVersionsCentrally=false
+
+using A2A;
+using FastEndpoints;
+using FastEndpoints.A2A;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+
+const string DiscoveryHostUrl = "http://localhost:5051";
+
+var bld = WebApplication.CreateBuilder(args);
+bld.WebHost.UseUrls(DiscoveryHostUrl);
+bld.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver()));
+
+// JWT validation
+var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY not configured");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+var jwtValidator = new JwtValidator(signingKey);
+
+// Service registry
+var serviceRegistry = new ServiceRegistry();
+
+bld.Services.AddSingleton(jwtValidator);
+bld.Services.AddSingleton(serviceRegistry);
+
+bld.Services
+   .AddFastEndpoints()
+   .AddA2A(o =>
+   {
+       o.AgentName = "fe-discovery-agent";
+       o.Description = "Discovery service for A2A demo - service registry and agent discovery.";
+       o.Version = "1.0.0";
+       o.SkillVisibilityFilter = (_, _, _) => true;
+   });
+
+var app = bld.Build();
+
+// JWT validation middleware
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.ToString();
+
+    // Skip auth for health and unauthenticated agent card
+    if (path == "/health" || path == "/.well-known/agent-card.json")
+    {
+        await next();
+        return;
+    }
+
+    var authHeader = context.Request.Headers["Authorization"].ToString();
+    if (string.IsNullOrWhiteSpace(authHeader))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsJsonAsync(new { error = "Missing authorization header" });
+        return;
+    }
+
+    var token = authHeader.Replace("Bearer ", "").Trim();
+    var claims = jwtValidator.ValidateToken(token);
+    
+    if (claims == null)
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" });
+        return;
+    }
+
+    // Store claims for later use
+    context.Items["jwt_claims"] = claims;
+    await next();
+});
+
+app.UseFastEndpoints()
+    .UseA2A(rpcPattern: "/a2a", agentCardPattern: "/.well-known/agent-card.json");
+
+app.Run();
+
+// ============ Endpoints ============
+
+sealed class ServiceInfo
+{
+    [JsonPropertyName("serviceId")]
+    public string? ServiceId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("agentCardUrl")]
+    public string? AgentCardUrl { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "running";
+
+    [JsonPropertyName("registeredAt")]
+    public DateTime RegisteredAt { get; set; }
+}
+
+sealed class RegisterServiceRequest
+{
+    [JsonPropertyName("serviceId")]
+    public string? ServiceId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("agentCardUrl")]
+    public string? AgentCardUrl { get; set; }
+}
+
+sealed class ListServicesResponse
+{
+    [JsonPropertyName("services")]
+    public List<ServiceInfo>? Services { get; set; }
+
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
+}
+
+sealed class HealthResponse
+{
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "healthy";
+
+    [JsonPropertyName("service")]
+    public string Service { get; set; } = "discovery";
+}
+
+sealed class RegisterServiceEndpoint : Endpoint<RegisterServiceRequest, ServiceInfo>
+{
+    private readonly ServiceRegistry _registry;
+
+    public RegisterServiceEndpoint(ServiceRegistry registry)
+    {
+        _registry = registry;
+    }
+
+    public override void Configure()
+    {
+        Post("/discovery/register");
+    }
+
+    public override async Task HandleAsync(RegisterServiceRequest req, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(req.ServiceId))
+        {
+            ThrowError(r => r.Problem = "serviceId is required", statusCode: 400);
+            return;
+        }
+
+        var service = new ServiceInfo
+        {
+            ServiceId = req.ServiceId,
+            Name = req.Name ?? req.ServiceId,
+            Description = req.Description,
+            AgentCardUrl = req.AgentCardUrl,
+            RegisteredAt = DateTime.UtcNow,
+        };
+
+        _registry.Register(service);
+
+        await SendAsync(service, cancellation: ct);
+    }
+}
+
+sealed class ListServicesEndpoint : EndpointWithoutRequest<ListServicesResponse>
+{
+    private readonly ServiceRegistry _registry;
+
+    public ListServicesEndpoint(ServiceRegistry registry)
+    {
+        _registry = registry;
+    }
+
+    public override void Configure()
+    {
+        Get("/discovery/services");
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var services = _registry.GetAll();
+        var response = new ListServicesResponse
+        {
+            Services = services.ToList(),
+            Count = services.Count(),
+        };
+
+        await SendAsync(response, cancellation: ct);
+    }
+}
+
+sealed class GetServiceEndpoint : Endpoint<GetServiceRequest, ServiceInfo>
+{
+    private readonly ServiceRegistry _registry;
+
+    public GetServiceEndpoint(ServiceRegistry registry)
+    {
+        _registry = registry;
+    }
+
+    public override void Configure()
+    {
+        Get("/discovery/services/{serviceId}");
+    }
+
+    public override async Task HandleAsync(GetServiceRequest req, CancellationToken ct)
+    {
+        var service = _registry.Get(req.ServiceId ?? "");
+        if (service == null)
+        {
+            ThrowError(r => r.Problem = "Service not found", statusCode: 404);
+            return;
+        }
+
+        await SendAsync(service, cancellation: ct);
+    }
+}
+
+sealed class GetServiceRequest
+{
+    [FromRoute]
+    public string? ServiceId { get; set; }
+}
+
+sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
+{
+    public override void Configure()
+    {
+        Get("/health");
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        await SendAsync(new HealthResponse(), cancellation: ct);
+    }
+}
+
+sealed class DiscoverySkillEndpoint : Endpoint<DiscoverySkillRequest, DiscoverySkillResponse>
+{
+    private readonly ServiceRegistry _registry;
+
+    public DiscoverySkillEndpoint(ServiceRegistry registry)
+    {
+        _registry = registry;
+    }
+
+    public override void Configure()
+    {
+        Post("/skills/discover-services");
+        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "discover_services",
+            tags: ["discovery", "a2a"],
+            configure: skill =>
+            {
+                skill.Name = "Discover Services";
+                skill.Description = "Returns list of all available A2A services in the discovery registry.";
+                skill.Examples = ["Get list of available services"];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
+    }
+
+    public override async Task HandleAsync(DiscoverySkillRequest req, CancellationToken ct)
+    {
+        var services = _registry.GetAll();
+        var response = new DiscoverySkillResponse
+        {
+            Services = services.Select(s => new ServiceInfoDto
+            {
+                ServiceId = s.ServiceId,
+                Name = s.Name,
+                Description = s.Description,
+                AgentCardUrl = s.AgentCardUrl,
+            }).ToList(),
+        };
+
+        await Send.OkAsync(response, ct);
+    }
+}
+
+sealed record DiscoverySkillRequest(string? Query);
+sealed record DiscoverySkillResponse([property: JsonPropertyName("services")] List<ServiceInfoDto> Services);
+sealed record ServiceInfoDto(string? ServiceId, string? Name, string? Description, string? AgentCardUrl);
+
+// ============ Services ============
+
+sealed class ServiceRegistry
+{
+    private readonly Dictionary<string, ServiceInfo> _services = new();
+    private readonly object _lock = new();
+
+    public void Register(ServiceInfo service)
+    {
+        lock (_lock)
+        {
+            _services[service.ServiceId!] = service;
+        }
+    }
+
+    public ServiceInfo? Get(string serviceId)
+    {
+        lock (_lock)
+        {
+            _services.TryGetValue(serviceId, out var service);
+            return service;
+        }
+    }
+
+    public IEnumerable<ServiceInfo> GetAll()
+    {
+        lock (_lock)
+        {
+            return _services.Values.ToList();
+        }
+    }
+}
+
+sealed class JwtValidator
+{
+    private readonly SymmetricSecurityKey _signingKey;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new();
+
+    public JwtValidator(SymmetricSecurityKey signingKey)
+    {
+        _signingKey = signingKey;
+    }
+
+    public IEnumerable<System.Security.Claims.Claim>? ValidateToken(string token)
+    {
+        try
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = _signingKey,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            };
+
+            var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
+            return principal.Claims;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

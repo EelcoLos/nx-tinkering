@@ -1,0 +1,208 @@
+version: '3.9'
+
+services:
+  identity:
+    image: a2a-identity
+    ports:
+      - "5050:5050"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - CLASSIFIER_AGENT_ID=${CLASSIFIER_AGENT_ID}
+      - CLASSIFIER_AGENT_SECRET=${CLASSIFIER_AGENT_SECRET}
+      - ASSESSOR_AGENT_ID=${ASSESSOR_AGENT_ID}
+      - ASSESSOR_AGENT_SECRET=${ASSESSOR_AGENT_SECRET}
+      - ROUTER_AGENT_ID=${ROUTER_AGENT_ID}
+      - ROUTER_AGENT_SECRET=${ROUTER_AGENT_SECRET}
+      - HANDLER_AGENT_ID=${HANDLER_AGENT_ID}
+      - HANDLER_AGENT_SECRET=${HANDLER_AGENT_SECRET}
+    networks:
+      - a2a-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5050/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  discovery:
+    image: a2a-discovery
+    ports:
+      - "5051:5051"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - a2a-network
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5051/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  classifier:
+    image: a2a-classifier
+    ports:
+      - "5052:5052"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - CLASSIFIER_AGENT_ID=${CLASSIFIER_AGENT_ID}
+      - CLASSIFIER_AGENT_SECRET=${CLASSIFIER_AGENT_SECRET}
+    networks:
+      - a2a-network
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5052/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  assessor:
+    image: a2a-assessor
+    ports:
+      - "5053:5053"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ASSESSOR_AGENT_ID=${ASSESSOR_AGENT_ID}
+      - ASSESSOR_AGENT_SECRET=${ASSESSOR_AGENT_SECRET}
+    networks:
+      - a2a-network
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5053/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  router:
+    image: a2a-router
+    ports:
+      - "5054:5054"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ROUTER_AGENT_ID=${ROUTER_AGENT_ID}
+      - ROUTER_AGENT_SECRET=${ROUTER_AGENT_SECRET}
+    networks:
+      - a2a-network
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5054/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  handler:
+    image: a2a-handler
+    ports:
+      - "5055:5055"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - HANDLER_AGENT_ID=${HANDLER_AGENT_ID}
+      - HANDLER_AGENT_SECRET=${HANDLER_AGENT_SECRET}
+    networks:
+      - a2a-network
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5055/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  api:
+    image: a2a-api
+    ports:
+      - "5056:5056"
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - a2a-network
+    depends_on:
+      - identity
+      - discovery
+      - classifier
+      - assessor
+      - router
+      - handler
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5056/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  website:
+    image: a2a-website
+    ports:
+      - "8080:8080"
+    networks:
+      - a2a-network
+    depends_on:
+      - api
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+networks:
+  a2a-network:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid: "4096"
