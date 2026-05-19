@@ -29,8 +29,9 @@ jobs:
       dependency-names: ${{ steps.metadata.outputs.dependency-names }}
       update-type: ${{ steps.metadata.outputs.update-type }}
       dependency-versions: ${{ steps.metadata.outputs.new-version }}
+      package-ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}
       updated-dependencies-json: ${{ steps.metadata.outputs.updated-dependencies-json }}
-    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]'}}
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) }}
     steps:
       - name: Fetch dependabot metadata
         id: metadata
@@ -39,22 +40,96 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           skip-commit-verification: true
 
-  nx-migrate:
-    name: "NX Migrate"
+  override-cleanup:
+    name: "Override cleanup"
     runs-on: ubuntu-latest
     needs: dependabot-check
     if: always() &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
       (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) &&
-      (contains(needs.dependabot-check.outputs.dependency-names, '@nx/') || contains(needs.dependabot-check.outputs.dependency-names, 'nx')) || (inputs.nx_update == 'true')
+      needs.dependabot-check.outputs.package-ecosystem == 'npm'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: "Checkout code for Nx updates"
+      - name: "Checkout code for override cleanup"
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore NuGet packages
+        run: dotnet restore nx-tinker.slnx
+      - name: Derive appropriate SHAs for `nx affected`
+        id: setSHAs
+        uses: nrwl/nx-set-shas@v5
+      - name: Install dependencies
+        run: npm ci
+      - name: Set user to github actions
+        run: |
+          git config --global user.email "dependabot[bot]@users.noreply.github.com"
+          git config --global user.name "dependabot[bot]"
+      - name: Reconcile npm overrides
+        env:
+          UPDATED_DEPS_JSON: ${{ needs.dependabot-check.outputs.updated-dependencies-json }}
+          DEPENDENCY_NAMES: ${{ needs.dependabot-check.outputs.dependency-names }}
+        run: |
+          node scripts/reconcile-dependabot-overrides.js \
+            --updated-dependencies-json "$UPDATED_DEPS_JSON" \
+            --dependency-names "$DEPENDENCY_NAMES" \
+            --report-path "tmp/dependabot-override-report.json"
+      - name: Commit override cleanup
+        run: |
+          if [ ! -f tmp/dependabot-override-report.json ]; then
+            echo "No override report found"
+            exit 0
+          fi
+          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('tmp/dependabot-override-report.json','utf8')); if (!report.applied) process.exit(0); const names=report.removedOverrides.map((entry) => entry.dependencyName).join(', '); const message=report.removedOverrides.length === 1 ? 'chore(deps): remove unneeded override for ' + names : 'chore(deps): remove unneeded npm overrides'; fs.writeFileSync('tmp/dependabot-override-commit-message.txt', message + '\n');"
+          if [ -f tmp/dependabot-override-commit-message.txt ]; then
+            git add package.json package-lock.json
+            if git commit -F tmp/dependabot-override-commit-message.txt; then
+              git push origin ${{ github.event.pull_request.head.ref }} --force
+            else
+              echo "No override cleanup changes to commit"
+            fi
+          fi
+
+  nx-migrate:
+    name: "NX Migrate"
+    runs-on: ubuntu-latest
+    needs: [dependabot-check, override-cleanup]
+    if: always() &&
+      (
+        inputs.nx_update == 'true' ||
+        (
+          github.event_name == 'pull_request' &&
+          (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) &&
+          (
+            contains(needs.dependabot-check.outputs.dependency-names, '@nx/') ||
+            contains(needs.dependabot-check.outputs.dependency-names, 'nx')
+          )
+        )
+      )
+    steps:
+      - name: "Checkout code for Dependabot automation"
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run npm install"
         run: |
-          npm i
+          npm ci
         working-directory: ${{ github.workspace }}
       - name: Set user to github actions
         run: |
