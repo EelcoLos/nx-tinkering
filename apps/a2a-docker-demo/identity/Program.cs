@@ -7,7 +7,11 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "your-256-bit-secret-key-must-be-min-32-chars";
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException("JWT_SECRET_KEY environment variable must be set and at least 32 characters long");
+}
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
 builder.Services.AddSingleton<JwtService>(new JwtService(signingKey));
@@ -169,6 +173,9 @@ class AgentTokenEndpoint : Endpoint<EmptyRequest, object>
     {
         Get("/auth/agent/token");
         AllowAnonymous();
+        Description(d => d
+            .WithName("Get Agent Token")
+            .WithDescription("DEMO ONLY: In production, this endpoint must require authentication (client credentials, mTLS, or API key). Currently allows any agent ID to be requested."));
     }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)

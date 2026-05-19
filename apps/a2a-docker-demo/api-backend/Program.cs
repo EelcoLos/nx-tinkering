@@ -13,6 +13,9 @@ var settings = ServiceSettings.Create();
 
 builder.Services.AddCors(options =>
 {
+    // NOTE: In production, restrict CORS to specific trusted origins
+    // Example: policy.WithOrigins("https://yourdomain.com")
+    // For demo/local development, we allow all origins
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
