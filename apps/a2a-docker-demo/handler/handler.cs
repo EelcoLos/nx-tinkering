@@ -5,7 +5,6 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
-
 using A2A;
 using FastEndpoints;
 using FastEndpoints.A2A;
@@ -15,6 +14,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            using var doc = JsonDocument.Parse(json);
+
+
 
 const string HandlerHostUrl = "http://localhost:5055";
 const string IdentityServiceUrl = "http://localhost:5050";
@@ -81,9 +84,15 @@ app.Use(async (context, next) =>
 app.UseFastEndpoints()
     .UseA2A(rpcPattern: "/a2a", agentCardPattern: "/.well-known/agent-card.json");
 
-app.Run();
 
 // ============ Endpoints ============
+
+
+
+
+
+
+// ============ Services ============
 
 sealed class HandlerRequest
 {
@@ -190,8 +199,6 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
     }
 }
 
-// ============ Services ============
-
 sealed class JwtValidator
 {
     private readonly SymmetricSecurityKey _signingKey;
@@ -250,7 +257,6 @@ sealed class AgentJwtProvider
 
         try
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var url = $"{_identityServiceUrl}/auth/agent/token?agentId={_agentId}&agentSecret={_agentSecret}";
             var response = await client.GetAsync(url);
 
@@ -260,7 +266,6 @@ sealed class AgentJwtProvider
             }
 
             var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
             var token = doc.RootElement.GetProperty("token").GetString();
 
             _cachedToken = token;
@@ -274,3 +279,6 @@ sealed class AgentJwtProvider
         }
     }
 }
+
+
+app.Run();

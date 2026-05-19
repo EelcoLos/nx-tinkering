@@ -4,7 +4,6 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
-
 using A2A;
 using FastEndpoints;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +11,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+
+
 
 const string ApiHostUrl = "http://localhost:5056";
 const string IdentityServiceUrl = "http://localhost:5050";
@@ -68,9 +71,19 @@ app.Use(async (context, next) =>
 });
 
 app.UseFastEndpoints();
-app.Run();
 
 // ============ Endpoints ============
+
+
+
+
+
+
+
+
+
+
+// ============ Services ============
 
 sealed class LoginRequest
 {
@@ -151,7 +164,6 @@ sealed class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
         var response = await client.PostAsJsonAsync($"{IdentityServiceUrl}/auth/login", req, ct);
 
         if (!response.IsSuccessStatusCode)
@@ -180,7 +192,6 @@ sealed class SubmitTriageEndpoint : Endpoint<TriageRequest, TriageResponse>
 
         try
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
             // Step 1: Classify
             var step1 = await CallService(client, 
@@ -369,8 +380,6 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
     }
 }
 
-// ============ Services ============
-
 sealed class JwtValidator
 {
     private readonly SymmetricSecurityKey _signingKey;
@@ -404,3 +413,6 @@ sealed class JwtValidator
         }
     }
 }
+
+
+app.Run();

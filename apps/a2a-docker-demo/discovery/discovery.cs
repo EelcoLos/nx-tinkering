@@ -5,7 +5,6 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
-
 using A2A;
 using FastEndpoints;
 using FastEndpoints.A2A;
@@ -15,6 +14,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+
+
 
 const string DiscoveryHostUrl = "http://localhost:5051";
 
@@ -83,9 +84,20 @@ app.Use(async (context, next) =>
 app.UseFastEndpoints()
     .UseA2A(rpcPattern: "/a2a", agentCardPattern: "/.well-known/agent-card.json");
 
-app.Run();
 
 // ============ Endpoints ============
+
+
+
+
+
+
+
+
+
+
+
+// ============ Services ============
 
 sealed class ServiceInfo
 {
@@ -297,11 +309,7 @@ sealed class DiscoverySkillEndpoint : Endpoint<DiscoverySkillRequest, DiscoveryS
     }
 }
 
-sealed record DiscoverySkillRequest(string? Query);
-sealed record DiscoverySkillResponse([property: JsonPropertyName("services")] List<ServiceInfoDto> Services);
 sealed record ServiceInfoDto(string? ServiceId, string? Name, string? Description, string? AgentCardUrl);
-
-// ============ Services ============
 
 sealed class ServiceRegistry
 {
@@ -367,3 +375,6 @@ sealed class JwtValidator
         }
     }
 }
+
+
+app.Run();

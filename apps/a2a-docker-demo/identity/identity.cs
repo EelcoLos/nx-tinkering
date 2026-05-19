@@ -3,13 +3,16 @@
 #:package System.IdentityModel.Tokens.Jwt@7.*
 #:package Microsoft.IdentityModel.Tokens@7.*
 #:property ManagePackageVersionsCentrally=false
-
 using FastEndpoints;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+    using (var rng = RandomNumberGenerator.Create())
+
+
 
 const string IdentityHostUrl = "http://localhost:5050";
 
@@ -34,9 +37,23 @@ bld.Services.AddFastEndpoints();
 
 var app = bld.Build();
 app.UseFastEndpoints();
-app.Run();
 
 // ============ Endpoints ============
+
+
+
+
+
+
+
+
+
+
+
+
+// ============ Domain Models ============
+
+// ============ Services ============
 
 sealed class LoginRequest
 {
@@ -243,12 +260,7 @@ sealed class HealthEndpoint : EndpointWithoutRequest<HealthResponse>
     }
 }
 
-// ============ Domain Models ============
-
-sealed record User(string UserId, string Username, string PasswordHash);
 sealed record Agent(string AgentId, string AgentSecret, string AgentType);
-
-// ============ Services ============
 
 sealed class UserDatabase
 {
@@ -273,7 +285,6 @@ sealed class UserDatabase
 
     private static string HashPassword(string password)
     {
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
@@ -398,13 +409,10 @@ sealed class JwtService
     }
 }
 
-static string GenerateSecretKey()
-{
-    var key = new byte[32];
-    using (var rng = RandomNumberGenerator.Create())
-    {
-        rng.GetBytes(key);
-    }
 
-    return Convert.ToBase64String(key);
+static class Helpers
+{
+    string GenerateSecretKey()        {            var key = new byte[32];            {                rng.GetBytes(key);            }                    return Convert.ToBase64String(key);        }        
 }
+
+app.Run();
