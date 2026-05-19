@@ -1,4 +1,4 @@
-namespace Classifier.Services;
+namespace Assessor.Services;
 
 public class ServiceSettings
 {

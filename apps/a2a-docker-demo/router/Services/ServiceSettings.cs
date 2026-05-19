@@ -1,4 +1,4 @@
-namespace Classifier.Services;
+namespace Router.Services;
 
 public class ServiceSettings
 {

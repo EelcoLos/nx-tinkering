@@ -1,4 +1,4 @@
-namespace Classifier.Infrastructure;
+namespace Handler.Infrastructure;
 
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

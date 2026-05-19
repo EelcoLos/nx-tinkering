@@ -1,4 +1,4 @@
-namespace Classifier.Services;
+namespace Handler.Services;
 
 public class ServiceSettings
 {
