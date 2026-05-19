@@ -11,7 +11,7 @@ This is a comprehensive demonstration of the FastEndpoints A2A (Agent-to-Agent) 
 │                                                                       │
 │  ┌──────────────────────────┐  ┌──────────────────┐  ┌────────────┐ │
 │  │  Identity Service        │  │  React Website   │  │  API       │ │
-│  │  (Port 5050)             │  │  (Port 3000)     │  │  Backend   │ │
+│  │  (Port 5050)             │  │  (Port 8080)     │  │  Backend   │ │
 │  │  - User authentication   │  │  - User login    │  │  (Port     │ │
 │  │  - Agent token issuance  │  │  - Dashboard     │  │  5056)     │ │
 │  │  - Token validation      │  └──────────────────┘  └────────────┘ │
@@ -113,7 +113,7 @@ HTTP gateway for the website. Coordinates the triage workflow.
 - `POST /api/triage` - Submit triage request (user JWT required)
 - `GET /health` - Health check
 
-### React Website (Port 3000)
+### React Website (Port 8080)
 User interface for the demo.
 
 **Features:**
@@ -204,26 +204,39 @@ cd apps/a2a-docker-demo
 cp .env.example .env
 # Edit .env with production values
 
-docker stack deploy -c docker-compose.yml a2a-demo-triage
+docker stack deploy -c docker-compose.yml a2a-demo
 ```
 
 ### 2. Verify Services
 
 ```bash
 docker service ls
-docker stack ps a2a-demo-triage
+docker stack ps a2a-demo
 ```
 
-### 3. Access via Portainer
+All services should show `1/1` replicas in the REPLICAS column.
 
-- Open Portainer at your Portainer URL
-- Navigate to: Stacks → a2a-demo-triage
-- View service logs and status
+### 3. Access Services
 
-### 4. Remove Stack
+- **Website**: http://localhost:8080
+- **API Backend**: http://localhost:5056/health
+- **Identity**: http://localhost:5050/health
+- **Discovery**: http://localhost:5051/health
+- **Classifier**: http://localhost:5052/health
+- **Assessor**: http://localhost:5053/health
+- **Router**: http://localhost:5054/health
+- **Handler**: http://localhost:5055/health
+
+### 4. Run End-to-End Tests
 
 ```bash
-docker stack rm a2a-demo-triage
+bash test-e2e.sh
+```
+
+### 5. Remove Stack
+
+```bash
+docker stack rm a2a-demo
 ```
 
 ## Testing the A2A Protocol
@@ -359,11 +372,14 @@ Edit the classification, assessment, routing, and handling logic in respective s
 
 ## Architecture Notes
 
-- **Single-file services**: Each service is a standalone .cs file (like a2a-demo-fastendpoints)
+- **Project-based .NET services**: Each service has its own directory with Program.cs, .csproj, and Dockerfile
+- **Multi-stage Docker builds**: Services compiled with .NET 11 preview SDK, deployed with lean aspnet runtime
+- **Smaller images**: ~123MB per service (vs 700MB+ single-stage builds)
 - **In-memory registries**: Discovery and identity services use in-memory storage (suitable for demo)
 - **JWT validation at boundaries**: Each service validates tokens on incoming requests
 - **No external dependencies**: Uses only standard .NET/FastEndpoints libraries
-- **Docker Swarm optimized**: Configured for deployment on Docker Stack
+- **Docker Swarm optimized**: Configured for deployment on Docker Stack with overlay network
+- **Service discovery via DNS**: Services communicate using internal service names (e.g., http://identity:5050)
 
 ## Security Considerations
 
