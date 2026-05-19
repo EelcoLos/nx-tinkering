@@ -11,11 +11,20 @@ const {
 
 function parseArgs() {
   const args = {};
-  for (const arg of process.argv.slice(2)) {
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
     if (!arg.startsWith('--')) continue;
     const eq = arg.indexOf('=');
     if (eq === -1) {
-      args[arg.slice(2)] = true;
+      const key = arg.slice(2);
+      const next = argv[i + 1];
+      if (next && !next.startsWith('--')) {
+        args[key] = next;
+        i += 1;
+      } else {
+        args[key] = true;
+      }
       continue;
     }
     args[arg.slice(2, eq)] = arg.slice(eq + 1);
@@ -197,11 +206,19 @@ function runNxValidation(cwd) {
 
 function restoreWorkspace(snapshot, cwd) {
   fs.writeFileSync(snapshot.packageJsonPath, snapshot.packageJson, 'utf8');
-  if (snapshot.packageLockPath && typeof snapshot.packageLock === 'string') {
-    fs.writeFileSync(snapshot.packageLockPath, snapshot.packageLock, 'utf8');
+  const hasPackageLockSnapshot = typeof snapshot.packageLock === 'string';
+  if (snapshot.packageLockPath) {
+    if (hasPackageLockSnapshot) {
+      fs.writeFileSync(snapshot.packageLockPath, snapshot.packageLock, 'utf8');
+    } else if (fs.existsSync(snapshot.packageLockPath)) {
+      fs.unlinkSync(snapshot.packageLockPath);
+    }
   }
 
-  const restore = runCommand('npm ci', cwd);
+  const restore = runCommand(
+    hasPackageLockSnapshot ? 'npm ci' : 'npm install --no-package-lock',
+    cwd,
+  );
   if (!restore.ok) {
     throw new Error(
       `Failed to restore workspace: ${restore.error || restore.stderr || restore.stdout}`,

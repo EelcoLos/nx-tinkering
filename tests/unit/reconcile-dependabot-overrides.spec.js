@@ -1,4 +1,31 @@
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const processor = require('../../scripts/reconcile-dependabot-overrides');
+
+describe('parseArgs', () => {
+  const originalArgv = process.argv.slice();
+
+  afterEach(() => {
+    process.argv = originalArgv.slice();
+  });
+
+  test('supports key=value and key value forms', () => {
+    process.argv = [
+      ...originalArgv.slice(0, 2),
+      '--updated-dependencies-json',
+      '{"foo":1}',
+      '--flag',
+      '--dependency-names=undici,axios',
+    ];
+
+    expect(processor.parseArgs()).toEqual({
+      'updated-dependencies-json': '{"foo":1}',
+      flag: true,
+      'dependency-names': 'undici,axios',
+    });
+  });
+});
 
 describe('collectUpdatedDependencyNames', () => {
   test('extracts dependency names from Dependabot metadata and strings', () => {
@@ -11,6 +38,45 @@ describe('collectUpdatedDependencyNames', () => {
     );
 
     expect(names).toEqual(['undici', 'yaml', 'axios', 'lodash']);
+  });
+});
+
+describe('restoreWorkspace', () => {
+  test('uses npm install without package lock when no original lockfile exists', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'override-restore-'));
+    const packageJsonPath = path.join(tmpDir, 'package.json');
+    const packageLockPath = path.join(tmpDir, 'package-lock.json');
+    fs.writeFileSync(packageJsonPath, '{"name":"fixture"}\n', 'utf8');
+    fs.writeFileSync(packageLockPath, 'stale-lock', 'utf8');
+
+    const childProcess = require('child_process');
+    const originalExecSync = childProcess.execSync;
+    const commands = [];
+
+    childProcess.execSync = (command) => {
+      commands.push(command);
+      return '';
+    };
+
+    try {
+      processor.restoreWorkspace(
+        {
+          packageJsonPath,
+          packageJson: '{"name":"fixture","private":true}\n',
+          packageLockPath,
+          packageLock: null,
+        },
+        tmpDir,
+      );
+    } finally {
+      childProcess.execSync = originalExecSync;
+    }
+
+    expect(commands).toEqual(['npm install --no-package-lock']);
+    expect(fs.readFileSync(packageJsonPath, 'utf8')).toBe(
+      '{"name":"fixture","private":true}\n',
+    );
+    expect(fs.existsSync(packageLockPath)).toBe(false);
   });
 });
 
