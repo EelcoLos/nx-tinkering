@@ -1,112 +1,201 @@
-version: '3.9'
-
 services:
   identity:
-    image: a2a-identity
+    build:
+      context: ./identity
+      dockerfile: Dockerfile
+    image: a2a-identity:v2
     ports:
       - "5050:5050"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - CLASSIFIER_AGENT_ID=${CLASSIFIER_AGENT_ID}
-      - CLASSIFIER_AGENT_SECRET=${CLASSIFIER_AGENT_SECRET}
-      - ASSESSOR_AGENT_ID=${ASSESSOR_AGENT_ID}
-      - ASSESSOR_AGENT_SECRET=${ASSESSOR_AGENT_SECRET}
-      - ROUTER_AGENT_ID=${ROUTER_AGENT_ID}
-      - ROUTER_AGENT_SECRET=${ROUTER_AGENT_SECRET}
-      - HANDLER_AGENT_ID=${HANDLER_AGENT_ID}
-      - HANDLER_AGENT_SECRET=${HANDLER_AGENT_SECRET}
+      - ASPNETCORE_URLS=http://+:5050
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
     networks:
       - a2a-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5050/health"]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 3
-      start_period: 5s
+      start_period: 10s
 
   discovery:
-    image: a2a-discovery
+    build:
+      context: ./discovery
+      dockerfile: Dockerfile
+    image: a2a-discovery:v2
     ports:
       - "5051:5051"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ASPNETCORE_URLS=http://+:5051
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - DISCOVERY_AGENT_ID=discovery-agent
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5051/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   classifier:
-    image: a2a-classifier
+    build:
+      context: ./classifier
+      dockerfile: Dockerfile
+    image: a2a-classifier:v2
     ports:
       - "5052:5052"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - CLASSIFIER_AGENT_ID=${CLASSIFIER_AGENT_ID}
-      - CLASSIFIER_AGENT_SECRET=${CLASSIFIER_AGENT_SECRET}
+      - ASPNETCORE_URLS=http://+:5052
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - CLASSIFIER_SERVICE_URL=http://classifier:5052
+      - CLASSIFIER_AGENT_ID=classifier-agent
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
+      discovery:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5052/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   assessor:
-    image: a2a-assessor
+    build:
+      context: ./assessor
+      dockerfile: Dockerfile
+    image: a2a-assessor:v2
     ports:
       - "5053:5053"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - ASSESSOR_AGENT_ID=${ASSESSOR_AGENT_ID}
-      - ASSESSOR_AGENT_SECRET=${ASSESSOR_AGENT_SECRET}
+      - ASPNETCORE_URLS=http://+:5053
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - ASSESSOR_SERVICE_URL=http://assessor:5053
+      - ASSESSOR_AGENT_ID=assessor-agent
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
+      discovery:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5053/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   router:
-    image: a2a-router
+    build:
+      context: ./router
+      dockerfile: Dockerfile
+    image: a2a-router:v2
     ports:
       - "5054:5054"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - ROUTER_AGENT_ID=${ROUTER_AGENT_ID}
-      - ROUTER_AGENT_SECRET=${ROUTER_AGENT_SECRET}
+      - ASPNETCORE_URLS=http://+:5054
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - ROUTER_SERVICE_URL=http://router:5054
+      - ROUTER_AGENT_ID=router-agent
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
+      discovery:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5054/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   handler:
-    image: a2a-handler
+    build:
+      context: ./handler
+      dockerfile: Dockerfile
+    image: a2a-handler:v2
     ports:
       - "5055:5055"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - HANDLER_AGENT_ID=${HANDLER_AGENT_ID}
-      - HANDLER_AGENT_SECRET=${HANDLER_AGENT_SECRET}
+      - ASPNETCORE_URLS=http://+:5055
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - HANDLER_SERVICE_URL=http://handler:5055
+      - HANDLER_AGENT_ID=handler-agent
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
+      discovery:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5055/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
-  api:
-    image: a2a-api
+  api-backend:
+    build:
+      context: ./api-backend
+      dockerfile: Dockerfile
+    image: a2a-api-backend:v2
     ports:
       - "5056:5056"
     environment:
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ASPNETCORE_URLS=http://+:5056
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - IDENTITY_SERVICE_URL=http://identity:5050
+      - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - CLASSIFIER_SERVICE_URL=http://classifier:5052
+      - ASSESSOR_SERVICE_URL=http://assessor:5053
+      - ROUTER_SERVICE_URL=http://router:5054
+      - HANDLER_SERVICE_URL=http://handler:5055
+      - API_BACKEND_SERVICE_URL=http://api-backend:5056
+      - API_BACKEND_AGENT_ID=api-backend-agent
     networks:
       - a2a-network
     depends_on:
-      - identity
-      - discovery
-      - classifier
-      - assessor
-      - router
-      - handler
+      identity:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      classifier:
+        condition: service_healthy
+      assessor:
+        condition: service_healthy
+      router:
+        condition: service_healthy
+      handler:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5056/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 networks:
   a2a-network:
