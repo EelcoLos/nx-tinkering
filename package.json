@@ -78,7 +78,7 @@
     "@typescript-eslint/eslint-plugin": "8.59.4",
     "@typescript-eslint/parser": "8.59.4",
     "@typescript-eslint/utils": "8.59.4",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "@vitest/ui": "~4.1.6",
     "angular-eslint": "21.4.0",
     "babel-jest": "^30.4.1",
