@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="8.*" />
+    <PackageReference Include="FastEndpoints" Version="8.2.0-beta.39" />
     <PackageReference Include="FastEndpoints.A2A" Version="1.0.0-beta.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.*" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.*" />

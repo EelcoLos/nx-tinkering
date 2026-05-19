@@ -1,29 +1,23 @@
 namespace Classifier.Skills;
 
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Text.Json.Serialization;
 
 /// <summary>
 /// A2A Skill: Classifies text input into predefined categories
 /// Exposed only via /a2a JSON-RPC endpoint, not direct HTTP
 /// </summary>
+[A2ASkill("classify-text")]
 public class ClassifySkillEndpoint : Endpoint<ClassifyRequest, ClassifyResponse>
 {
     public override void Configure()
     {
-        Post("/classify");
+        Post("/classify-internal");
         AllowAnonymous();
-        
-        // Register as A2A skill
-        // Accessible ONLY via /a2a JSON-RPC, not direct HTTP POST
-        this.A2ASkill(skill => skill
-            .WithId("classify-text")
+        Description(b => b
             .WithName("Classify Text")
-            .WithDescription("Classifies text into categories: incident, defect, feature_request, inquiry, or general")
-            .WithTag("text-classification")
-            .WithTag("triage")
-            .WithExample("The system is down - production outage")
-        );
+            .WithDescription("Classifies text into categories: incident, defect, feature_request, inquiry, or general"));
     }
 
     public override async Task HandleAsync(ClassifyRequest req, CancellationToken ct)
@@ -43,7 +37,7 @@ public class ClassifySkillEndpoint : Endpoint<ClassifyRequest, ClassifyResponse>
             Description = $"Text classified as '{classification.Category}' with {classification.Confidence:P0} confidence"
         };
 
-        await SendOkAsync(ct);
+        HttpContext.Response.StatusCode = 200;
         await HttpContext.Response.WriteAsJsonAsync(response, cancellationToken: ct);
     }
 

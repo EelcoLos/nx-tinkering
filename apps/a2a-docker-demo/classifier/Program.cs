@@ -26,6 +26,12 @@ builder.Services.AddA2A(options =>
     options.Description = "A2A agent that classifies text into categories";
     options.Version = "1.0.0";
     options.Url = $"{settings.ServiceBaseUrl}/a2a";
+    // Show skills to any authenticated caller (anyone with a Bearer token)
+    options.SkillVisibilityFilter = (endpoint, principal, context) => 
+    {
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        return !string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
+    };
 });
 
 var app = builder.Build();
