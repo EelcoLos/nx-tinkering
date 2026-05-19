@@ -9,10 +9,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-    using (var rng = RandomNumberGenerator.Create())
 
 
+
+static string GenerateSecretKey()
+{
+    var key = new byte[32];
+    using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+    {
+        rng.GetBytes(key);
+    }
+    return Convert.ToBase64String(key);
+}
 
 const string IdentityHostUrl = "http://localhost:5050";
 
@@ -410,9 +418,6 @@ sealed class JwtService
 }
 
 
-static class Helpers
-{
-    string GenerateSecretKey()        {            var key = new byte[32];            {                rng.GetBytes(key);            }                    return Convert.ToBase64String(key);        }        
-}
+
 
 app.Run();
