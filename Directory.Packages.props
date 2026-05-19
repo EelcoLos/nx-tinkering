@@ -6,10 +6,10 @@
     <!-- Code coverage -->
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <!-- FastEndpoints -->
-    <PackageVersion Include="FastEndpoints" Version="8.2.0-beta.37" />
-    <PackageVersion Include="FastEndpoints.OpenApi" Version="8.2.0-beta.37" />
-    <PackageVersion Include="FastEndpoints.OpenApi.Kiota" Version="8.2.0-beta.37" />
-    <PackageVersion Include="FastEndpoints.Security" Version="8.2.0-beta.37" />
+    <PackageVersion Include="FastEndpoints" Version="8.2.0-beta.38" />
+    <PackageVersion Include="FastEndpoints.OpenApi" Version="8.2.0-beta.38" />
+    <PackageVersion Include="FastEndpoints.OpenApi.Kiota" Version="8.2.0-beta.38" />
+    <PackageVersion Include="FastEndpoints.Security" Version="8.2.0-beta.38" />
     <!-- Microsoft.AspNetCore -->
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
