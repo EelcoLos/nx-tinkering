@@ -361,6 +361,7 @@ class DownstreamGateway
 
     public async Task<TriageRecord> RunTriageAsync(string input, CancellationToken ct)
     {
+        var startTime = DateTimeOffset.UtcNow;
         var agentToken = await _identityClient.GetAgentTokenAsync(ct);
         var client = _httpClientFactory.CreateClient();
         var record = new TriageRecord
@@ -368,10 +369,12 @@ class DownstreamGateway
             Id = $"triage-{Guid.NewGuid():N}"[..19],
             Input = input,
             Status = "processing",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
+            CreatedAt = startTime,
+            UpdatedAt = startTime
         };
 
+        // Classifier
+        var classifyStart = DateTimeOffset.UtcNow;
         var classification = await PostAsync<ClassificationResponse>(client, $"{_settings.ClassifierServiceUrl}/skills/classify", new
         {
             input,
@@ -379,7 +382,16 @@ class DownstreamGateway
         }, ct);
         record.Classification = classification.ClassificationType;
         record.UpdatedAt = DateTimeOffset.UtcNow;
+        record.Trace.Add(new TraceEntry
+        {
+            Service = "Classifier",
+            Status = "completed",
+            TimestampMs = (long)(DateTimeOffset.UtcNow - classifyStart).TotalMilliseconds,
+            Result = classification.ClassificationType
+        });
 
+        // Assessor
+        var assessStart = DateTimeOffset.UtcNow;
         var assessment = await PostAsync<AssessmentResponse>(client, $"{_settings.AssessorServiceUrl}/skills/assess", new
         {
             classification = classification.ClassificationType,
@@ -387,7 +399,16 @@ class DownstreamGateway
         }, ct);
         record.Priority = assessment.Priority;
         record.UpdatedAt = DateTimeOffset.UtcNow;
+        record.Trace.Add(new TraceEntry
+        {
+            Service = "Assessor",
+            Status = "completed",
+            TimestampMs = (long)(DateTimeOffset.UtcNow - assessStart).TotalMilliseconds,
+            Result = assessment.Priority
+        });
 
+        // Router
+        var routeStart = DateTimeOffset.UtcNow;
         var routing = await PostAsync<RoutingResponse>(client, $"{_settings.RouterServiceUrl}/skills/route", new
         {
             priority = assessment.Priority,
@@ -395,7 +416,16 @@ class DownstreamGateway
         }, ct);
         record.NextHandler = routing.NextHandler;
         record.UpdatedAt = DateTimeOffset.UtcNow;
+        record.Trace.Add(new TraceEntry
+        {
+            Service = "Router",
+            Status = "completed",
+            TimestampMs = (long)(DateTimeOffset.UtcNow - routeStart).TotalMilliseconds,
+            Result = routing.NextHandler
+        });
 
+        // Handler
+        var handleStart = DateTimeOffset.UtcNow;
         var handling = await PostAsync<HandlingResponse>(client, $"{_settings.HandlerServiceUrl}/skills/handle", new
         {
             input,
@@ -408,6 +438,14 @@ class DownstreamGateway
         record.TicketId = handling.TicketId;
         record.Summary = handling.Summary;
         record.UpdatedAt = DateTimeOffset.UtcNow;
+        record.Trace.Add(new TraceEntry
+        {
+            Service = "Handler",
+            Status = "completed",
+            TimestampMs = (long)(DateTimeOffset.UtcNow - handleStart).TotalMilliseconds,
+            Result = handling.TicketId
+        });
+
         return record;
     }
 
@@ -484,8 +522,17 @@ class TriageRecord
     [JsonPropertyName("summary")] public string? Summary { get; set; }
     [JsonPropertyName("status")] public string Status { get; set; } = "pending";
     [JsonPropertyName("error")] public string? Error { get; set; }
+    [JsonPropertyName("trace")] public List<TraceEntry> Trace { get; set; } = new();
     [JsonPropertyName("created_at")] public DateTimeOffset CreatedAt { get; set; }
     [JsonPropertyName("updated_at")] public DateTimeOffset UpdatedAt { get; set; }
+}
+
+class TraceEntry
+{
+    [JsonPropertyName("service")] public string Service { get; set; } = "";
+    [JsonPropertyName("status")] public string Status { get; set; } = "";
+    [JsonPropertyName("timestamp_ms")] public long TimestampMs { get; set; }
+    [JsonPropertyName("result")] public string Result { get; set; } = "";
 }
 
 class ClassificationResponse

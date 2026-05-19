@@ -294,6 +294,20 @@
             
             const item = document.createElement('div');
             item.className = 'request-item';
+            
+            // Build trace HTML
+            let traceHtml = '';
+            if (request.trace && request.trace.length > 0) {
+                traceHtml = '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+                traceHtml += '<strong>📊 Service Trace:</strong><br>';
+                request.trace.forEach((entry, idx) => {
+                    traceHtml += `<div style="margin: 5px 0; font-size: 13px;">
+                        ${idx + 1}. <strong>${entry.service}</strong>: ${entry.result} (${entry.timestamp_ms}ms) ✓
+                    </div>`;
+                });
+                traceHtml += '</div>';
+            }
+            
             item.innerHTML = `
                 <h4>Request #${Math.random().toString(36).substr(2, 9).toUpperCase()}</h4>
                 <p><strong>Input:</strong> ${request.input || 'Processing...'}</p>
@@ -307,6 +321,7 @@
                     Router <span class="flow-arrow">→</span>
                     Handler
                 </div>
+                ${traceHtml}
             `;
             historyList.insertBefore(item, historyList.firstChild);
         }
