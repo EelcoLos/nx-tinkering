@@ -373,13 +373,13 @@ class DownstreamGateway
             UpdatedAt = startTime
         };
 
-        // Classifier
+        // Classifier - via A2A JSON-RPC
         var classifyStart = DateTimeOffset.UtcNow;
-        var classification = await PostAsync<ClassificationResponse>(client, $"{_settings.ClassifierServiceUrl}/skills/classify", new
+        var classifyResult = await SendA2AMessageAsync(client, _settings.ClassifierServiceUrl, "classify-text", new { text = input }, agentToken, ct);
+        var classification = new ClassificationResponse
         {
-            input,
-            metadata = new { agent_jwt = agentToken }
-        }, ct);
+            ClassificationType = classifyResult["classification"]?.ToString() ?? "unknown"
+        };
         record.Classification = classification.ClassificationType;
         record.UpdatedAt = DateTimeOffset.UtcNow;
         record.Trace.Add(new TraceEntry
@@ -390,13 +390,14 @@ class DownstreamGateway
             Result = classification.ClassificationType
         });
 
-        // Assessor
+        // Assessor - via A2A JSON-RPC
         var assessStart = DateTimeOffset.UtcNow;
-        var assessment = await PostAsync<AssessmentResponse>(client, $"{_settings.AssessorServiceUrl}/skills/assess", new
+        var assessResult = await SendA2AMessageAsync(client, _settings.AssessorServiceUrl, "assess-priority", new { classification = classification.ClassificationType }, agentToken, ct);
+        var assessment = new AssessmentResponse
         {
-            classification = classification.ClassificationType,
-            metadata = new { agent_jwt = agentToken }
-        }, ct);
+            Priority = assessResult["priority"]?.ToString() ?? "medium",
+            Score = int.TryParse(assessResult["score"]?.ToString(), out var score) ? score : 5
+        };
         record.Priority = assessment.Priority;
         record.UpdatedAt = DateTimeOffset.UtcNow;
         record.Trace.Add(new TraceEntry
@@ -407,13 +408,13 @@ class DownstreamGateway
             Result = assessment.Priority
         });
 
-        // Router
+        // Router - via A2A JSON-RPC
         var routeStart = DateTimeOffset.UtcNow;
-        var routing = await PostAsync<RoutingResponse>(client, $"{_settings.RouterServiceUrl}/skills/route", new
+        var routeResult = await SendA2AMessageAsync(client, _settings.RouterServiceUrl, "route-incident", new { priority = assessment.Priority }, agentToken, ct);
+        var routing = new RoutingResponse
         {
-            priority = assessment.Priority,
-            metadata = new { agent_jwt = agentToken }
-        }, ct);
+            NextHandler = routeResult["team"]?.ToString() ?? "ops-standard"
+        };
         record.NextHandler = routing.NextHandler;
         record.UpdatedAt = DateTimeOffset.UtcNow;
         record.Trace.Add(new TraceEntry
@@ -424,16 +425,15 @@ class DownstreamGateway
             Result = routing.NextHandler
         });
 
-        // Handler
+        // Handler - via A2A JSON-RPC
         var handleStart = DateTimeOffset.UtcNow;
-        var handling = await PostAsync<HandlingResponse>(client, $"{_settings.HandlerServiceUrl}/skills/handle", new
+        var handleResult = await SendA2AMessageAsync(client, _settings.HandlerServiceUrl, "create-ticket", new { subject = input, team = routing.NextHandler }, agentToken, ct);
+        var handling = new HandlingResponse
         {
-            input,
-            classification = classification.ClassificationType,
-            priority = assessment.Priority,
-            metadata = new { agent_jwt = agentToken }
-        }, ct);
-
+            Status = "completed",
+            TicketId = handleResult["ticketId"]?.ToString() ?? $"TKT-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
+            Summary = $"Classified as {classification.ClassificationType}, routed to {routing.NextHandler}"
+        };
         record.Status = handling.Status;
         record.TicketId = handling.TicketId;
         record.Summary = handling.Summary;
@@ -449,17 +449,48 @@ class DownstreamGateway
         return record;
     }
 
-    private static async Task<T> PostAsync<T>(HttpClient client, string url, object payload, CancellationToken ct)
+    private async Task<Dictionary<string, object>> SendA2AMessageAsync(HttpClient client, string serviceBaseUrl, string skillId, object parameters, string bearerToken, CancellationToken ct)
     {
-        using var response = await client.PostAsJsonAsync(url, payload, ct);
-        response.EnsureSuccessStatusCode();
-        var body = await response.Content.ReadFromJsonAsync<T>(cancellationToken: ct);
-        if (body is null)
+        var rpcRequest = new
         {
-            throw new InvalidOperationException($"{url} returned an empty response.");
+            jsonrpc = "2.0",
+            id = Guid.NewGuid().ToString(),
+            method = "SendMessage",
+            @params = new
+            {
+                message = new
+                {
+                    messageId = Guid.NewGuid().ToString(),
+                    role = "ROLE_USER",
+                    parts = new[] { new { data = parameters } }
+                },
+                metadata = new { skill = skillId }
+            }
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{serviceBaseUrl}/a2a");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        request.Content = JsonContent.Create(rpcRequest);
+
+        using var response = await client.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+
+        var jsonResponse = await response.Content.ReadAsStringAsync(ct);
+        using var doc = JsonDocument.Parse(jsonResponse);
+        var resultElement = doc.RootElement.GetProperty("result");
+        
+        if (resultElement.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("Invalid A2A response");
         }
 
-        return body;
+        var messageElement = resultElement.GetProperty("message");
+        var partsElement = messageElement.GetProperty("parts");
+        var firstPart = partsElement[0];
+        var dataElement = firstPart.GetProperty("data");
+
+        var result = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText()) ?? new Dictionary<string, object>();
+        return result;
     }
 }
 
