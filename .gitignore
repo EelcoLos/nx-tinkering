@@ -57,3 +57,4 @@ apps/x402-demo/app.run.local.json
 vite.config.*.timestamp*
 .nx/polygraph
 .nx/self-healing
+*.csproj.lscache
