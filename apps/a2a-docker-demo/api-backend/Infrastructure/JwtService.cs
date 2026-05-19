@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Assessor.Infrastructure;
+namespace ApiBackend.Infrastructure;
 
 public class JwtService
 {

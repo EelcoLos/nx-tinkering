@@ -1,79 +1,57 @@
-namespace Handler.Infrastructure;
-
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Handler.Infrastructure;
 
 public class JwtService
 {
-    private readonly SymmetricSecurityKey _key;
-
-    public JwtService(string jwtSecretKey)
+    private readonly string _secretKey;
+    private static readonly string[] AvailableServices = new[]
     {
-        if (string.IsNullOrWhiteSpace(jwtSecretKey) || jwtSecretKey.Length < 32)
-            throw new ArgumentException("JWT secret key must be at least 32 characters");
-        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey));
+        "classifier:5052",
+        "assessor:5053",
+        "router:5054",
+        "handler:5055",
+        "identity:5050",
+        "api-backend:5056"
+    };
+
+    public JwtService(string secretKey)
+    {
+        _secretKey = secretKey;
     }
 
-    public string GenerateAgentToken(string agentId)
+    public string IssueAgentToken(string agentId, string[] scopes)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var descriptor = new SecurityTokenDescriptor
+        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim("sub", agentId),
-                new Claim("agent_id", agentId),
-                new Claim("type", "agent")
-            }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)
+            new(ClaimTypes.NameIdentifier, agentId),
+            new("agent_id", agentId),
+            new("type", "agent")
         };
 
-        return handler.WriteToken(handler.CreateToken(descriptor));
-    }
-
-    public ValidatedToken? ValidateLocal(string token, string? expectedType = null)
-    {
-        try
+        foreach (var scope in scopes)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var principal = handler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = _key,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero,
-            }, out _);
-
-            var validatedToken = new ValidatedToken
-            {
-                Subject = principal.FindFirst("sub")?.Value ?? "",
-                Type = principal.FindFirst("type")?.Value ?? "",
-                AgentId = principal.FindFirst("agent_id")?.Value
-            };
-
-            if (!string.IsNullOrWhiteSpace(expectedType) && 
-                !string.Equals(validatedToken.Type, expectedType, StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
-            return validatedToken;
+            claims.Add(new("scope", scope));
         }
-        catch
+
+        foreach (var service in AvailableServices)
         {
-            return null;
+            claims.Add(new("service", service));
         }
-    }
-}
 
-public record ValidatedToken
-{
-    public string Subject { get; set; } = "";
-    public string Type { get; set; } = "";
-    public string? AgentId { get; set; }
+        var token = new JwtSecurityToken(
+            issuer: "a2a-identity-provider",
+            audience: "a2a-agents",
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }
