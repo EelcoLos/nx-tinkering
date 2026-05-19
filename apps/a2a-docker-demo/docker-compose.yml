@@ -39,7 +39,7 @@ services:
       start_period: 10s
 
   classifier:
-    image: a2a-classifier:v2
+    image: a2a-classifier:v4
     ports:
       - "5052:5052"
     environment:
@@ -59,7 +59,7 @@ services:
       start_period: 10s
 
   assessor:
-    image: a2a-assessor:v2
+    image: a2a-assessor:v4
     ports:
       - "5053:5053"
     environment:
@@ -79,7 +79,7 @@ services:
       start_period: 10s
 
   router:
-    image: a2a-router:v2
+    image: a2a-router:v4
     ports:
       - "5054:5054"
     environment:
@@ -99,7 +99,7 @@ services:
       start_period: 10s
 
   handler:
-    image: a2a-handler:v2
+    image: a2a-handler:v4
     ports:
       - "5055:5055"
     environment:
@@ -119,7 +119,7 @@ services:
       start_period: 10s
 
   api-backend:
-    image: a2a-api-backend:v9
+    image: a2a-api-backend:v10
     ports:
       - "5056:5056"
     environment:

@@ -576,7 +576,11 @@ class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 
 class GetServiceCardEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() => Get("/api/services/{id}/card");
+    public override void Configure()
+    {
+        Get("/api/services/{id}/card");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)
     {
@@ -596,7 +600,11 @@ class GetServiceCardEndpoint : Endpoint<EmptyRequest, object>
 
 class SubmitTriageEndpoint : Endpoint<SubmitTriageRequest, object>
 {
-    public override void Configure() => Post("/api/triage");
+    public override void Configure()
+    {
+        Post("/api/triage");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)
     {
@@ -636,7 +644,11 @@ class SubmitTriageEndpoint : Endpoint<SubmitTriageRequest, object>
 
 class GetTriageStatusEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() => Get("/api/triage/{id}");
+    public override void Configure()
+    {
+        Get("/api/triage/{id}");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)
     {

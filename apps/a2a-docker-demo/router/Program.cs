@@ -227,8 +227,13 @@ class RequestAuthorizer
         return await _identityClient.ValidateTokenAsync(token, expectedType, ct);
     }
 
-    private static string? GetBearerToken(string authorizationHeader)
+    private static string? GetBearerToken(string? authorizationHeader)
     {
+        if (string.IsNullOrEmpty(authorizationHeader))
+        {
+            return null;
+        }
+
         const string prefix = "Bearer ";
         return authorizationHeader.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? authorizationHeader[prefix.Length..].Trim()
