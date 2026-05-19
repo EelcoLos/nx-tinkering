@@ -252,8 +252,11 @@ class RequestAuthorizer
         return await _identityClient.ValidateTokenAsync(token, expectedType, ct);
     }
 
-    private static string? GetBearerToken(string authorizationHeader)
+    private static string? GetBearerToken(string? authorizationHeader)
     {
+        if (string.IsNullOrWhiteSpace(authorizationHeader))
+            return null;
+            
         const string prefix = "Bearer ";
         return authorizationHeader.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? authorizationHeader[prefix.Length..].Trim()
@@ -557,7 +560,11 @@ class LoginEndpoint : Endpoint<LoginRequest, object>
 
 class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() => Get("/api/services");
+    public override void Configure() 
+    { 
+        Get("/api/services");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)
     {

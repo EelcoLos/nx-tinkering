@@ -292,7 +292,11 @@ class ValidatedToken
 
 class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() => Get("/services");
+    public override void Configure() 
+    { 
+        Get("/services");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)
     {
@@ -303,7 +307,11 @@ class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 
 class GetServiceCardEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() => Get("/services/{id}/card");
+    public override void Configure() 
+    { 
+        Get("/services/{id}/card");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(EmptyRequest _, CancellationToken ct)
     {
