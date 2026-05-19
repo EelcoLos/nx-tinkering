@@ -82,25 +82,25 @@ app.MapPost("/api/triage", async (TriageRequest req, IHttpClientFactory httpClie
 
     var bearerToken = "test-token";
     var client = httpClientFactory.CreateClient();
-    var steps = new List<(string, string)>();
+    var steps = new List<StepResult>();
 
     try
     {
         var classifyResult = await A2AHelper.CallServiceAsync(client, "http://classifier:5052", "classify-text", new { text = input }, bearerToken, ct);
         var classification = classifyResult["classification"]?.ToString() ?? "unknown";
-        steps.Add(("Classifier", classification));
+        steps.Add(new StepResult("Classifier", classification));
 
         var assessResult = await A2AHelper.CallServiceAsync(client, "http://assessor:5053", "assess-priority", new { classification }, bearerToken, ct);
         var priority = assessResult["priority"]?.ToString() ?? "medium";
-        steps.Add(("Assessor", priority));
+        steps.Add(new StepResult("Assessor", priority));
 
         var routeResult = await A2AHelper.CallServiceAsync(client, "http://router:5054", "route-incident", new { priority }, bearerToken, ct);
         var team = routeResult["team"]?.ToString() ?? "ops-standard";
-        steps.Add(("Router", team));
+        steps.Add(new StepResult("Router", team));
 
         var handleResult = await A2AHelper.CallServiceAsync(client, "http://handler:5055", "create-ticket", new { subject = input, team }, bearerToken, ct);
         var ticketId = handleResult["ticketId"]?.ToString() ?? $"TKT-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-        steps.Add(("Handler", ticketId));
+        steps.Add(new StepResult("Handler", ticketId));
 
         var result = new TriageWorkflowResult(
             Id: $"triage-{Guid.NewGuid():N}"[..19],
@@ -133,7 +133,9 @@ app.Run();
 
 record TriageRequest(string? Input);
 
-record TriageWorkflowResult(string Id, string Input, string Status, List<(string, string)> Steps, string? Summary = null, string? Error = null);
+record StepResult(string Service, string Result);
+
+record TriageWorkflowResult(string Id, string Input, string Status, List<StepResult> Steps, string? Summary = null, string? Error = null);
 
 static class A2AHelper
 {

@@ -95,7 +95,7 @@ services:
       start_period: 10s
 
   api-backend:
-    image: a2a-api-backend:v7-a2a
+    image: a2a-api-backend:v7.1-a2a
     ports:
       - "5056:5056"
     environment:
