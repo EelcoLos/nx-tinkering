@@ -331,8 +331,8 @@
             }
         });
 
-        // CORS handling
-        fetch(`${API_URL}`, { 
+        // CORS preflight - use OPTIONS to check if API is available
+        fetch(`${API_URL}/health`, { 
             mode: 'no-cors',
             headers: { 'Origin': window.location.origin }
         }).catch(() => {
