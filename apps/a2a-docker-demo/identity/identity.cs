@@ -10,6 +10,28 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 
+// ============ Top-Level Setup (MUST come first in file-scoped programs) ============
+
+const string IdentityHostUrl = "http://localhost:5050";
+
+string GenerateSecretKey()
+{
+    var key = new byte[32];
+    using (var rng = RandomNumberGenerator.Create())
+    {
+        rng.GetBytes(key);
+    }
+    return Convert.ToBase64String(key);
+}
+
+var bld = WebApplication.CreateBuilder(args);
+bld.WebHost.UseUrls(IdentityHostUrl);
+
+var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? GenerateSecretKey();
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+
+// ============ Domain Models ============
+
 sealed class LoginRequest
 {
     [JsonPropertyName("username")]
@@ -392,23 +414,7 @@ sealed class JwtService
     }
 }
 
-const string IdentityHostUrl = "http://localhost:5050";
-
-string GenerateSecretKey()
-{
-    var key = new byte[32];
-    using (var rng = RandomNumberGenerator.Create())
-    {
-        rng.GetBytes(key);
-    }
-    return Convert.ToBase64String(key);
-}
-
-var bld = WebApplication.CreateBuilder(args);
-bld.WebHost.UseUrls(IdentityHostUrl);
-
-var jwtSecret = bld.Configuration["JWT_SECRET_KEY"] ?? GenerateSecretKey();
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+// ============ Application Setup (Continuation) ============
 
 var userDb = new UserDatabase();
 userDb.SeedDemoUsers();
