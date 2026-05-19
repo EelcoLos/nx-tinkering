@@ -32,6 +32,8 @@ builder.Services.AddSingleton<DownstreamGateway>();
 builder.Services.AddFastEndpoints();
 
 var app = builder.Build();
+
+// CORS must come early, before routing
 app.UseCors("AllowAll");
 
 app.Use(async (context, next) =>
@@ -61,8 +63,8 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseFastEndpoints();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+app.UseFastEndpoints();
 app.Lifetime.ApplicationStarted.Register(() =>
 {
     _ = Task.Run(async () =>
