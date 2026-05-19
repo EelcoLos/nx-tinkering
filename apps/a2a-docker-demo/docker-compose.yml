@@ -118,7 +118,7 @@ services:
       start_period: 10s
 
   website:
-    image: a2a-website:v12
+    image: a2a-website:v13
     ports:
       - "8080:80"
     networks:

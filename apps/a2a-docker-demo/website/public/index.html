@@ -178,7 +178,7 @@
         // Otherwise use the same host
         // Use the same protocol (HTTP/HTTPS) as the website
         const API_HOST = window.location.hostname === '10.0.0.3' ? '10.0.0.3' : window.location.hostname;
-        const API_PROTOCOL = window.location.protocol === 'https:' ? 'https' : 'http';
+        const API_PROTOCOL = window.location.protocol;  // Already includes colon (e.g., 'https:', 'http:')
         const API_URL = `${API_PROTOCOL}//${API_HOST}:5056`;
         
         console.log('Website Debug Info:');

@@ -1,50 +1,57 @@
 # A2A Protocol Docker Demo - Triage Workflow
 
-This is a comprehensive demonstration of the FastEndpoints A2A (Agent-to-Agent) protocol with real network communication, service discovery, and identity management. The demo implements a triage workflow where multiple specialist A2A services work together to classify, assess, route, and handle incoming requests.
+This is a comprehensive demonstration of the FastEndpoints A2A (Agent-to-Agent) protocol with real network communication, identity management, and a complete triage workflow. The demo implements a multi-service architecture where specialist agents work together to classify, assess, route, and handle incoming requests.
 
 ## Architecture
 
+### Services Overview
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      Docker Stack Network                            │
+│                      Docker Swarm Stack                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                       │
-│  ┌──────────────────────────┐  ┌──────────────────┐  ┌────────────┐ │
-│  │  Identity Service        │  │  React Website   │  │  API       │ │
-│  │  (Port 5050)             │  │  (Port 8080)     │  │  Backend   │ │
-│  │  - User authentication   │  │  - User login    │  │  (Port     │ │
-│  │  - Agent token issuance  │  │  - Dashboard     │  │  5056)     │ │
-│  │  - Token validation      │  └──────────────────┘  └────────────┘ │
-│  └──────────────────────────┘           │                    │      │
-│           ▲                              └────┬───────────────┘      │
-│           │ (JWT validation)                  │                     │
-│    ┌──────┴──────────────────────────────────┘                      │
-│    │                                                                  │
 │  ┌──────────────────────────┐  ┌──────────────────┐                 │
-│  │ Discovery Service        │  │ Classifier       │                 │
-│  │ (Port 5051)              │  │ (Port 5052)      │                 │
-│  │ - Service registry       │  │ - A2A Specialist │                 │
-│  │ - Agent lookup           │  │ - JWT-protected  │                 │
+│  │  Identity Service        │  │  Website         │                 │
+│  │  (Port 5050)             │  │  (Port 8080)     │                 │
+│  │  - User authentication   │  │  - Login form    │                 │
+│  │  - Agent token issuance  │  │  - Triage UI     │                 │
+│  │  - A2A skills            │  │  - Results view  │                 │
 │  └──────────────────────────┘  └──────────────────┘                 │
 │           ▲                             │                           │
 │           │                             ▼                           │
-│  ┌────────────────────────────┐  ┌──────────────────┐               │
-│  │ Router Service             │  │ Assessor         │               │
-│  │ (Port 5054)                │  │ (Port 5053)      │               │
-│  │ - A2A Specialist           │  │ - A2A Specialist │               │
-│  │ - JWT-protected            │  │ - JWT-protected  │               │
-│  └────────────────────────────┘  └──────────────────┘               │
-│           │                             │                           │
-│           └──────────┬──────────────────┘                           │
-│                      ▼                                              │
-│                ┌──────────────────┐                                 │
-│                │ Handler          │                                 │
-│                │ (Port 5055)      │                                 │
-│                │ - A2A Specialist │                                 │
-│                │ - JWT-protected  │                                 │
-│                └──────────────────┘                                 │
-│                                                                      │
-└──────────────────────────────────────────────────────────────────────┘
+│           │                  ┌──────────────────┐                   │
+│           │                  │  API Backend     │                   │
+│           │                  │  (Port 5056)     │                   │
+│           │                  │  - Orchestration │                   │
+│           │                  │  - Login endpoint│                   │
+│           │                  │  - Triage flow   │                   │
+│           │                  └──────────────────┘                   │
+│           │                        │ │ │ │                         │
+│           └─────────────┬──────────┤ │ │ │                         │
+│                         │          │ │ │ │                         │
+│           ┌─────────────┼──┬───────┼─┼─┘ │                         │
+│           ▼             │  │       │ │   │                         │
+│  ┌──────────────────┐  │  │       │ │   │                         │
+│  │ Classifier       │  │  ▼       │ │   │                         │
+│  │ (Port 5052)      │  │ ┌───────────┐  │                         │
+│  │ - Classify text  │  │ │ Assessor  │  │                         │
+│  │ - A2A Skill      │  │ │ (5053)    │  │                         │
+│  └──────────────────┘  │ └───────────┘  │                         │
+│           │             │      │        │                         │
+│           │             │      ▼        │                         │
+│           │             │  ┌───────────┐                          │
+│           └─────────────┼──│  Router   │                          │
+│                         │  │ (5054)    │                          │
+│                         │  └───────────┘                          │
+│                         │      │                                  │
+│                         │      ▼                                  │
+│                         │  ┌───────────┐                          │
+│                         └──│  Handler  │                          │
+│                            │ (5055)    │                          │
+│                            └───────────┘                          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Services
@@ -53,362 +60,350 @@ This is a comprehensive demonstration of the FastEndpoints A2A (Agent-to-Agent) 
 Central authentication and token issuance service for both users and agents.
 
 **Endpoints:**
-- `POST /auth/login` - User login (returns JWT)
-- `GET /auth/agent/token` - Agent token issuance
-- `POST /auth/validate` - Token validation
+- `POST /auth/login` - User login (returns JWT token and user_id)
+- `POST /api/token` - Agent token issuance  
 - `GET /health` - Health check
+- `POST /a2a` - A2A JSON-RPC endpoint (requires Bearer token)
 
-**Demo Users:**
-- Username: `admin`, Password: `demo123`
-- Username: `user`, Password: `user456`
+**Demo Credentials:**
+- Username: `demo`, Password: `demo123`
+- Username: `admin`, Password: `admin123`
 
-### Discovery Service (Port 5051)
-Service registry for A2A agents. Allows services to register themselves and discover other services.
-
-**Endpoints:**
-- `POST /discovery/register` - Register a service (agent JWT required)
-- `GET /discovery/services` - List all registered services (user JWT required)
-- `GET /discovery/services/{serviceId}` - Get specific service info (user JWT required)
-- `POST /skills/discover-services` - A2A skill for agent-to-agent discovery
-- `GET /health` - Health check
+**Service Discovery:**
+- Services are discovered via JWT claims (no separate discovery service)
+- Each token includes list of available services in claims
+- Services authenticate with identity to get tokens at startup
 
 ### Classifier Service (Port 5052)
-First specialist in the triage flow. Analyzes incoming requests and determines their type and urgency.
+First A2A specialist in the triage flow. Analyzes incoming requests and determines their type.
 
-**Skills:**
-- `classifier_skill` - Classifies requests as technical_issue, inquiry, defect, feature_request, or general
-
-**Urgency Levels:** critical, high, normal, low
+**A2A Skill:**
+- Skill ID: `classify-text`
+- Input: Text to classify
+- Output: Classification (incident, defect, inquiry, feature)
 
 ### Assessor Service (Port 5053)
-Second specialist. Assigns priority levels based on classification.
+Second A2A specialist. Assigns priority levels based on classification.
 
-**Skills:**
-- `assessor_skill` - Assigns priority (1-5) and determines handler assignment
-
-**Output:** Priority level, assigned handler
+**A2A Skill:**
+- Skill ID: `assess-priority`
+- Input: Classification result
+- Output: Priority (critical, high, medium, low)
 
 ### Router Service (Port 5054)
-Third specialist. Routes requests to appropriate handlers based on priority.
+Third A2A specialist. Routes incidents to appropriate teams based on priority.
 
-**Skills:**
-- `router_skill` - Determines routing queue and estimated wait time
-
-**Routing Queues:** urgent_queue, standard_queue, low_priority_queue
+**A2A Skill:**
+- Skill ID: `route-incident`
+- Input: Priority level
+- Output: Team assignment (ops-critical, ops-high, ops-standard, support-tier-1)
 
 ### Handler Service (Port 5055)
-Final specialist. Processes and resolves triage requests, creates tickets.
+Final A2A specialist. Creates tickets for incidents.
 
-**Skills:**
-- `handler_skill` - Executes resolution, creates tickets
-
-**Output:** Ticket ID, resolution strategy
+**A2A Skill:**
+- Skill ID: `create-ticket`
+- Input: Subject and assigned team
+- Output: Ticket ID and status
 
 ### API Backend (Port 5056)
-HTTP gateway for the website. Coordinates the triage workflow.
+Orchestration service that coordinates the triage workflow and serves the website.
 
 **Endpoints:**
-- `POST /api/auth/login` - Forward user login to identity service
-- `GET /api/services` - List available services (user JWT required)
-- `POST /api/triage` - Submit triage request (user JWT required)
+- `POST /auth/login` - User login (returns demo-user-token)
+- `POST /api/triage` - Submit request for triage
 - `GET /health` - Health check
+- `POST /a2a` - A2A JSON-RPC endpoint (requires Bearer token)
 
-### React Website (Port 8080)
-User interface for the demo.
+### Website (Port 8080)
+Interactive dashboard for submitting triage requests and viewing results.
 
 **Features:**
-- Interactive login
-- Service discovery viewer
-- Triage request form
-- Request history with flow visualization
-- Real-time status updates
+- User login form
+- Triage request submission
+- Real-time workflow progress display
+- Request history viewer
+- Responsive design
+- Auto-detects HTTP/HTTPS protocol for API calls
 
-## Running Locally (for Development)
-
-### Prerequisites
-- .NET 9 SDK
-- Node.js 18+
-- Docker (for full stack deployment)
-
-### 1. Setup Environment
-
-```bash
-cd apps/a2a-docker-demo
-cp .env.example .env
-# Edit .env and set proper values for:
-# - JWT_SECRET_KEY (min 32 characters)
-# - Agent credentials
-# - Demo user credentials
-```
-
-### 2. Run Services (in separate terminals)
-
-Terminal 1 - Identity Service:
-```bash
-dotnet run apps/a2a-docker-demo/identity/identity.cs
-```
-
-Terminal 2 - Discovery Service:
-```bash
-dotnet run apps/a2a-docker-demo/discovery/discovery.cs
-```
-
-Terminal 3 - Classifier Service:
-```bash
-dotnet run apps/a2a-docker-demo/classifier/classifier.cs
-```
-
-Terminal 4 - Assessor Service:
-```bash
-dotnet run apps/a2a-docker-demo/assessor/assessor.cs
-```
-
-Terminal 5 - Router Service:
-```bash
-dotnet run apps/a2a-docker-demo/router/router.cs
-```
-
-Terminal 6 - Handler Service:
-```bash
-dotnet run apps/a2a-docker-demo/handler/handler.cs
-```
-
-Terminal 7 - API Backend:
-```bash
-dotnet run apps/a2a-docker-demo/api-backend/api.cs
-```
-
-Terminal 8 - React Website:
-```bash
-cd apps/a2a-docker-demo/website
-npm install
-npm start
-```
-
-### 3. Access the Application
-
-- **Website**: http://localhost:8080
-- **API**: http://localhost:5056
-- **Identity Service**: http://localhost:5050
-
-## Running with Docker Stack
+## Quick Start
 
 ### Prerequisites
-- Docker Swarm initialized (`docker swarm init`)
-- Portainer (optional, for GUI management)
+- Docker and Docker Compose
+- Docker Swarm initialized (or use local compose)
 
-### 1. Deploy Stack
+### Local Development
 
+1. **Set environment variables:**
 ```bash
-cd apps/a2a-docker-demo
 cp .env.example .env
-# Edit .env with production values
+# Edit .env and set JWT_SECRET_KEY to a 32+ character string
+```
 
+2. **Start the stack:**
+```bash
+docker compose up -d
+```
+
+3. **Access the website:**
+- Open http://localhost:8080
+- Login with demo/demo123
+- Submit triage requests
+
+### Docker Swarm Deployment
+
+1. **Deploy the stack:**
+```bash
 docker stack deploy -c docker-compose.yml a2a-demo
 ```
 
-### 2. Verify Services
+2. **Access on Swarm:**
+- Website: http://10.0.0.3:8080
+- API: http://10.0.0.3:5056
 
+## API Usage
+
+### Login
 ```bash
-docker service ls
-docker stack ps a2a-demo
-```
-
-All services should show `1/1` replicas in the REPLICAS column.
-
-### 3. Access Services
-
-**From Docker Host (127.0.0.1):**
-- **Website**: http://127.0.0.1:8080
-- **API Backend**: http://127.0.0.1:5056/health
-- **Identity**: http://127.0.0.1:5050/health
-
-**From Network (10.0.0.1 to 10.0.0.3):**
-- **Website**: http://10.0.0.3:8080
-- **API Backend**: http://10.0.0.3:5056/health
-- **Identity**: http://10.0.0.3:5050/health
-
-### 4. Run End-to-End Tests
-
-```bash
-# From host machine (10.0.0.1) to Docker Swarm (10.0.0.3)
-bash test-e2e.sh 10.0.0.3
-
-# From Docker host (127.0.0.1)
-bash test-e2e.sh 127.0.0.1
-
-# Uses default 10.0.0.3
-bash test-e2e.sh
-```
-
-### 5. Remove Stack
-
-```bash
-docker stack rm a2a-demo
-```
-
-## Testing the A2A Protocol
-
-### Quick Network Test
-```bash
-# Test from 10.0.0.1 to 10.0.0.3
-curl http://10.0.0.3:5050/health
-```
-
-### 1. User Login
-```bash
-curl -X POST http://10.0.0.3:5050/auth/login \
+curl -X POST http://localhost:5056/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"demo123"}'
+  -d '{
+    "username": "demo",
+    "password": "demo123"
+  }'
 ```
 
-### 2. Get Agent Token
-```bash
-curl -X GET "http://10.0.0.3:5050/auth/agent/token?agentId=classifier_agent&agentSecret=classifier-secret-change-this"
-```
-
-### 3. Submit Triage Request
-```bash
-curl -X POST http://10.0.0.3:5056/api/triage \
-  -H "Authorization: Bearer <USER_JWT>" \
-  -H "Content-Type: application/json" \
-  -d '{"input":"Server is down - critical issue"}'
-```
-
-### 4. List Services
-```bash
-curl http://10.0.0.3:5051/services \
-  -H "Authorization: Bearer <USER_JWT>"
-```
-
-## JWT Token Format
-
-### User JWT Claims
+Response:
 ```json
 {
-  "sub": "user_id",
-  "username": "admin",
-  "type": "user",
-  "iat": 1234567890,
-  "exp": 1234571490
+  "token": "demo-user-token",
+  "user_id": "demo",
+  "message": "Login successful"
 }
 ```
 
-### Agent JWT Claims
+### Submit Triage Request
+```bash
+curl -X POST http://localhost:5056/api/triage \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "system is down"
+  }'
+```
+
+Response:
 ```json
 {
-  "sub": "agent_id",
-  "agent_id": "classifier_agent",
-  "agent_type": "specialist",
-  "type": "agent",
-  "iat": 1234567890,
-  "exp": 1234571490
+  "id": "triage-abc123def456",
+  "input": "system is down",
+  "status": "completed",
+  "steps": [
+    {
+      "service": "Classifier",
+      "result": "incident"
+    },
+    {
+      "service": "Assessor",
+      "result": "critical"
+    },
+    {
+      "service": "Router",
+      "result": "ops-critical"
+    },
+    {
+      "service": "Handler",
+      "result": "TKT-1779226913"
+    }
+  ],
+  "summary": "Classified as incident, assessed critical, routed to ops-critical, ticket TKT-1779226913 created"
 }
 ```
 
-## A2A Communication Flow
+## A2A Protocol Implementation
 
-```
-User Request (with user JWT)
-    ↓
-[API Backend] validates user JWT
-    ↓
-Calls Classifier Service (with agent JWT in metadata)
-    ↓
-[Classifier] validates agent JWT
-    ↓
-Calls Assessor Service (with agent JWT)
-    ↓
-[Assessor] validates agent JWT
-    ↓
-Calls Router Service (with agent JWT)
-    ↓
-[Router] validates agent JWT
-    ↓
-Calls Handler Service (with agent JWT)
-    ↓
-[Handler] validates agent JWT
-    ↓
-Returns result through the chain
-```
+All services implement the FastEndpoints A2A protocol with the following features:
 
-**All 401 responses indicate JWT validation failures.**
+- **JSON-RPC 2.0 Endpoint:** `/a2a` on each service
+- **Authentication:** Bearer token in Authorization header
+- **Skills Registration:** Auto-generated agent cards at `/.well-known/agent-card.json`
+- **Message Format:** Standard A2A message envelope with messageId, role, parts
+- **Error Handling:** Proper 401/403 responses for auth failures
+
+### Service-to-Service Communication
+
+Services call each other using A2A JSON-RPC messages:
+
+```bash
+# From API backend to Classifier
+curl -X POST http://classifier:5052/a2a \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "SendMessage",
+    "id": "msg-123",
+    "params": {
+      "recipient": "classifier-agent",
+      "skillName": "classify-text",
+      "input": "system is down"
+    }
+  }'
+```
 
 ## Environment Variables
 
-See `.env.example` for all configuration options.
+Create a `.env` file with these variables:
 
-**Key Variables:**
-- `JWT_SECRET_KEY` - Secret for signing JWT tokens
-- `CLASSIFIER_AGENT_ID` / `CLASSIFIER_AGENT_SECRET` - Classifier credentials
-- `ASSESSOR_AGENT_ID` / `ASSESSOR_AGENT_SECRET` - Assessor credentials
-- `ROUTER_AGENT_ID` / `ROUTER_AGENT_SECRET` - Router credentials
-- `HANDLER_AGENT_ID` / `HANDLER_AGENT_SECRET` - Handler credentials
+```bash
+JWT_SECRET_KEY=your-secret-key-minimum-32-characters-1234567890123
+```
 
-## Extending the Demo
+**REQUIRED:** `JWT_SECRET_KEY` must be at least 32 characters. Services will fail to start if not set.
 
-### Adding a New Specialist Service
+## Docker Images
 
-1. Create `apps/a2a-docker-demo/new-service/service.cs` (copy from classifier.cs pattern)
-2. Add credentials to `.env.example` and `.env`:
-   ```
-   NEW_SERVICE_AGENT_ID=new_service_agent
-   NEW_SERVICE_AGENT_SECRET=new-service-secret
-   ```
-3. Add service to `docker-compose.yml`
-4. Service auto-registers with Discovery on startup
-5. Update API backend to call new service in the triage flow
+All services are built from .NET code with multi-stage Docker builds:
 
-### Adding New Users
+- `a2a-identity:v8-a2a`
+- `a2a-classifier:v8-a2a`
+- `a2a-assessor:v8-a2a`
+- `a2a-router:v8-a2a`
+- `a2a-handler:v8-a2a`
+- `a2a-api-backend:v9-a2a`
+- `a2a-website:v12`
 
-Edit the `UserDatabase` seeding in `identity.cs` and rebuild.
+### Building Images Locally
 
-### Customizing Triage Logic
+Use `docker compose build` to rebuild images:
 
-Edit the classification, assessment, routing, and handling logic in respective service files.
+```bash
+# Build all services
+docker compose build
 
-## Troubleshooting
+# Build specific service
+docker compose build api-backend
 
-### Services Can't Find Each Other
-- Ensure all services are running and reachable
-- Check `docker network ls` for correct network
-- Verify environment variables point to correct URLs
+# Build without cache (forces rebuild)
+docker compose build --no-cache
+```
 
-### 401 Unauthorized Errors
-- Verify JWT token is valid and not expired
-- Check JWT_SECRET_KEY is consistent across all services
-- Verify agent credentials in .env match what services are using
+## Testing
 
-### Discovery Service Shows No Services
-- Ensure specialist services are running
-- Check they are sending registration requests to discovery
-- Verify they have valid agent JWTs
+### Health Checks
+```bash
+curl http://localhost:5050/health  # Identity
+curl http://localhost:5052/health  # Classifier
+curl http://localhost:5053/health  # Assessor
+curl http://localhost:5054/health  # Router
+curl http://localhost:5055/health  # Handler
+curl http://localhost:5056/health  # API Backend
+curl http://localhost:8080/health  # Website
+```
 
-## Architecture Notes
+### End-to-End Workflow Test
+See `A2A_PROTOCOL_GUIDE.md` for detailed testing instructions and request/response examples.
 
-- **Project-based .NET services**: Each service has its own directory with Program.cs, .csproj, and Dockerfile
-- **Multi-stage Docker builds**: Services compiled with .NET 11 preview SDK, deployed with lean aspnet runtime
-- **Smaller images**: ~123MB per service (vs 700MB+ single-stage builds)
-- **In-memory registries**: Discovery and identity services use in-memory storage (suitable for demo)
-- **JWT validation at boundaries**: Each service validates tokens on incoming requests
-- **No external dependencies**: Uses only standard .NET/FastEndpoints libraries
-- **Docker Swarm optimized**: Configured for deployment on Docker Stack with overlay network
-- **Service discovery via DNS**: Services communicate using internal service names (e.g., http://identity:5050)
+## Logging
+
+Services log at INFO level by default. Infrastructure component logging (Microsoft.AspNetCore.Hosting.Diagnostics) is set to WARNING to reduce verbosity.
+
+Configure logging levels in `appsettings.json` in each service directory.
 
 ## Security Considerations
 
-This is a **demonstration project**. For production:
+### Authentication
+- All A2A endpoints require Bearer token authentication (401 if missing)
+- User login returns demo token (for demo purposes)
+- Agent tokens are issued by Identity service at startup
 
-- Use strong, randomly generated JWT_SECRET_KEY
-- Implement token refresh/rotation
-- Use persistent database for users and services (not in-memory)
-- Implement rate limiting
-- Add request logging and monitoring
-- Use HTTPS/TLS for all communication
-- Implement proper CORS policies
-- Add authentication to all sensitive endpoints
-- Implement audit logging for authorization events
+### Secrets
+- JWT_SECRET_KEY is loaded from environment variable
+- Services fail at startup if JWT_SECRET_KEY is not set or is too short
+- No credentials or secrets are hardcoded in source code
+
+### Demo Limitations
+- Uses plaintext demo credentials (not hashed)
+- No bcrypt/Argon2 for production use
+- No request validation/sanitization middleware
+- CORS is open to all origins (for demo)
+
+For production, implement:
+- Bcrypt/Argon2 password hashing
+- Request validation middleware
+- Restricted CORS configuration
+- Rate limiting
+- API key management
+- Audit logging
+
+## Architecture Decisions
+
+### Service Discovery via JWT Claims
+- Original: Separate Discovery service (port 5051)
+- Current: Service list embedded in JWT claims
+- **Benefit:** Simpler architecture, no separate service, discovery built-in to auth
+
+### Website Protocol Auto-Detection
+- Website automatically detects HTTP vs HTTPS
+- Uses `window.location.protocol` for protocol selection
+- Works in both HTTP and HTTPS environments
+
+### A2A-First Communication
+- All inter-service communication uses A2A JSON-RPC
+- No custom HTTP endpoints between services
+- Standard-compliant FastEndpoints.A2A implementation
+
+## Troubleshooting
+
+### Services Won't Start
+- Check JWT_SECRET_KEY is set in .env and is 32+ characters
+- Check Docker Swarm is initialized (or use local compose)
+- Check port conflicts on 5050-5056, 8080
+
+### Login Fails
+- Verify credentials are demo/demo123 or admin/admin123
+- Check API backend is running: curl http://localhost:5056/health
+- Check browser console for CORS errors
+
+### Triage Request Returns Empty Steps
+- Check all services are healthy: docker compose ps
+- Check service logs: docker compose logs classifier
+- Verify bearer token is valid in localStorage
+
+### Website Shows Old HTML
+- Clear browser cache (Ctrl+F5 / Cmd+Shift+R)
+- Or rebuild website container: docker compose build --no-cache website
+
+## Files Structure
+
+```
+a2a-docker-demo/
+├── README.md                 # This file
+├── A2A_PROTOCOL_GUIDE.md    # Detailed A2A protocol testing guide
+├── DEPLOYMENT.md            # Deployment instructions
+├── VERIFICATION.md          # Verification and testing procedures
+├── docker-compose.yml       # Docker Compose configuration
+├── .env.example             # Example environment variables
+├── identity/                # Identity service
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── identity.csproj
+│   └── Dockerfile
+├── classifier/              # Classifier A2A service
+├── assessor/                # Assessor A2A service
+├── router/                  # Router A2A service
+├── handler/                 # Handler A2A service
+├── api-backend/             # API orchestration service
+└── website/                 # Nginx + HTML website
+    └── public/index.html
+```
+
+## Support
+
+For issues or questions about the A2A protocol implementation, see:
+- `A2A_PROTOCOL_GUIDE.md` - Protocol details and examples
+- `VERIFICATION.md` - Testing and verification procedures
+- FastEndpoints documentation: https://dev.fastendpoints-doc-site.pages.dev/
 
 ## License
 
-MIT
+Demo project - see repository for license details.

@@ -1,315 +1,347 @@
-# A2A Protocol Demo - Verification & Testing Guide
+# A2A Protocol Docker Demo - Verification Guide
 
-This document verifies that the A2A protocol stack is fully functional with proper JWT-based identity management.
+This guide provides step-by-step verification procedures for the A2A triage workflow implementation.
 
-## Architecture Summary
+## Quick Health Check
 
-```
-User (with JWT)
-    ↓ [POST /api/triage with user JWT]
-    ↓
-API Backend (validates user JWT, orchestrates workflow)
-    ↓ [validates user JWT in Authorization header]
-    ├→ [POST /skills/classify]
-    │  Classifier Service (validates request)
-    │  Returns: { classification, urgency }
-    │
-    ├→ [POST /skills/assess]  
-    │  Assessor Service (validates request)
-    │  Returns: { priority, priorityLabel, assignedTo }
-    │
-    ├→ [POST /skills/route]
-    │  Router Service (validates request)
-    │  Returns: { route, handlerQueue, estimatedWaitTime }
-    │
-    └→ [POST /skills/handle]
-       Handler Service (validates request)
-       Returns: { ticketId, status, resolution }
-    ↓
-Response to user with full triage workflow results
-```
+Verify all services are running:
 
-## Service Tests
-
-### 1. Identity Service (Port 5050)
-
-**Test User Login - SUCCESS CASE:**
 ```bash
-curl -X POST http://localhost:5050/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"demo123"}'
+docker compose ps
 ```
-Expected: `{ "token": "<JWT>", "expiresIn": 3600, "type": "Bearer" }`
 
-**Test User Login - 401 UNAUTHORIZED:**
+Expected: All 7 services should show "Up (healthy)"
+
+Check individual service health:
+
 ```bash
-curl -X POST http://localhost:5050/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"wrong"}'
-```
-Expected: `{ "error": "Invalid credentials" }` with status 401
-
-**Test Agent Token - SUCCESS CASE:**
-```bash
-curl -X GET "http://localhost:5050/auth/agent/token?agentId=classifier_agent&agentSecret=classifier-secret-12345"
-```
-Expected: `{ "token": "<AGENT_JWT>", "expiresIn": 3600, "type": "Bearer" }`
-
-**Test Agent Token - 401 UNAUTHORIZED:**
-```bash
-curl -X GET "http://localhost:5050/auth/agent/token?agentId=classifier_agent&agentSecret=wrong"
-```
-Expected: `{ "error": "Invalid agent credentials" }` with status 401
-
-**Test Token Validation - SUCCESS:**
-```bash
-curl -X POST http://localhost:5050/auth/validate \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <VALID_JWT>" \
-  -d '{}'
-```
-Expected: `{ "valid": true, "claims": { "sub": "...", "username": "...", "type": "user" } }`
-
-**Test Token Validation - 401 UNAUTHORIZED:**
-```bash
-curl -X POST http://localhost:5050/auth/validate \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer invalid-token" \
-  -d '{}'
-```
-Expected: `{ "valid": false }` with status 401
-
----
-
-### 2. Discovery Service (Port 5051)
-
-**Test Health (No Auth Required):**
-```bash
-curl http://localhost:5051/health
-```
-Expected: `{ "status": "healthy", "service": "discovery" }`
-
-**Test List Services - SUCCESS (with user JWT):**
-```bash
-curl http://localhost:5051/discovery/services \
-  -H "Authorization: Bearer <USER_JWT>"
-```
-Expected: `{ "services": [...], "count": N }`
-
-**Test List Services - 401 (missing JWT):**
-```bash
-curl http://localhost:5051/discovery/services
-```
-Expected: `{ "error": "Missing authorization header" }` with status 401
-
-**Test List Services - 401 (invalid JWT):**
-```bash
-curl http://localhost:5051/discovery/services \
-  -H "Authorization: Bearer invalid-token"
-```
-Expected: `{ "error": "Invalid or expired token" }` with status 401
-
----
-
-### 3. Specialist Services (Classifier, Assessor, Router, Handler)
-
-Each specialist service has the same pattern:
-
-**Health Check (No Auth):**
-```bash
+curl http://localhost:5050/health  # Identity
 curl http://localhost:5052/health  # Classifier
 curl http://localhost:5053/health  # Assessor
 curl http://localhost:5054/health  # Router
 curl http://localhost:5055/health  # Handler
+curl http://localhost:5056/health  # API Backend
+curl http://localhost:8080/health  # Website
 ```
-Expected: `{ "status": "healthy", "service": "<service-name>" }`
 
-**Agent Card (No Auth Required):**
-```bash
-curl http://localhost:5052/.well-known/agent-card.json
-```
-Expected: Full A2A agent card with skills metadata
-
-**Call Skill (Direct HTTP - No Auth Required for Demo):**
-```bash
-curl -X POST http://localhost:5052/skills/classify \
-  -H "Content-Type: application/json" \
-  -d '{"input":"Server is down - critical issue"}'
-```
-Expected: `{ "result": "...", "classification": "technical_issue", "urgency": "critical" }`
+All should return: `{"status":"healthy","service":"<service-name>"}`
 
 ---
 
-### 4. API Backend (Port 5056)
+## Authentication Testing
 
-**Test Health (No Auth):**
+### Test User Login (via API Backend)
+
+**SUCCESS CASE:**
 ```bash
-curl http://localhost:5056/health
-```
-Expected: `{ "status": "healthy", "service": "api" }`
-
-**Test Login - SUCCESS:**
-```bash
-curl -X POST http://localhost:5056/api/auth/login \
+curl -X POST http://localhost:5056/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"demo123"}'
-```
-Expected: `{ "token": "<JWT>", "expiresIn": 3600, "type": "Bearer" }`
-
-**Test Triage - 401 (Missing JWT):**
-```bash
-curl -X POST http://localhost:5056/api/triage \
-  -H "Content-Type: application/json" \
-  -d '{"input":"test request"}'
-```
-Expected: `{ "error": "Missing authorization header" }` with status 401
-
-**Test Triage - 401 (Invalid JWT):**
-```bash
-curl -X POST http://localhost:5056/api/triage \
-  -H "Authorization: Bearer invalid-token" \
-  -H "Content-Type: application/json" \
-  -d '{"input":"test request"}'
-```
-Expected: `{ "error": "Invalid or expired token" }` with status 401
-
-**Test Triage - SUCCESS (Full Workflow):**
-```bash
-# 1. Login to get user JWT
-USER_TOKEN=$(curl -s -X POST http://localhost:5056/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"demo123"}' | jq -r '.token')
-
-# 2. Submit triage request
-curl -X POST http://localhost:5056/api/triage \
-  -H "Authorization: Bearer $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"input":"Server is down - critical issue"}'
+  -d '{"username":"demo","password":"demo123"}'
 ```
 
 Expected Response:
 ```json
 {
-  "ticketId": "TRG-XXXXXXXX",
-  "status": "completed",
-  "steps": [
-    {
-      "service": "classifier",
-      "action": "Classify request",
-      "result": "{\"result\":\"Classified: technical_issue, Urgency: critical\",\"classification\":\"technical_issue\",\"urgency\":\"critical\"}",
-      "success": true,
-      "timestamp": "2026-05-19T19:00:00Z"
-    },
-    {
-      "service": "assessor",
-      "action": "Assess priority",
-      "result": "{\"result\":\"Priority assessed: 5 (Critical), Assign to urgent_handler\",\"priority\":5,\"priorityLabel\":\"Critical\",\"assignedTo\":\"urgent_handler\"}",
-      "success": true,
-      "timestamp": "2026-05-19T19:00:01Z"
-    },
-    {
-      "service": "router",
-      "action": "Route to handler",
-      "result": "{\"result\":\"Routed to urgent_queue (estimated wait: 5min)\",\"route\":\"urgent_queue\",\"handlerQueue\":\"handler_urgent\",\"estimatedWaitTime\":5}",
-      "success": true,
-      "timestamp": "2026-05-19T19:00:02Z"
-    },
-    {
-      "service": "handler",
-      "action": "Create ticket",
-      "result": "{\"result\":\"Request processed: Ticket TKT-YYYYYYYY created\",\"status\":\"in_queue\",\"ticketId\":\"TKT-YYYYYYYY\",\"resolution\":\"Escalated to senior support team for immediate handling.\"}",
-      "success": true,
-      "timestamp": "2026-05-19T19:00:03Z"
-    }
-  ],
-  "finalResult": "{\"result\":\"Request processed: Ticket TKT-YYYYYYYY created\",\"status\":\"in_queue\",\"ticketId\":\"TKT-YYYYYYYY\",\"resolution\":\"Escalated to senior support team for immediate handling.\"}"
+  "token": "demo-user-token",
+  "user_id": "demo",
+  "message": "Login successful"
 }
 ```
 
-## JWT Validation Points
-
-The following endpoints enforce JWT validation and return 401 on failure:
-
-| Service | Endpoint | JWT Type | Auth Level |
-|---------|----------|----------|-----------|
-| Identity | `/auth/validate` | Any valid JWT | Required |
-| Discovery | `/discovery/services` | User JWT | Required |
-| Discovery | `/discovery/services/{id}` | User JWT | Required |
-| API Backend | `/api/triage` | User JWT | Required |
-| API Backend | (health, login) | - | Public |
-| All Services | `/health` | - | Public |
-| All Services | `/.well-known/agent-card.json` | - | Public |
-
-## Testing Checklist
-
-- [x] Identity service issues user JWTs
-- [x] Identity service issues agent JWTs
-- [x] Invalid credentials return 401
-- [x] Invalid JWTs return 401
-- [x] Expired JWTs return 401
-- [x] Classifier service analyzes requests
-- [x] Assessor service assigns priorities
-- [x] Router service determines routing
-- [x] Handler service creates tickets
-- [x] API backend orchestrates full workflow
-- [x] API backend validates user JWT on protected endpoints
-- [x] Discovery service maintains service registry
-- [x] All services have /health endpoints
-- [x] All services expose /.well-known/agent-card.json
-- [x] Full triage workflow completes end-to-end
-- [x] Triage returns all step details with timestamps
-
-## Deployment Verification
-
-### Docker Compose (Local Testing)
+**FAILURE CASE (Wrong Password):**
 ```bash
-cd apps/a2a-docker-demo
-cp .env.example .env
-# Edit .env with desired values
-docker compose -f docker-compose.local.yml up -d
-sleep 30
-docker compose -f docker-compose.local.yml ps
+curl -X POST http://localhost:5056/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo","password":"wrong"}'
 ```
 
-### Docker Stack (Production on Swarm)
+Expected: HTTP 401 Unauthorized
+
+---
+
+## A2A Endpoint Testing
+
+All services expose the A2A protocol at `/a2a` endpoint.
+
+### Get Agent Card (Service Discovery)
+
 ```bash
-docker stack deploy -c docker-compose.yml a2a-demo-triage
-sleep 30
-docker stack ps a2a-demo-triage
-docker service logs a2a-demo-triage_identity
+curl -s "http://localhost:5052/.well-known/agent-card.json" | jq .
 ```
 
-## Performance Notes
+Expected: JSON agent card with:
+- `agentName`: Service identifier (e.g., "classifier-agent")
+- `skills`: List of registered A2A skills
+- `description`: Human-readable description
+- `version`: Version number
 
-- Services start in order: Identity → Discovery → Specialists → API
-- Each service validates JWT independently
-- Full triage workflow typical latency: 2-5 seconds
-- Parallel requests are supported via HTTP connection pooling
-- Services are stateless and can be scaled horizontally
+### A2A Authentication Requirement
 
-## Security Checklist
+**WITHOUT Bearer Token (should fail with 401):**
+```bash
+curl -X POST http://localhost:5052/a2a \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"SendMessage","id":"test"}'
+```
 
-- [x] Passwords hashed with SHA256
-- [x] JWTs signed with HS256
-- [x] Token expiration enforced (1 hour default)
-- [x] Invalid tokens rejected immediately
-- [x] No secrets in logs or responses
-- [x] CORS enabled for frontend access
-- [x] Each service validates auth independently
-- [x] No hardcoded credentials in code
+Expected: HTTP 401 Unauthorized with `{"error":"Unauthorized"}`
+
+**WITH Bearer Token (should succeed):**
+```bash
+curl -X POST http://localhost:5052/a2a \
+  -H "Authorization: Bearer test-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc":"2.0",
+    "method":"SendMessage",
+    "id":"test-123",
+    "params":{"recipient":"classifier-agent","skillName":"classify-text","input":"test"}
+  }'
+```
+
+Expected: HTTP 200 with skill response
+
+---
+
+## Triage Workflow Testing
+
+### Submit Triage Request
+
+```bash
+curl -X POST http://localhost:5056/api/triage \
+  -H "Content-Type: application/json" \
+  -d '{"input":"critical server failure"}'
+```
+
+Expected Response:
+```json
+{
+  "id": "triage-abc123def456",
+  "input": "critical server failure",
+  "status": "completed",
+  "steps": [
+    {
+      "service": "Classifier",
+      "result": "incident"
+    },
+    {
+      "service": "Assessor",
+      "result": "critical"
+    },
+    {
+      "service": "Router",
+      "result": "ops-critical"
+    },
+    {
+      "service": "Handler",
+      "result": "TKT-1779226913"
+    }
+  ],
+  "summary": "Classified as incident, assessed critical, routed to ops-critical, ticket TKT-1779226913 created"
+}
+```
+
+### Verify Workflow Steps
+
+Each triage request should:
+
+1. **Classifier** - Returns one of: incident, defect, inquiry, feature
+2. **Assessor** - Returns one of: critical, high, medium, low
+3. **Router** - Returns one of: ops-critical, ops-high, ops-standard, support-tier-1
+4. **Handler** - Returns a ticket ID: TKT-xxxxxxxxxx
+
+---
+
+## Service Communication Testing
+
+Test inter-service A2A communication by checking service logs:
+
+```bash
+# Watch Classifier logs
+docker compose logs classifier -f
+
+# In another terminal, submit triage request
+curl -X POST http://localhost:5056/api/triage \
+  -H "Content-Type: application/json" \
+  -d '{"input":"test"}'
+```
+
+Expected: Classifier logs should show:
+- Incoming A2A request
+- Bearer token validation
+- Skill execution
+- JSON-RPC response
+
+---
+
+## Website UI Testing
+
+1. **Open website:** http://localhost:8080 (or http://10.0.0.3:8080 on Swarm)
+
+2. **Login:**
+   - Username: `demo`
+   - Password: `demo123`
+   - Click "Login"
+
+3. **Submit Request:**
+   - Type text into "Enter request" field
+   - Click "Submit Triage Request"
+   - Wait for "Request completed" message
+
+4. **View Results:**
+   - Check "Results" section shows classification, priority, team, ticket
+   - Check "Request History" shows submitted request with all steps
+
+5. **Protocol Support:**
+   - If accessing via HTTPS, verify API calls still work (no mixed content warning)
+   - Website automatically detects protocol (http/https)
+
+---
+
+## Logging Verification
+
+Check that infrastructure logging is at WARNING level (not INFO):
+
+```bash
+docker compose logs api-backend | grep "Microsoft.AspNetCore.Hosting"
+```
+
+Expected: Logs should show `warn:` level, not `info:`
+
+---
+
+## Error Scenarios
+
+### Missing JWT_SECRET_KEY
+
+1. Remove JWT_SECRET_KEY from .env
+2. Restart services: `docker compose restart`
+3. Check logs: `docker compose logs identity`
+
+Expected: Service should fail to start with message about JWT_SECRET_KEY validation
+
+### Service Unavailable
+
+Stop a service and try to submit triage:
+
+```bash
+docker compose stop classifier
+curl -X POST http://localhost:5056/api/triage \
+  -H "Content-Type: application/json" \
+  -d '{"input":"test"}'
+```
+
+Expected: Request should fail with error mentioning connection refused or service unavailable
+
+---
+
+## Security Verification
+
+### Token Validation
+
+Verify that invalid tokens are rejected:
+
+```bash
+curl -X POST http://localhost:5052/a2a \
+  -H "Authorization: Bearer invalid-token-123" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"SendMessage","id":"test"}'
+```
+
+Expected: HTTP 401 Unauthorized (current implementation validates token structure)
+
+### No Hardcoded Secrets
+
+Verify docker-compose.yml does not have hardcoded JWT_SECRET_KEY defaults:
+
+```bash
+grep "JWT_SECRET_KEY=" docker-compose.yml
+```
+
+Expected: Should show `JWT_SECRET_KEY=${JWT_SECRET_KEY}` without `:-default` fallback
+
+---
+
+## Performance Testing
+
+### Concurrent Requests
+
+Submit multiple triage requests concurrently:
+
+```bash
+for i in {1..5}; do
+  curl -X POST http://localhost:5056/api/triage \
+    -H "Content-Type: application/json" \
+    -d "{\"input\":\"request $i\"}" &
+done
+wait
+```
+
+Expected: All requests complete successfully with unique IDs
+
+---
+
+## Verification Checklist
+
+- [ ] All 7 services healthy and running
+- [ ] Health endpoints return 200 OK
+- [ ] User login endpoint works (demo/demo123)
+- [ ] Triage request returns 4-step workflow
+- [ ] Each step shows correct service and result
+- [ ] Website loads and displays results
+- [ ] A2A endpoints require Bearer token (401 without)
+- [ ] Agent cards available at /.well-known/agent-card.json
+- [ ] Infrastructure logging at WARNING level
+- [ ] No hardcoded secrets in docker-compose.yml
+- [ ] Website auto-detects HTTP/HTTPS protocol
+- [ ] Error handling for missing services
+- [ ] Concurrent requests handled correctly
+
+---
 
 ## Troubleshooting
 
-If services return 401 unexpectedly:
-1. Verify JWT_SECRET_KEY is consistent across all services
-2. Check token hasn't expired (default 1 hour)
-3. Verify Authorization header format: `Authorization: Bearer <token>`
-4. Check service is running and reachable
-5. Review service logs: `docker service logs a2a-demo-triage_<service>`
+### Services Won't Start
+Check logs: `docker compose logs`
+Verify JWT_SECRET_KEY is set: `echo $JWT_SECRET_KEY`
 
-If triage workflow fails at a step:
-1. Check intermediate service is running
-2. Verify service can reach other services (network connectivity)
-3. Check service logs for errors
-4. Verify service has correct environment variables
+### Login Fails  
+Try correct credentials: demo/demo123
+Check API backend: `curl http://localhost:5056/health`
 
+### Triage Returns Empty Steps
+Verify all services are running: `docker compose ps`
+Check service logs for errors: `docker compose logs classifier`
+
+### Website Shows Old Content
+Clear browser cache (Ctrl+F5)
+Rebuild website: `docker compose build --no-cache website`
+
+---
+
+## Test Commands Quick Reference
+
+```bash
+# Health checks
+docker compose ps
+curl http://localhost:5050/health
+
+# Login
+curl -X POST http://localhost:5056/auth/login \
+  -d '{"username":"demo","password":"demo123"}'
+
+# Triage
+curl -X POST http://localhost:5056/api/triage \
+  -d '{"input":"test"}'
+
+# Agent card
+curl http://localhost:5052/.well-known/agent-card.json | jq
+
+# Logs
+docker compose logs -f identity
+docker compose logs -f api-backend
+
+# Rebuild
+docker compose build --no-cache
+docker compose up -d
+```
