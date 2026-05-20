@@ -9,4 +9,13 @@
     <Project Path="apps/ms-graph-demo.Test/MsGraphDemo.Test.csproj" />
     <Project Path="apps/ms-graph-demo/MsGraphDemo.csproj" />
   </Folder>
+  <Folder Name="/apps/a2a-docker-demo/">
+    <Project Path="apps/a2a-docker-demo/api-backend/api-backend.csproj" />
+    <Project Path="apps/a2a-docker-demo/assessor/assessor.csproj" />
+    <Project Path="apps/a2a-docker-demo/classifier/classifier.csproj" />
+    <Project Path="apps/a2a-docker-demo/discovery/discovery.csproj" />
+    <Project Path="apps/a2a-docker-demo/handler/handler.csproj" />
+    <Project Path="apps/a2a-docker-demo/identity/identity.csproj" />
+    <Project Path="apps/a2a-docker-demo/router/router.csproj" />
+  </Folder>
 </Solution>
