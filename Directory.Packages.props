@@ -18,7 +18,9 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <!-- Microsoft.Identity -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.9.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.6.0" />
     <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="1.22.2" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
     <!-- Scalar -->
     <PackageVersion Include="Scalar.AspNetCore" Version="2.14.14" />
     <!-- Testing -->
