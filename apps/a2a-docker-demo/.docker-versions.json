@@ -1,10 +1,10 @@
 {
-  "identity": 2,
-  "discovery": 3,
-  "classifier": 4,
-  "assessor": 4,
-  "router": 4,
-  "handler": 4,
-  "api": 11,
-  "website": 11
+  "identity": 3,
+  "discovery": 4,
+  "classifier": 5,
+  "assessor": 5,
+  "router": 5,
+  "handler": 5,
+  "api": 12,
+  "website": 12
 }

@@ -1,9 +1,9 @@
 services:
   identity:
     build:
-      context: ./identity
-      dockerfile: Dockerfile
-    image: a2a-identity:v2
+      context: .
+      dockerfile: identity/Dockerfile
+    image: a2a-identity:v3
     ports:
       - "5050:5050"
     environment:
@@ -22,9 +22,9 @@ services:
 
   discovery:
     build:
-      context: ./discovery
-      dockerfile: Dockerfile
-    image: a2a-discovery:v2
+      context: .
+      dockerfile: discovery/Dockerfile
+    image: a2a-discovery:v4
     ports:
       - "5051:5051"
     environment:
@@ -47,9 +47,9 @@ services:
 
   classifier:
     build:
-      context: ./classifier
-      dockerfile: Dockerfile
-    image: a2a-classifier:v2
+      context: .
+      dockerfile: classifier/Dockerfile
+    image: a2a-classifier:v5
     ports:
       - "5052:5052"
     environment:
@@ -75,9 +75,9 @@ services:
 
   assessor:
     build:
-      context: ./assessor
-      dockerfile: Dockerfile
-    image: a2a-assessor:v2
+      context: .
+      dockerfile: assessor/Dockerfile
+    image: a2a-assessor:v5
     ports:
       - "5053:5053"
     environment:
@@ -103,9 +103,9 @@ services:
 
   router:
     build:
-      context: ./router
-      dockerfile: Dockerfile
-    image: a2a-router:v2
+      context: .
+      dockerfile: router/Dockerfile
+    image: a2a-router:v5
     ports:
       - "5054:5054"
     environment:
@@ -131,9 +131,9 @@ services:
 
   handler:
     build:
-      context: ./handler
-      dockerfile: Dockerfile
-    image: a2a-handler:v2
+      context: .
+      dockerfile: handler/Dockerfile
+    image: a2a-handler:v5
     ports:
       - "5055:5055"
     environment:
@@ -159,9 +159,9 @@ services:
 
   api-backend:
     build:
-      context: ./api-backend
-      dockerfile: Dockerfile
-    image: a2a-api-backend:v2
+      context: .
+      dockerfile: api-backend/Dockerfile
+    image: a2a-api-backend:v12
     ports:
       - "5056:5056"
     environment:
@@ -199,8 +199,8 @@ services:
 
   website:
     build:
-      context: ./website
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: website/Dockerfile
     image: a2a-website:local
     ports:
       - "8080:80"
@@ -219,3 +219,5 @@ services:
 networks:
   a2a-network:
     driver: bridge
+
+
