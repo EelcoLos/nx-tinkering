@@ -197,6 +197,25 @@ services:
       retries: 3
       start_period: 10s
 
+  website:
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    image: a2a-website:local
+    ports:
+      - "8080:80"
+    networks:
+      - a2a-network
+    depends_on:
+      api-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 networks:
   a2a-network:
     driver: bridge
