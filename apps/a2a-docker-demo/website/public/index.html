@@ -1,319 +1,597 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>A2A Triage Protocol Demo</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        /* Login Page */
-        .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
-        .login-card h1 { margin-bottom: 30px; color: #333; text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; }
-        .form-group input:focus { outline: none; border-color: #667eea; }
-        .btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: all 0.3s; font-weight: 600; }
-        .btn-primary { background: #667eea; color: white; width: 100%; }
-        .btn-primary:hover { background: #5568d3; }
-        .error { color: #e74c3c; margin-top: 10px; padding: 10px; background: #ffe0e0; border-radius: 6px; display: none; }
-        .success { color: #27ae60; margin-top: 10px; padding: 10px; background: #e0ffe0; border-radius: 6px; display: none; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
 
-        /* Dashboard */
-        .dashboard { display: none; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: #333; }
-        .btn-logout { background: #e74c3c; color: white; padding: 8px 16px; }
-        .btn-logout:hover { background: #c0392b; }
+      /* Login Page */
+      .login-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .login-card {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 400px;
+      }
+      .login-card h1 {
+        margin-bottom: 30px;
+        color: #333;
+        text-align: center;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: #667eea;
+        color: white;
+        width: 100%;
+      }
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+      .error {
+        color: #e74c3c;
+        margin-top: 10px;
+        padding: 10px;
+        background: #ffe0e0;
+        border-radius: 6px;
+        display: none;
+      }
+      .success {
+        color: #27ae60;
+        margin-top: 10px;
+        padding: 10px;
+        background: #e0ffe0;
+        border-radius: 6px;
+        display: none;
+      }
 
-        /* Tabs */
-        .tabs { display: flex; border-bottom: 2px solid #ecf0f1; margin-bottom: 30px; }
-        .tab { padding: 12px 20px; cursor: pointer; border: none; background: none; font-size: 16px; color: #999; font-weight: 600; transition: all 0.3s; }
-        .tab.active { color: #667eea; border-bottom: 3px solid #667eea; margin-bottom: -2px; }
+      /* Dashboard */
+      .dashboard {
+        display: none;
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .header h1 {
+        color: #333;
+      }
+      .btn-logout {
+        background: #e74c3c;
+        color: white;
+        padding: 8px 16px;
+      }
+      .btn-logout:hover {
+        background: #c0392b;
+      }
 
-        /* Tab Content */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+      /* Tabs */
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #ecf0f1;
+        margin-bottom: 30px;
+      }
+      .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 16px;
+        color: #999;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+        margin-bottom: -2px;
+      }
 
-        /* Services */
-        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .service-card { border: 1px solid #ecf0f1; border-radius: 8px; padding: 20px; transition: all 0.3s; }
-        .service-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #667eea; }
-        .service-card h3 { color: #333; margin-bottom: 10px; }
-        .service-card .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .status.healthy { background: #d4edda; color: #155724; }
-        .status.starting { background: #fff3cd; color: #856404; }
-        .status.unhealthy { background: #f8d7da; color: #721c24; }
+      /* Tab Content */
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
 
-        /* Triage Form */
-        .triage-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .triage-form textarea { width: 100%; height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
-        .btn-submit { background: #27ae60; color: white; margin-top: 12px; }
-        .btn-submit:hover { background: #229954; }
+      /* Services */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .service-card {
+        border: 1px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s;
+      }
+      .service-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+      }
+      .service-card h3 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .service-card .status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .status.healthy {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.starting {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status.unhealthy {
+        background: #f8d7da;
+        color: #721c24;
+      }
 
-        /* Request History */
-        .request-item { border: 1px solid #ecf0f1; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .request-item h4 { color: #333; margin-bottom: 8px; }
-        .request-item p { color: #666; font-size: 14px; margin-bottom: 8px; }
-        .request-item .flow { display: flex; align-items: center; gap: 10px; color: #999; font-size: 12px; flex-wrap: wrap; }
-        .flow-arrow { color: #667eea; font-weight: bold; }
+      /* Triage Form */
+      .triage-form {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .triage-form textarea {
+        width: 100%;
+        height: 100px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: inherit;
+      }
+      .btn-submit {
+        background: #27ae60;
+        color: white;
+        margin-top: 12px;
+      }
+      .btn-submit:hover {
+        background: #229954;
+      }
 
-        /* Loading */
-        .loading { display: inline-block; width: 4px; height: 4px; background: #667eea; border-radius: 50%; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+      /* Request History */
+      .request-item {
+        border: 1px solid #ecf0f1;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+      }
+      .request-item h4 {
+        color: #333;
+        margin-bottom: 8px;
+      }
+      .request-item p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+      .request-item .flow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #999;
+        font-size: 12px;
+        flex-wrap: wrap;
+      }
+      .flow-arrow {
+        color: #667eea;
+        font-weight: bold;
+      }
+
+      /* Loading */
+      .loading {
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        background: #667eea;
+        border-radius: 50%;
+        animation: pulse 1s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Login Page -->
     <div class="login-page" id="loginPage">
-        <div class="login-card">
-            <h1>A2A Triage Demo</h1>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="admin or user" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-                <div class="error" id="loginError"></div>
-                <div class="success" id="loginSuccess"></div>
-            </form>
-            <p style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-                Demo credentials:<br>
-                admin / demo123<br>
-                user / user456
-            </p>
-        </div>
+      <div class="login-card">
+        <h1>A2A Triage Demo</h1>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="admin or user"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+          <div class="error" id="loginError"></div>
+          <div class="success" id="loginSuccess"></div>
+        </form>
+        <p
+          style="
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
+          "
+        >
+          Demo credentials:<br />
+          admin / demo123<br />
+          user / user456
+        </p>
+      </div>
     </div>
 
     <!-- Dashboard -->
     <div class="dashboard" id="dashboard">
-        <div class="container">
-            <div class="header">
-                <div>
-                    <h1>A2A Triage Workflow</h1>
-                    <p style="color: #999; margin-top: 5px;">Demonstrating Agent-to-Agent Protocol</p>
-                </div>
-                <button class="btn btn-logout" onclick="logout()">Logout</button>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('services', event)">Services</button>
-                <button class="tab" onclick="switchTab('triage', event)">Submit Triage</button>
-                <button class="tab" onclick="switchTab('history', event)">Request History</button>
-            </div>
-
-            <!-- Services Tab -->
-            <div class="tab-content active" id="servicesTab">
-                <h2 style="margin-bottom: 20px; color: #333;">Available A2A Services</h2>
-                <div class="services-grid" id="servicesGrid">
-                    <div class="service-card">
-                        <h3>Identity Service</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">JWT token management</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                    <div class="service-card">
-                        <h3>Classifier Agent</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Analyzes and classifies requests</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                    <div class="service-card">
-                        <h3>Assessor Agent</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Assigns priority levels</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                    <div class="service-card">
-                        <h3>Router Agent</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Routes based on priority</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                    <div class="service-card">
-                        <h3>Handler Agent</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Processes requests</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                    <div class="service-card">
-                        <h3>Discovery Service</h3>
-                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Service registry</p>
-                        <span class="status healthy">🟢 Healthy</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Triage Tab -->
-            <div class="tab-content" id="triageTab">
-                <h2 style="margin-bottom: 20px; color: #333;">Submit Triage Request</h2>
-                <div class="triage-form">
-                    <label style="display: block; margin-bottom: 12px; color: #555; font-weight: 500;">Issue Description</label>
-                    <textarea id="triageDescription" placeholder="Describe the issue..."></textarea>
-                    <button class="btn btn-submit" onclick="submitTriage()">Process Triage</button>
-                    <div class="error" id="triageError"></div>
-                </div>
-            </div>
-
-            <!-- History Tab -->
-            <div class="tab-content" id="historyTab">
-                <h2 style="margin-bottom: 20px; color: #333;">Request History</h2>
-                <div id="historyList">
-                    <p style="color: #999; text-align: center; padding: 40px;">No requests yet. Submit one from the Triage tab!</p>
-                </div>
-            </div>
+      <div class="container">
+        <div class="header">
+          <div>
+            <h1>A2A Triage Workflow</h1>
+            <p style="color: #999; margin-top: 5px">
+              Demonstrating Agent-to-Agent Protocol
+            </p>
+          </div>
+          <button class="btn btn-logout" onclick="logout()">Logout</button>
         </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('services', event)">
+            Services
+          </button>
+          <button class="tab" onclick="switchTab('triage', event)">
+            Submit Triage
+          </button>
+          <button class="tab" onclick="switchTab('history', event)">
+            Request History
+          </button>
+        </div>
+
+        <!-- Services Tab -->
+        <div class="tab-content active" id="servicesTab">
+          <h2 style="margin-bottom: 20px; color: #333">
+            Available A2A Services
+          </h2>
+          <div class="services-grid" id="servicesGrid">
+            <div class="service-card">
+              <h3>Identity Service</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                JWT token management
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+            <div class="service-card">
+              <h3>Classifier Agent</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                Analyzes and classifies requests
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+            <div class="service-card">
+              <h3>Assessor Agent</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                Assigns priority levels
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+            <div class="service-card">
+              <h3>Router Agent</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                Routes based on priority
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+            <div class="service-card">
+              <h3>Handler Agent</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                Processes requests
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+            <div class="service-card">
+              <h3>Discovery Service</h3>
+              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+                Service registry
+              </p>
+              <span class="status healthy">🟢 Healthy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Triage Tab -->
+        <div class="tab-content" id="triageTab">
+          <h2 style="margin-bottom: 20px; color: #333">
+            Submit Triage Request
+          </h2>
+          <div class="triage-form">
+            <label
+              style="
+                display: block;
+                margin-bottom: 12px;
+                color: #555;
+                font-weight: 500;
+              "
+              >Issue Description</label
+            >
+            <textarea
+              id="triageDescription"
+              placeholder="Describe the issue..."
+            ></textarea>
+            <button class="btn btn-submit" onclick="submitTriage()">
+              Process Triage
+            </button>
+            <div class="error" id="triageError"></div>
+          </div>
+        </div>
+
+        <!-- History Tab -->
+        <div class="tab-content" id="historyTab">
+          <h2 style="margin-bottom: 20px; color: #333">Request History</h2>
+          <div id="historyList">
+            <p style="color: #999; text-align: center; padding: 40px">
+              No requests yet. Submit one from the Triage tab!
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Dynamically determine API host based on website location
-        // Uses the same hostname as the website (works from any host/IP)
-        const API_HOST = window.location.hostname;
-        const API_URL = `http://${API_HOST}:5056`;
-        
-        console.log('Website Debug Info:');
-        console.log('- Hostname:', window.location.hostname);
-        console.log('- Full URL:', window.location.href);
-        console.log('- API_HOST:', API_HOST);
-        console.log('- API_URL:', API_URL);
-        
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            console.log('Login attempt to:', API_URL + '/auth/login');
-            
-            try {
-                const response = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.token) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.user_id);
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'block';
-                    loadServices();
-                } else {
-                    console.error('Login failed:', data);
-                    showError('loginError', 'Invalid credentials');
-                }
-            } catch (err) {
-                console.error('Login error:', err.message, err);
-                showError('loginError', 'Login failed: ' + err.message);
+      // Dynamically determine API host based on website location
+      // Uses the same hostname as the website (works from any host/IP)
+      const API_HOST = window.location.hostname;
+      const API_URL = `http://${API_HOST}:5056`;
+
+      console.log('Website Debug Info:');
+      console.log('- Hostname:', window.location.hostname);
+      console.log('- Full URL:', window.location.href);
+      console.log('- API_HOST:', API_HOST);
+      console.log('- API_URL:', API_URL);
+
+      document
+        .getElementById('loginForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const username = document.getElementById('username').value;
+          const password = document.getElementById('password').value;
+
+          console.log('Login attempt to:', API_URL + '/auth/login');
+
+          try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('userId', data.user_id);
+              document.getElementById('loginPage').style.display = 'none';
+              document.getElementById('dashboard').style.display = 'block';
+              loadServices();
+            } else {
+              console.error('Login failed:', data);
+              showError('loginError', 'Invalid credentials');
             }
+          } catch (err) {
+            console.error('Login error:', err.message, err);
+            showError('loginError', 'Login failed: ' + err.message);
+          }
         });
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
+      function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+      }
+
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function switchTab(tab, event) {
+        document
+          .querySelectorAll('.tab-content')
+          .forEach((el) => el.classList.remove('active'));
+        document
+          .querySelectorAll('.tab')
+          .forEach((el) => el.classList.remove('active'));
+        document.getElementById(tab + 'Tab').classList.add('active');
+
+        // Only update button style if called from an onclick event
+        if (event && event.target) {
+          event.target.classList.add('active');
+        }
+      }
+
+      async function loadServices() {
+        try {
+          const response = await fetch(`${API_URL}/api/services`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          if (response.status === 401) logout();
+          // Services are static for now
+        } catch (err) {
+          console.error('Failed to load services:', err);
+        }
+      }
+
+      async function submitTriage() {
+        const input = document.getElementById('triageDescription').value;
+        if (!input) {
+          showError('triageError', 'Please enter a description');
+          return;
         }
 
-        function switchTab(tab, event) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab + 'Tab').classList.add('active');
-            
-            // Only update button style if called from an onclick event
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
+        try {
+          const response = await fetch(`${API_URL}/api/triage`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ input }),
+          });
+
+          if (response.status === 401) {
+            logout();
+            return;
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            showError(
+              'triageError',
+              `Failed: ${errorData.error || 'Unknown error'}`,
+            );
+            return;
+          }
+
+          const data = await response.json();
+          document.getElementById('triageDescription').value = '';
+          addToHistory(data);
+          switchTab('history', null);
+        } catch (err) {
+          showError('triageError', 'Triage processing failed: ' + err.message);
+        }
+      }
+
+      function addToHistory(request) {
+        const historyList = document.getElementById('historyList');
+        if (historyList.innerHTML.includes('No requests yet')) {
+          historyList.innerHTML = '';
         }
 
-        async function loadServices() {
-            try {
-                const response = await fetch(`${API_URL}/api/services`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                if (response.status === 401) logout();
-                // Services are static for now
-            } catch (err) {
-                console.error('Failed to load services:', err);
-            }
-        }
+        const item = document.createElement('div');
+        item.className = 'request-item';
 
-        async function submitTriage() {
-            const input = document.getElementById('triageDescription').value;
-            if (!input) {
-                showError('triageError', 'Please enter a description');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/api/triage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ input })
-                });
-
-                if (response.status === 401) {
-                    logout();
-                    return;
-                }
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    showError('triageError', `Failed: ${errorData.error || 'Unknown error'}`);
-                    return;
-                }
-
-                const data = await response.json();
-                document.getElementById('triageDescription').value = '';
-                addToHistory(data);
-                switchTab('history', null);
-            } catch (err) {
-                showError('triageError', 'Triage processing failed: ' + err.message);
-            }
-        }
-
-        function addToHistory(request) {
-            const historyList = document.getElementById('historyList');
-            if (historyList.innerHTML.includes('No requests yet')) {
-                historyList.innerHTML = '';
-            }
-            
-            const item = document.createElement('div');
-            item.className = 'request-item';
-            
-            // Build trace HTML
-            let traceHtml = '';
-            if (request.trace && request.trace.length > 0) {
-                traceHtml = '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
-                traceHtml += '<strong>📊 Service Trace:</strong><br>';
-                request.trace.forEach((entry, idx) => {
-                    traceHtml += `<div style="margin: 5px 0; font-size: 13px;">
-                        ${idx + 1}. <strong>${entry.service}</strong>: ${entry.result} (${entry.timestamp_ms}ms) ✓
+        // Build trace HTML
+        let traceHtml = '';
+        if (request.trace && request.trace.length > 0) {
+          traceHtml =
+            '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+          traceHtml += '<strong>📊 Service Trace:</strong><br>';
+          request.trace.forEach((entry, idx) => {
+            traceHtml += `<div style="margin: 5px 0; font-size: 13px;">
+                        ${idx + 1}. <strong>${escapeHtml(entry.service)}</strong>: ${escapeHtml(entry.result)} (${escapeHtml(entry.timestamp_ms)}ms) ✓
                     </div>`;
-                });
-                traceHtml += '</div>';
-            }
-            
-            item.innerHTML = `
+          });
+          traceHtml += '</div>';
+        }
+
+        item.innerHTML = `
                 <h4>Request #${Math.random().toString(36).substr(2, 9).toUpperCase()}</h4>
-                <p><strong>Input:</strong> ${request.input || 'Processing...'}</p>
-                <p><strong>Classification:</strong> ${request.classification || 'Pending'}</p>
-                <p><strong>Priority:</strong> ${request.priority || 'Pending'}</p>
-                <p><strong>Status:</strong> ${request.status || 'In Progress'}</p>
-                <p><strong>Ticket ID:</strong> ${request.ticket_id || 'N/A'}</p>
+                <p><strong>Input:</strong> ${escapeHtml(request.input) || 'Processing...'}</p>
+                <p><strong>Classification:</strong> ${escapeHtml(request.classification) || 'Pending'}</p>
+                <p><strong>Priority:</strong> ${escapeHtml(request.priority) || 'Pending'}</p>
+                <p><strong>Status:</strong> ${escapeHtml(request.status) || 'In Progress'}</p>
+                <p><strong>Ticket ID:</strong> ${escapeHtml(request.ticket_id) || 'N/A'}</p>
                 <div class="flow">
                     Classifier <span class="flow-arrow">→</span>
                     Assessor <span class="flow-arrow">→</span>
@@ -322,32 +600,32 @@
                 </div>
                 ${traceHtml}
             `;
-            historyList.insertBefore(item, historyList.firstChild);
+        historyList.insertBefore(item, historyList.firstChild);
+      }
+
+      function showError(id, message) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.style.display = 'block';
+      }
+
+      // Check if already logged in
+      window.addEventListener('load', () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          document.getElementById('loginPage').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          loadServices();
         }
+      });
 
-        function showError(id, message) {
-            const el = document.getElementById(id);
-            el.textContent = message;
-            el.style.display = 'block';
-        }
-
-        // Check if already logged in
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                loadServices();
-            }
-        });
-
-        // CORS handling
-        fetch(`${API_URL}`, { 
-            mode: 'no-cors',
-            headers: { 'Origin': window.location.origin }
-        }).catch(() => {
-            // API not ready yet, that's OK
-        });
+      // CORS handling
+      fetch(`${API_URL}`, {
+        mode: 'no-cors',
+        headers: { Origin: window.location.origin },
+      }).catch(() => {
+        // API not ready yet, that's OK
+      });
     </script>
-</body>
+  </body>
 </html>

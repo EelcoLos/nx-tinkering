@@ -2,12 +2,12 @@ version: '3.9'
 
 services:
   identity:
-    image: a2a-identity:v2
+    image: a2a-identity:v3
     ports:
       - "5050:5050"
     environment:
       - ASPNETCORE_URLS=http://+:5050
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
     networks:
@@ -20,12 +20,12 @@ services:
       start_period: 10s
 
   discovery:
-    image: a2a-discovery:v3
+    image: a2a-discovery:v4
     ports:
       - "5051:5051"
     environment:
       - ASPNETCORE_URLS=http://+:5051
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - DISCOVERY_AGENT_ID=discovery-agent
@@ -39,12 +39,12 @@ services:
       start_period: 10s
 
   classifier:
-    image: a2a-classifier:v4
+    image: a2a-classifier:v5
     ports:
       - "5052:5052"
     environment:
       - ASPNETCORE_URLS=http://+:5052
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
@@ -59,12 +59,12 @@ services:
       start_period: 10s
 
   assessor:
-    image: a2a-assessor:v4
+    image: a2a-assessor:v5
     ports:
       - "5053:5053"
     environment:
       - ASPNETCORE_URLS=http://+:5053
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ASSESSOR_SERVICE_URL=http://assessor:5053
@@ -79,12 +79,12 @@ services:
       start_period: 10s
 
   router:
-    image: a2a-router:v4
+    image: a2a-router:v5
     ports:
       - "5054:5054"
     environment:
       - ASPNETCORE_URLS=http://+:5054
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ROUTER_SERVICE_URL=http://router:5054
@@ -99,12 +99,12 @@ services:
       start_period: 10s
 
   handler:
-    image: a2a-handler:v4
+    image: a2a-handler:v5
     ports:
       - "5055:5055"
     environment:
       - ASPNETCORE_URLS=http://+:5055
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - HANDLER_SERVICE_URL=http://handler:5055
@@ -119,12 +119,12 @@ services:
       start_period: 10s
 
   api-backend:
-    image: a2a-api-backend:v11
+    image: a2a-api-backend:v12
     ports:
       - "5056:5056"
     environment:
       - ASPNETCORE_URLS=http://+:5056
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
@@ -143,7 +143,7 @@ services:
       start_period: 10s
 
   website:
-    image: a2a-website:v11
+    image: a2a-website:v12
     ports:
       - "8080:80"
     networks:
@@ -160,3 +160,4 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid: "4096"
+
