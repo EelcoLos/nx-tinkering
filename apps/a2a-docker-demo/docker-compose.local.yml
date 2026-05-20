@@ -8,7 +8,7 @@ services:
       - "5050:5050"
     environment:
       - ASPNETCORE_URLS=http://+:5050
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
     networks:
@@ -29,7 +29,7 @@ services:
       - "5051:5051"
     environment:
       - ASPNETCORE_URLS=http://+:5051
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - DISCOVERY_AGENT_ID=discovery-agent
@@ -54,7 +54,7 @@ services:
       - "5052:5052"
     environment:
       - ASPNETCORE_URLS=http://+:5052
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
@@ -82,7 +82,7 @@ services:
       - "5053:5053"
     environment:
       - ASPNETCORE_URLS=http://+:5053
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ASSESSOR_SERVICE_URL=http://assessor:5053
@@ -110,7 +110,7 @@ services:
       - "5054:5054"
     environment:
       - ASPNETCORE_URLS=http://+:5054
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ROUTER_SERVICE_URL=http://router:5054
@@ -138,7 +138,7 @@ services:
       - "5055:5055"
     environment:
       - ASPNETCORE_URLS=http://+:5055
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - HANDLER_SERVICE_URL=http://handler:5055
@@ -166,7 +166,7 @@ services:
       - "5056:5056"
     environment:
       - ASPNETCORE_URLS=http://+:5056
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-256-bit-secret-key-must-be-min-32-chars-1234567890123}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052

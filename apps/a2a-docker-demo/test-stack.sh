@@ -52,7 +52,7 @@ fi
 # Test 401 on missing JWT
 echo ""
 echo "✓ Testing 401 enforcement..."
-unauthorized=$(curl -s -w "\n%{http_code}" http://localhost:5051/discovery/services | tail -1)
+unauthorized=$(curl -s -w "\n%{http_code}" http://localhost:5051/services | tail -1)
 if [ "$unauthorized" = "401" ]; then
   echo "  Missing JWT: ✓ Returns 401"
 else
@@ -60,7 +60,7 @@ else
 fi
 
 # Test 401 on invalid JWT
-invalid_response=$(curl -s -w "\n%{http_code}" http://localhost:5051/discovery/services \
+invalid_response=$(curl -s -w "\n%{http_code}" http://localhost:5051/services \
   -H "Authorization: Bearer invalid" | tail -1)
 if [ "$invalid_response" = "401" ]; then
   echo "  Invalid JWT: ✓ Returns 401"
