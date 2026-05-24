@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: a2a-health
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: [http://identity:5050/health]
+        labels:
+          service: identity
+      - targets: [http://discovery:5051/health]
+        labels:
+          service: discovery
+      - targets: [http://classifier:5052/health]
+        labels:
+          service: classifier
+      - targets: [http://assessor:5053/health]
+        labels:
+          service: assessor
+      - targets: [http://router:5054/health]
+        labels:
+          service: router
+      - targets: [http://handler:5055/health]
+        labels:
+          service: handler
+      - targets: [http://api-backend:5056/health]
+        labels:
+          service: api-backend
+      - targets: [http://website/health]
+        labels:
+          service: website
+      - targets: [http://grafana:3000/api/health]
+        labels:
+          service: grafana
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [service]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

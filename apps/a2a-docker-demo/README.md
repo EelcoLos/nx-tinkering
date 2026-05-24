@@ -63,13 +63,11 @@ Central authentication and token issuance service for both users and agents.
 - Username: `user`, Password: `user456`
 
 ### Discovery Service (Port 5051)
-Service registry for A2A agents. Allows services to register themselves and discover other services.
+Legacy registry service retained for compatibility experiments. The active triage flow no longer depends on service self-registration and discovers specialists directly from their protected agent cards.
 
 **Endpoints:**
-- `POST /discovery/register` - Register a service (agent JWT required)
-- `GET /discovery/services` - List all registered services (user JWT required)
-- `GET /discovery/services/{serviceId}` - Get specific service info (user JWT required)
-- `POST /skills/discover-services` - A2A skill for agent-to-agent discovery
+- `GET /services` - List the registry contents
+- `GET /services/{id}/card` - Get a legacy registered card
 - `GET /health` - Health check
 
 ### Classifier Service (Port 5052)
@@ -126,7 +124,7 @@ User interface for the demo.
 ## Running Locally (for Development)
 
 ### Prerequisites
-- .NET 9 SDK
+- .NET 10 SDK
 - Node.js 18+
 - Docker (for full stack deployment)
 
@@ -137,45 +135,45 @@ cd apps/a2a-docker-demo
 cp .env.example .env
 # Edit .env and set proper values for:
 # - JWT_SECRET_KEY (min 32 characters)
-# - Agent credentials
-# - Demo user credentials
+# - OIDC_* values if using local Keycloak auth flow
+# - OTEL_* values for trace export to Tempo
 ```
 
 ### 2. Run Services (in separate terminals)
 
 Terminal 1 - Identity Service:
 ```bash
-dotnet run apps/a2a-docker-demo/identity/identity.cs
+dotnet run --project apps/a2a-docker-demo/identity/identity.csproj
 ```
 
 Terminal 2 - Discovery Service:
 ```bash
-dotnet run apps/a2a-docker-demo/discovery/discovery.cs
+dotnet run --project apps/a2a-docker-demo/discovery/discovery.csproj
 ```
 
 Terminal 3 - Classifier Service:
 ```bash
-dotnet run apps/a2a-docker-demo/classifier/classifier.cs
+dotnet run --project apps/a2a-docker-demo/classifier/classifier.csproj
 ```
 
 Terminal 4 - Assessor Service:
 ```bash
-dotnet run apps/a2a-docker-demo/assessor/assessor.cs
+dotnet run --project apps/a2a-docker-demo/assessor/assessor.csproj
 ```
 
 Terminal 5 - Router Service:
 ```bash
-dotnet run apps/a2a-docker-demo/router/router.cs
+dotnet run --project apps/a2a-docker-demo/router/router.csproj
 ```
 
 Terminal 6 - Handler Service:
 ```bash
-dotnet run apps/a2a-docker-demo/handler/handler.cs
+dotnet run --project apps/a2a-docker-demo/handler/handler.csproj
 ```
 
 Terminal 7 - API Backend:
 ```bash
-dotnet run apps/a2a-docker-demo/api-backend/api.cs
+dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
 ```
 
 Terminal 8 - React Website:
@@ -190,6 +188,67 @@ npm start
 - **Website**: http://localhost:8080
 - **API**: http://localhost:5056
 - **Identity Service**: http://localhost:5050
+- **Keycloak**: http://localhost:8081
+- **Grafana (observability)**: http://localhost:3001
+
+### Local HTTPS
+
+The FastEndpoints services in this demo can run over HTTPS without changing the
+endpoint code. The A2A package already emits the agent-card `supportedInterfaces`
+URL from `ServiceBaseUrl`, so if the service URLs are configured as `https://...`,
+the published A2A discovery surface follows that.
+
+For local source-based runs on Windows/macOS, the workable path is:
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+Then start each .NET service with HTTPS URLs and matching service base URLs, for
+example:
+
+```powershell
+$env:ASPNETCORE_URLS = 'https://localhost:5056'
+$env:API_BACKEND_SERVICE_URL = 'https://localhost:5056'
+$env:IDENTITY_SERVICE_URL = 'https://localhost:5050'
+$env:CLASSIFIER_SERVICE_URL = 'https://localhost:5052'
+$env:ASSESSOR_SERVICE_URL = 'https://localhost:5053'
+$env:ROUTER_SERVICE_URL = 'https://localhost:5054'
+$env:HANDLER_SERVICE_URL = 'https://localhost:5055'
+dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
+```
+
+The website now follows the page scheme for API and Grafana links, so serving the
+UI over HTTPS will no longer force mixed `http://` requests to the API.
+
+Current limitation: the Docker stack is still HTTP internally. Moving the full
+compose stack to HTTPS requires certificate material plus trust distribution for
+every container-to-container hop, and Keycloak is currently bootstrapped in
+dev-mode HTTP on `8081`. If you want full Docker HTTPS next, the clean options are
+either a TLS reverse proxy for browser-facing routes or a shared internal CA with
+per-service certificates.
+
+Keycloak configuration is bootstrapped automatically by the `keycloak-init` service in compose. It creates:
+
+- Realm: `a2a-local`
+- Demo users: `admin`, `user`
+- OIDC clients: `website-client`, `identity-facade`, `discovery-agent`, `classifier-agent`, `assessor-agent`, `router-agent`, `handler-agent`, `api-backend-agent`
+
+### Preloaded Grafana Dashboard
+
+Grafana is provisioned automatically with a Tempo datasource and a dashboard for tool-calling traces:
+
+- **Dashboard URL**: http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview
+- **Folder**: `A2A Demo`
+- **Dashboard**: `A2A Tool Calling Overview`
+
+The dashboard is preconfigured to surface spans emitted by the API backend orchestration flow, including:
+
+- `a2a.triage.run`
+- `a2a.tool.classifier`
+- `a2a.tool.assessor`
+- `a2a.tool.router`
+- `a2a.tool.handler`
 
 ## Running with Docker Stack
 

@@ -1,0 +1,24 @@
+<h2 class="section-title">Submit Triage Request</h2>
+<div class="triage-form">
+  <label for="triageDescription" class="triage-label">Issue Description</label>
+  <textarea
+    id="triageDescription"
+    placeholder="Describe the issue..."
+    aria-describedby="triageHelp"
+    required
+  ></textarea>
+  <p id="triageHelp" class="sr-only">
+    Describe the issue you want the A2A workflow to classify, assess, route, and
+    handle.
+  </p>
+  <button class="btn btn-submit" id="submitTriageButton" type="button">
+    Process Triage
+  </button>
+  <div
+    class="error"
+    id="triageError"
+    role="alert"
+    aria-live="assertive"
+    hidden
+  ></div>
+</div>

@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /build
 COPY Directory.Packages.props .
-COPY assessor/assessor.csproj .
-COPY assessor/Program.cs .
-RUN dotnet publish -c Release -o /app
+COPY common ./common
+COPY assessor ./assessor
+RUN dotnet publish ./assessor/assessor.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 WORKDIR /app

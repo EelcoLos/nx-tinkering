@@ -30,6 +30,190 @@
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
+    },
+    {
+      "name": "A2A Demo: Identity",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a identity",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/identity/net10.0/identity.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/identity",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5050",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "OIDC_TOKEN_ENDPOINT": "http://localhost:8081/realms/a2a-local/protocol/openid-connect/token",
+        "OIDC_INTROSPECTION_ENDPOINT": "http://localhost:8081/realms/a2a-local/protocol/openid-connect/token/introspect",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "A2A Demo: Discovery",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a discovery",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/discovery/net10.0/discovery.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/discovery",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5051",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      }
+    },
+    {
+      "name": "A2A Demo: Classifier",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a classifier",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/classifier/net10.0/classifier.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/classifier",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5052",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "CLASSIFIER_SERVICE_URL": "http://localhost:5052",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      }
+    },
+    {
+      "name": "A2A Demo: Assessor",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a assessor",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/assessor/net10.0/assessor.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/assessor",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5053",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "ASSESSOR_SERVICE_URL": "http://localhost:5053",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      }
+    },
+    {
+      "name": "A2A Demo: Router",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a router",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/router/net10.0/router.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/router",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5054",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "ROUTER_SERVICE_URL": "http://localhost:5054",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      }
+    },
+    {
+      "name": "A2A Demo: Handler",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a handler",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/handler/net10.0/handler.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/handler",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5055",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "HANDLER_SERVICE_URL": "http://localhost:5055",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      }
+    },
+    {
+      "name": "A2A Demo: API Backend",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a api-backend",
+      "program": "${workspaceFolder}/dist/apps/a2a-docker-demo/api-backend/net10.0/api-backend.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-docker-demo/api-backend",
+      "stopAtEntry": false,
+      "envFile": "${workspaceFolder}/apps/a2a-docker-demo/.env",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5056",
+        "IDENTITY_SERVICE_URL": "http://localhost:5050",
+        "DISCOVERY_SERVICE_URL": "http://localhost:5051",
+        "CLASSIFIER_SERVICE_URL": "http://localhost:5052",
+        "ASSESSOR_SERVICE_URL": "http://localhost:5053",
+        "ROUTER_SERVICE_URL": "http://localhost:5054",
+        "HANDLER_SERVICE_URL": "http://localhost:5055",
+        "API_BACKEND_SERVICE_URL": "http://localhost:5056",
+        "OIDC_TOKEN_ENDPOINT": "http://localhost:8081/realms/a2a-local/protocol/openid-connect/token",
+        "OIDC_INTROSPECTION_ENDPOINT": "http://localhost:8081/realms/a2a-local/protocol/openid-connect/token/introspect",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "A2A Demo: Website",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "serve a2a website",
+      "url": "http://127.0.0.1:8080",
+      "webRoot": "${workspaceFolder}/apps/a2a-docker-demo/website/public"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "A2A Demo: Services Only",
+      "configurations": [
+        "A2A Demo: Identity",
+        "A2A Demo: Discovery",
+        "A2A Demo: Classifier",
+        "A2A Demo: Assessor",
+        "A2A Demo: Router",
+        "A2A Demo: Handler",
+        "A2A Demo: API Backend"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "A2A Demo: Full Triage Stack",
+      "configurations": [
+        "A2A Demo: Identity",
+        "A2A Demo: Discovery",
+        "A2A Demo: Classifier",
+        "A2A Demo: Assessor",
+        "A2A Demo: Router",
+        "A2A Demo: Handler",
+        "A2A Demo: API Backend",
+        "A2A Demo: Website"
+      ],
+      "stopAll": true
     }
   ]
 }
