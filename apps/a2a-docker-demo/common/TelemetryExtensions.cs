@@ -19,6 +19,10 @@ public static class TelemetryExtensions
             return services;
         }
 
+        var excludedPrefixes = Array.FindAll(
+            excludedAspNetCorePathPrefixes,
+            static prefix => !string.IsNullOrWhiteSpace(prefix));
+
         services
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(serviceName, serviceNamespace: serviceNamespace))
@@ -26,7 +30,15 @@ public static class TelemetryExtensions
             {
                 tracing
                     .AddSource(activitySourceName)
-                    .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        if (excludedPrefixes.Length == 0)
+                        {
+                            return;
+                        }
+
+                        options.Filter = httpContext => !IsExcludedAspNetCorePath(httpContext.Request.Path.Value, excludedPrefixes);
+                    })
                     .AddHttpClientInstrumentation();
 
                 if (Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var endpoint))
@@ -36,6 +48,25 @@ public static class TelemetryExtensions
             });
 
         return services;
+    }
+
+    private static bool IsExcludedAspNetCorePath(string? path, string[] excludedPrefixes)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        foreach (var prefix in excludedPrefixes)
+        {
+            if (path.Equals(prefix, StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith($"{prefix}/", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static Activity? StartToolActivity(ActivitySource activitySource, string toolName)

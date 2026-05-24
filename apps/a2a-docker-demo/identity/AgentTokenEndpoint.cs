@@ -27,11 +27,18 @@ public sealed class AgentTokenEndpoint(
 
         if (settings.OidcEnabled)
         {
-            var oidcToken = await oidcAuthClient.GetAgentTokenAsync(agentId, ct);
-            if (string.IsNullOrWhiteSpace(oidcToken))
+            if (!settings.AgentClients.ContainsKey(agentId))
             {
                 AddError($"No OIDC client mapping found for agent '{agentId}'");
                 await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct);
+                return;
+            }
+
+            var oidcToken = await oidcAuthClient.GetAgentTokenAsync(agentId, ct);
+            if (string.IsNullOrWhiteSpace(oidcToken))
+            {
+                AddError($"OIDC token request failed for agent '{agentId}'");
+                await Send.ErrorsAsync(StatusCodes.Status502BadGateway, ct);
                 return;
             }
 

@@ -20,17 +20,17 @@ console.log('- API_HOST:', API_HOST);
 console.log('- API_URL:', API_URL);
 
 window.addEventListener('load', () => {
+  warmUpApi();
   initializePage().catch((err) => {
     console.error('Failed to initialize page:', err);
   });
 });
 
-fetch(`${API_URL}`, {
-  mode: 'no-cors',
-  headers: { Origin: window.location.origin },
-}).catch(() => {
-  // API not ready yet, that's OK
-});
+function warmUpApi() {
+  fetch(`${API_URL}/health`).catch(() => {
+    // API not ready yet, that's OK
+  });
+}
 
 async function initializePage() {
   const page = document.body.dataset.page;
@@ -321,7 +321,7 @@ function addToHistory(request) {
   }
 
   item.innerHTML = `
-    <h3>Request #${Math.random().toString(36).slice(2, 11).toUpperCase()}</h3>
+    <h3>Request #${escapeHtml(request.id || Math.random().toString(36).slice(2, 11).toUpperCase())}</h3>
     <p><strong>Input:</strong> ${escapeHtml(request.input) || 'Processing...'}</p>
     <p><strong>Classification:</strong> ${escapeHtml(request.classification) || 'Pending'}</p>
     <p><strong>Priority:</strong> ${escapeHtml(request.priority) || 'Pending'}</p>
