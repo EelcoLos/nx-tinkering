@@ -1,4 +1,5 @@
 using A2ADemo.Common;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -10,14 +11,10 @@ namespace A2ADemo.ApiBackend;
 public sealed class DownstreamGateway(
     IHttpClientFactory httpClientFactory,
     IdentityClient identityClient,
-    ServiceSettings settings)
+    IOptions<ServiceSettings> settingsOptions)
 {
     private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
-
-    private sealed record KnownA2AService(string ServiceId, string BaseUrl)
-    {
-        public string AgentCardUrl => $"{BaseUrl.TrimEnd('/')}/.well-known/agent-card.json";
-    }
+    private readonly ServiceSettings settings = settingsOptions.Value;
 
     public async Task<IReadOnlyCollection<ServiceSummary>> GetServicesAsync(CancellationToken ct)
     {
@@ -196,6 +193,11 @@ public sealed class DownstreamGateway(
 
         return builder.Uri.ToString().TrimEnd('/');
     }
+}
+
+internal sealed record KnownA2AService(string ServiceId, string BaseUrl)
+{
+    public string AgentCardUrl => $"{BaseUrl.TrimEnd('/')}/.well-known/agent-card.json";
 }
 
 file sealed record ClassifySkillInput(string Input);

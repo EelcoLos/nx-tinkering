@@ -1,9 +1,12 @@
 using System.Net.Http.Json;
+using Microsoft.Extensions.Options;
 
 namespace A2ADemo.ApiBackend;
 
-public sealed class AuthenticationGateway(IHttpClientFactory httpClientFactory, ServiceSettings settings)
+public sealed class AuthenticationGateway(IHttpClientFactory httpClientFactory, IOptions<ServiceSettings> settingsOptions)
 {
+    private readonly ServiceSettings settings = settingsOptions.Value;
+
     public async Task<(int StatusCode, string Body)> LoginAsync(LoginRequest request, CancellationToken ct)
     {
         var client = httpClientFactory.CreateClient();

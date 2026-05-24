@@ -4,7 +4,7 @@ using FastEndpoints;
 using FastEndpoints.A2A;
 
 var builder = WebApplication.CreateBuilder(args);
-var settings = ServiceSettings.Create();
+var settings = builder.Services.AddConfiguredToolServiceSettings<ServiceSettings>(ServiceSettings.Configure);
 
 builder.Services.AddToolServiceInfrastructure(settings, DemoTelemetry.ActivitySourceName);
 builder.Services.AddToolServiceA2A(settings, "A2A specialist that turns classifications into priorities.");

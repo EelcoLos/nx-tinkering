@@ -63,13 +63,11 @@ Central authentication and token issuance service for both users and agents.
 - Username: `user`, Password: `user456`
 
 ### Discovery Service (Port 5051)
-Service registry for A2A agents. Allows services to register themselves and discover other services.
+Legacy registry service retained for compatibility experiments. The active triage flow no longer depends on service self-registration and discovers specialists directly from their protected agent cards.
 
 **Endpoints:**
-- `POST /discovery/register` - Register a service (agent JWT required)
-- `GET /discovery/services` - List all registered services (user JWT required)
-- `GET /discovery/services/{serviceId}` - Get specific service info (user JWT required)
-- `POST /skills/discover-services` - A2A skill for agent-to-agent discovery
+- `GET /services` - List the registry contents
+- `GET /services/{id}/card` - Get a legacy registered card
 - `GET /health` - Health check
 
 ### Classifier Service (Port 5052)

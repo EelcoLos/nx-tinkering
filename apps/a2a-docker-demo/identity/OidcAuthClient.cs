@@ -1,4 +1,5 @@
 using A2ADemo.Common;
+using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -6,8 +7,10 @@ using System.Text;
 
 namespace A2ADemo.Identity;
 
-public sealed class OidcAuthClient(IHttpClientFactory httpClientFactory, AuthSettings settings)
+public sealed class OidcAuthClient(IHttpClientFactory httpClientFactory, IOptions<AuthSettings> settingsOptions)
 {
+    private readonly AuthSettings settings = settingsOptions.Value;
+
     public async Task<LoginResponse?> LoginAsync(LoginRequest request, CancellationToken ct)
     {
         var token = await RequestTokenAsync(

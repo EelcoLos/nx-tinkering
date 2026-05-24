@@ -2,35 +2,26 @@ using A2ADemo.Common;
 
 namespace A2ADemo.Assessor;
 
-public sealed record ServiceSettings(
-    string ServiceName,
-    int Port,
-    string ServiceBaseUrl,
-    string DiscoveryServiceUrl,
-    string IdentityServiceUrl,
-    string JwtSecretKey,
-    string AgentId,
-    bool OtelEnabled,
-    string OtelExporterEndpoint,
-    string OtelServiceNamespace) : IToolServiceSettings
+public sealed class ServiceSettings : IToolServiceSettings
 {
-    public static ServiceSettings Create()
-    {
-        const string serviceName = "assessor";
-        const int port = 5053;
-        const string defaultBaseUrl = "http://assessor:5053";
-        const string envPrefix = "ASSESSOR";
+    public string ServiceName { get; set; } = "assessor";
+    public int Port { get; set; } = 5053;
+    public string ServiceBaseUrl { get; set; } = "http://assessor:5053";
+    public string IdentityServiceUrl { get; set; } = "http://identity:5050";
+    public string JwtSecretKey { get; set; } = "your-256-bit-secret-key-must-be-min-32-chars";
+    public string AgentId { get; set; } = "assessor-agent";
+    public bool OtelEnabled { get; set; }
+    public string OtelExporterEndpoint { get; set; } = "http://tempo:4317";
+    public string OtelServiceNamespace { get; set; } = "a2a-docker-demo";
 
-        return new ServiceSettings(
-            serviceName,
-            port,
-            Environment.GetEnvironmentVariable($"{envPrefix}_SERVICE_URL") ?? defaultBaseUrl,
-            Environment.GetEnvironmentVariable("DISCOVERY_SERVICE_URL") ?? "http://discovery:5051",
-            Environment.GetEnvironmentVariable("IDENTITY_SERVICE_URL") ?? "http://identity:5050",
-            Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "your-256-bit-secret-key-must-be-min-32-chars",
-            Environment.GetEnvironmentVariable($"{envPrefix}_AGENT_ID") ?? $"{serviceName}-agent",
-            bool.TryParse(Environment.GetEnvironmentVariable("OTEL_ENABLED"), out var enabled) && enabled,
-            Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://tempo:4317",
-            Environment.GetEnvironmentVariable("OTEL_SERVICE_NAMESPACE") ?? "a2a-docker-demo");
+    public static void Configure(ServiceSettings options)
+    {
+        options.ServiceBaseUrl = Environment.GetEnvironmentVariable("ASSESSOR_SERVICE_URL") ?? options.ServiceBaseUrl;
+        options.IdentityServiceUrl = Environment.GetEnvironmentVariable("IDENTITY_SERVICE_URL") ?? options.IdentityServiceUrl;
+        options.JwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? options.JwtSecretKey;
+        options.AgentId = Environment.GetEnvironmentVariable("ASSESSOR_AGENT_ID") ?? options.AgentId;
+        options.OtelEnabled = bool.TryParse(Environment.GetEnvironmentVariable("OTEL_ENABLED"), out var enabled) && enabled;
+        options.OtelExporterEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? options.OtelExporterEndpoint;
+        options.OtelServiceNamespace = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAMESPACE") ?? options.OtelServiceNamespace;
     }
 }

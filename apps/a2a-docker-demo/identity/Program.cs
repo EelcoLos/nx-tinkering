@@ -1,18 +1,18 @@
 using A2ADemo.Common;
 using A2ADemo.Identity;
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-var settings = AuthSettings.Create();
+var settings = builder.Services.AddConfiguredSettings<AuthSettings>(AuthSettings.Configure);
 
 if (!settings.OidcEnabled && (string.IsNullOrWhiteSpace(settings.JwtSecretKey) || settings.JwtSecretKey.Length < 32))
 {
     throw new InvalidOperationException("JWT_SECRET_KEY environment variable must be set and at least 32 characters long");
 }
 
-builder.Services.AddSingleton(settings);
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton(new A2ADemo.Identity.JwtService(settings.JwtSecretKey));
+builder.Services.AddSingleton(sp => new A2ADemo.Identity.JwtService(sp.GetRequiredService<IOptions<AuthSettings>>().Value.JwtSecretKey));
 builder.Services.AddSingleton<OidcAuthClient>();
 builder.Services.AddSingleton<UserDatabase>();
 builder.Services.AddFastEndpoints();

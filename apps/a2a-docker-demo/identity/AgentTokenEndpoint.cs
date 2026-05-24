@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Identity;
@@ -8,10 +9,12 @@ public sealed record AgentTokenResult(
     [property: JsonPropertyName("agent_id")] string AgentId);
 
 public sealed class AgentTokenEndpoint(
-    AuthSettings settings,
+    IOptions<AuthSettings> settingsOptions,
     OidcAuthClient oidcAuthClient,
     JwtService jwtService) : EndpointWithoutRequest<AgentTokenResult>
 {
+    private readonly AuthSettings settings = settingsOptions.Value;
+
     public override void Configure()
     {
         Get("/auth/agent/token");

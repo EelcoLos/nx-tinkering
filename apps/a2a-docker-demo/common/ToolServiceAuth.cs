@@ -19,16 +19,10 @@ public interface IToolServiceSettings : IIdentityServiceSettings
     string ServiceName { get; }
     int Port { get; }
     string ServiceBaseUrl { get; }
-    string DiscoveryServiceUrl { get; }
     string JwtSecretKey { get; }
     bool OtelEnabled { get; }
     string OtelExporterEndpoint { get; }
     string OtelServiceNamespace { get; }
-}
-
-public interface IServiceRegistrar
-{
-    Task RegisterAsync();
 }
 
 public sealed class JwtService(string jwtSecretKey)

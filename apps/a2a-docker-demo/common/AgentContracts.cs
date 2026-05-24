@@ -2,15 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace A2ADemo.Common;
 
-public sealed record ServiceRegistrationRequest(
-    [property: JsonPropertyName("service_id")] string ServiceId,
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("base_url")] string BaseUrl,
-    [property: JsonPropertyName("port")] int Port,
-    [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("skills")] IReadOnlyList<string> Skills,
-    [property: JsonPropertyName("agent_card")] AgentCard AgentCard);
-
 public sealed record AgentCard(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,

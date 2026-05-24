@@ -106,7 +106,6 @@ services:
       - ASPNETCORE_URLS=http://+:5050
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - OIDC_ENABLED=${OIDC_ENABLED}
       - OIDC_TOKEN_ENDPOINT=${OIDC_TOKEN_ENDPOINT}
       - OIDC_INTROSPECTION_ENDPOINT=${OIDC_INTROSPECTION_ENDPOINT}
@@ -192,7 +191,6 @@ services:
       - ASPNETCORE_URLS=http://+:5052
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
       - CLASSIFIER_AGENT_ID=classifier-agent
       - OIDC_ENABLED=${OIDC_ENABLED}
@@ -224,7 +222,6 @@ services:
       - ASPNETCORE_URLS=http://+:5053
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ASSESSOR_SERVICE_URL=http://assessor:5053
       - ASSESSOR_AGENT_ID=assessor-agent
       - OIDC_ENABLED=${OIDC_ENABLED}
@@ -256,7 +253,6 @@ services:
       - ASPNETCORE_URLS=http://+:5054
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ROUTER_SERVICE_URL=http://router:5054
       - ROUTER_AGENT_ID=router-agent
       - OIDC_ENABLED=${OIDC_ENABLED}
@@ -288,7 +284,6 @@ services:
       - ASPNETCORE_URLS=http://+:5055
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - HANDLER_SERVICE_URL=http://handler:5055
       - HANDLER_AGENT_ID=handler-agent
       - OIDC_ENABLED=${OIDC_ENABLED}
@@ -320,7 +315,6 @@ services:
       - ASPNETCORE_URLS=http://+:5056
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
-      - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
       - ASSESSOR_SERVICE_URL=http://assessor:5053
       - ROUTER_SERVICE_URL=http://router:5054

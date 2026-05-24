@@ -1,14 +1,13 @@
 using A2ADemo.Common;
 using A2ADemo.Discovery;
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-var settings = ServiceSettings.Create();
+var settings = builder.Services.AddConfiguredIdentitySettings<ServiceSettings>(ServiceSettings.Configure);
 
-builder.Services.AddSingleton(settings);
-builder.Services.AddSingleton<IIdentityServiceSettings>(settings);
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton(new JwtService(settings.JwtSecretKey));
+builder.Services.AddSingleton(sp => new JwtService(sp.GetRequiredService<IOptions<ServiceSettings>>().Value.JwtSecretKey));
 builder.Services.AddSingleton<IdentityClient>();
 builder.Services.AddSingleton<RequestAuthorizer>();
 builder.Services.AddSingleton<ServiceRegistry>();
@@ -32,7 +31,7 @@ app.Use(async (context, next) =>
         return;
     }
 
-    if (context.Request.Path.StartsWithSegments("/services") || context.Request.Path.StartsWithSegments("/register"))
+    if (context.Request.Path.StartsWithSegments("/services"))
     {
         var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
         var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);

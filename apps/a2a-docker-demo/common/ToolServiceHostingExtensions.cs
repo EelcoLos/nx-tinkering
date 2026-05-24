@@ -3,6 +3,7 @@ using FastEndpoints.A2A;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace A2ADemo.Common;
 
@@ -14,10 +15,8 @@ public static class ToolServiceHostingExtensions
         string activitySourceName)
         where TSettings : class, IToolServiceSettings
     {
-        services.AddSingleton(settings);
-        services.AddSingleton<IIdentityServiceSettings>(settings);
         services.AddHttpClient();
-        services.AddSingleton(new JwtService(settings.JwtSecretKey));
+        services.AddSingleton(sp => new JwtService(sp.GetRequiredService<IOptions<TSettings>>().Value.JwtSecretKey));
         services.AddSingleton<IdentityClient>();
         services.AddSingleton<RequestAuthorizer>();
         services.AddAuthorization();
@@ -99,24 +98,5 @@ public static class ToolServiceHostingExtensions
         });
 
         return services;
-    }
-
-    public static void RegisterToolServiceOnStarted<TRegistrar>(this WebApplication app)
-        where TRegistrar : class, IServiceRegistrar
-    {
-        app.Lifetime.ApplicationStarted.Register(() =>
-        {
-            _ = Task.Run(async () =>
-            {
-                using var scope = app.Services.CreateScope();
-                try
-                {
-                    await scope.ServiceProvider.GetRequiredService<TRegistrar>().RegisterAsync();
-                }
-                catch
-                {
-                }
-            });
-        });
     }
 }

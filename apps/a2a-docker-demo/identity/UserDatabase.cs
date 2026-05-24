@@ -1,7 +1,10 @@
 namespace A2ADemo.Identity;
 
-public sealed class UserDatabase
+using Microsoft.Extensions.Options;
+
+public sealed class UserDatabase(IOptions<AuthSettings> settingsOptions)
 {
+    private readonly AuthSettings settings = settingsOptions.Value;
     private readonly List<User> users = [];
 
     public void SeedDemoUsers()
@@ -15,12 +18,12 @@ public sealed class UserDatabase
         [
             new User(
                 "user-1",
-                Environment.GetEnvironmentVariable("DEMO_USER_USERNAME") ?? "admin",
-                Environment.GetEnvironmentVariable("DEMO_USER_PASSWORD") ?? "demo123"),
+                settings.DemoUserUsername,
+                settings.DemoUserPassword),
             new User(
                 "user-2",
-                Environment.GetEnvironmentVariable("DEMO_USER2_USERNAME") ?? "user",
-                Environment.GetEnvironmentVariable("DEMO_USER2_PASSWORD") ?? "user456")
+                settings.DemoUser2Username,
+                settings.DemoUser2Password)
         ]);
     }
 

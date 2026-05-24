@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Identity;
@@ -12,11 +13,13 @@ public sealed record LoginResponse(
     [property: JsonPropertyName("user_id")] string? UserId);
 
 public sealed class LoginEndpoint(
-    AuthSettings settings,
+    IOptions<AuthSettings> settingsOptions,
     OidcAuthClient oidcAuthClient,
     UserDatabase userDatabase,
     JwtService jwtService) : Endpoint<LoginRequest, LoginResponse>
 {
+    private readonly AuthSettings settings = settingsOptions.Value;
+
     public override void Configure()
     {
         Post("/auth/login");
