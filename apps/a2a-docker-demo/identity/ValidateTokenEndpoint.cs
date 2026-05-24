@@ -1,7 +1,3 @@
-using A2ADemo.Common;
-using FastEndpoints;
-using Microsoft.Extensions.Options;
-
 namespace A2ADemo.Identity;
 
 public sealed class ValidateTokenEndpoint(

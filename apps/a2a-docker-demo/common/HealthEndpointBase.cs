@@ -1,6 +1,3 @@
-using FastEndpoints;
-using System.Text.Json.Serialization;
-
 namespace A2ADemo.Common;
 
 public sealed class HealthStatusResponse

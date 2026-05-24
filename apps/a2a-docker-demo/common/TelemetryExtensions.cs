@@ -1,7 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System.Diagnostics;
 
 namespace A2ADemo.Common;
 

@@ -1,6 +1,3 @@
-using A2ADemo.Common;
-using FastEndpoints;
-
 namespace A2ADemo.ApiBackend;
 
 public sealed class GetServiceCardEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<A2AAgentCard>

@@ -1,7 +1,3 @@
-using FastEndpoints;
-using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
-
 namespace A2ADemo.Identity;
 
 public sealed record LoginRequest(

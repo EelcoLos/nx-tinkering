@@ -1,6 +1,3 @@
-using A2ADemo.Common;
-using FastEndpoints;
-
 namespace A2ADemo.Discovery;
 
 public sealed class GetServiceCardEndpoint(ServiceRegistry registry) : EndpointWithoutRequest<AgentCard>

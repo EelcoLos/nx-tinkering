@@ -1,9 +1,3 @@
-using A2ADemo.Common;
-using FastEndpoints;
-using FastEndpoints.A2A;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
-
 namespace A2ADemo.Classifier;
 
 public sealed record ClassifyRequest(

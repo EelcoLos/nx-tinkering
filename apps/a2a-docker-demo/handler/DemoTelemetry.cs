@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace A2ADemo.Handler;
 
 public static class DemoTelemetry

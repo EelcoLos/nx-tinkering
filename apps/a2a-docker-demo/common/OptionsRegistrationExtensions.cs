@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-
 namespace A2ADemo.Common;
 
 public static class OptionsRegistrationExtensions

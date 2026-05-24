@@ -1,7 +1,5 @@
 namespace A2ADemo.Identity;
 
-using Microsoft.Extensions.Options;
-
 public sealed class UserDatabase(IOptions<AuthSettings> settingsOptions)
 {
     private readonly AuthSettings settings = settingsOptions.Value;

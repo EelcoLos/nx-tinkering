@@ -1,7 +1,4 @@
-using A2ADemo.Common;
 using A2ADemo.Discovery;
-using FastEndpoints;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var settings = builder.Services.AddConfiguredIdentitySettings<ServiceSettings>(ServiceSettings.Configure);

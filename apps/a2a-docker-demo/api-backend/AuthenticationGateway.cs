@@ -1,6 +1,3 @@
-using System.Net.Http.Json;
-using Microsoft.Extensions.Options;
-
 namespace A2ADemo.ApiBackend;
 
 public sealed class AuthenticationGateway(IHttpClientFactory httpClientFactory, IOptions<ServiceSettings> settingsOptions)

@@ -1,7 +1,4 @@
-using A2ADemo.Common;
 using A2ADemo.Handler;
-using FastEndpoints;
-using FastEndpoints.A2A;
 
 var builder = WebApplication.CreateBuilder(args);
 var settings = builder.Services.AddConfiguredToolServiceSettings<ServiceSettings>(ServiceSettings.Configure);

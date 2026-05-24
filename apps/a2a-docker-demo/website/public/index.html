@@ -21,6 +21,17 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
       }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -47,6 +58,12 @@
         color: #333;
         text-align: center;
       }
+      .login-help {
+        text-align: center;
+        margin-top: 20px;
+        color: #999;
+        font-size: 12px;
+      }
       .form-group {
         margin-bottom: 20px;
       }
@@ -67,6 +84,14 @@
       .form-group input:focus {
         outline: none;
         border-color: #667eea;
+      }
+      .form-group textarea:focus,
+      .btn:focus-visible,
+      .tab:focus-visible,
+      .btn-observability:focus-visible,
+      .form-group input:focus-visible {
+        outline: 3px solid rgba(102, 126, 234, 0.35);
+        outline-offset: 2px;
       }
       .btn {
         padding: 12px 24px;
@@ -118,6 +143,10 @@
       }
       .header h1 {
         color: #333;
+      }
+      .header-subtitle {
+        color: #999;
+        margin-top: 5px;
       }
       .btn-logout {
         background: #e74c3c;
@@ -172,6 +201,10 @@
       .tab-content.active {
         display: block;
       }
+      .section-title {
+        margin-bottom: 20px;
+        color: #333;
+      }
 
       /* Services */
       .services-grid {
@@ -191,6 +224,11 @@
       }
       .service-card h3 {
         color: #333;
+        margin-bottom: 10px;
+      }
+      .service-description {
+        color: #666;
+        font-size: 14px;
         margin-bottom: 10px;
       }
       .service-card .status {
@@ -220,6 +258,12 @@
         border-radius: 8px;
         margin-bottom: 20px;
       }
+      .triage-label {
+        display: block;
+        margin-bottom: 12px;
+        color: #555;
+        font-weight: 500;
+      }
       .triage-form textarea {
         width: 100%;
         height: 100px;
@@ -227,6 +271,7 @@
         border: 1px solid #ddd;
         border-radius: 6px;
         font-family: inherit;
+        font-size: 16px;
       }
       .btn-submit {
         background: #27ae60;
@@ -244,6 +289,7 @@
         border-radius: 6px;
         margin-bottom: 15px;
       }
+      .request-item h3,
       .request-item h4 {
         color: #333;
         margin-bottom: 8px;
@@ -264,6 +310,21 @@
       .flow-arrow {
         color: #667eea;
         font-weight: bold;
+      }
+      .empty-state {
+        color: #999;
+        text-align: center;
+        padding: 40px;
+      }
+      .trace-list {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+      .trace-row {
+        margin: 5px 0;
+        font-size: 13px;
       }
 
       /* Loading */
@@ -288,54 +349,63 @@
   </head>
   <body>
     <!-- Login Page -->
-    <div class="login-page" id="loginPage">
-      <div class="login-card">
-        <h1>A2A Triage Demo</h1>
-        <form id="loginForm">
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              placeholder="admin or user"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Password"
-              required
-            />
-          </div>
-          <button type="submit" class="btn btn-primary">Login</button>
-          <div class="error" id="loginError"></div>
-          <div class="success" id="loginSuccess"></div>
-        </form>
-        <p
-          style="
-            text-align: center;
-            margin-top: 20px;
-            color: #999;
-            font-size: 12px;
-          "
-        >
-          Demo credentials:<br />
-          admin / demo123<br />
-          user / user456
-        </p>
+    <main>
+      <div class="login-page" id="loginPage" aria-labelledby="loginTitle">
+        <section class="login-card" aria-describedby="loginHelp">
+          <h1 id="loginTitle">A2A Triage Demo</h1>
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                placeholder="admin or user"
+                autocomplete="username"
+                aria-describedby="loginHelp"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <div
+              class="error"
+              id="loginError"
+              role="alert"
+              aria-live="assertive"
+              hidden
+            ></div>
+            <div
+              class="success"
+              id="loginSuccess"
+              role="status"
+              aria-live="polite"
+              hidden
+            ></div>
+          </form>
+          <p id="loginHelp" class="login-help">
+            Demo credentials:<br />
+            admin / demo123<br />
+            user / user456
+          </p>
+        </section>
       </div>
-    </div>
 
     <!-- Dashboard -->
-    <div class="dashboard" id="dashboard">
+    <section class="dashboard" id="dashboard" hidden aria-labelledby="dashboardTitle">
       <div class="container">
-        <div class="header">
+        <header class="header">
           <div>
-            <h1>A2A Triage Workflow</h1>
-            <p style="color: #999; margin-top: 5px">
+            <h1 id="dashboardTitle">A2A Triage Workflow</h1>
+            <p class="header-subtitle">
               Demonstrating Agent-to-Agent Protocol
             </p>
           </div>
@@ -348,317 +418,166 @@
               rel="noopener noreferrer"
               >Open Observability</a
             >
-            <button class="btn btn-logout" onclick="logout()">Logout</button>
+            <button class="btn btn-logout" id="logoutButton" type="button">
+              Logout
+            </button>
           </div>
-        </div>
+        </header>
 
         <!-- Tabs -->
-        <div class="tabs">
-          <button class="tab active" onclick="switchTab('services', event)">
+        <div class="tabs" role="tablist" aria-label="A2A workflow views">
+          <button
+            class="tab active"
+            id="servicesTabButton"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="servicesTab"
+            data-tab="services"
+            tabindex="0"
+          >
             Services
           </button>
-          <button class="tab" onclick="switchTab('triage', event)">
+          <button
+            class="tab"
+            id="triageTabButton"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="triageTab"
+            data-tab="triage"
+            tabindex="-1"
+          >
             Submit Triage
           </button>
-          <button class="tab" onclick="switchTab('history', event)">
+          <button
+            class="tab"
+            id="historyTabButton"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="historyTab"
+            data-tab="history"
+            tabindex="-1"
+          >
             Request History
           </button>
         </div>
 
         <!-- Services Tab -->
-        <div class="tab-content active" id="servicesTab">
-          <h2 style="margin-bottom: 20px; color: #333">
+        <section
+          class="tab-content active"
+          id="servicesTab"
+          role="tabpanel"
+          aria-labelledby="servicesTabButton"
+          tabindex="0"
+        >
+          <h2 class="section-title">
             Available A2A Services
           </h2>
-          <div class="services-grid" id="servicesGrid">
-            <div class="service-card">
-              <h3>Identity Service</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+          <div class="services-grid" id="servicesGrid" role="list">
+            <article class="service-card" role="listitem" aria-labelledby="identityServiceTitle">
+              <h3 id="identityServiceTitle">Identity Service</h3>
+              <p class="service-description">
                 JWT token management
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
-            <div class="service-card">
-              <h3>Classifier Agent</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+            </article>
+            <article class="service-card" role="listitem" aria-labelledby="classifierServiceTitle">
+              <h3 id="classifierServiceTitle">Classifier Agent</h3>
+              <p class="service-description">
                 Analyzes and classifies requests
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
-            <div class="service-card">
-              <h3>Assessor Agent</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+            </article>
+            <article class="service-card" role="listitem" aria-labelledby="assessorServiceTitle">
+              <h3 id="assessorServiceTitle">Assessor Agent</h3>
+              <p class="service-description">
                 Assigns priority levels
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
-            <div class="service-card">
-              <h3>Router Agent</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+            </article>
+            <article class="service-card" role="listitem" aria-labelledby="routerServiceTitle">
+              <h3 id="routerServiceTitle">Router Agent</h3>
+              <p class="service-description">
                 Routes based on priority
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
-            <div class="service-card">
-              <h3>Handler Agent</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+            </article>
+            <article class="service-card" role="listitem" aria-labelledby="handlerServiceTitle">
+              <h3 id="handlerServiceTitle">Handler Agent</h3>
+              <p class="service-description">
                 Processes requests
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
-            <div class="service-card">
-              <h3>Discovery Service</h3>
-              <p style="color: #666; font-size: 14px; margin-bottom: 10px">
+            </article>
+            <article class="service-card" role="listitem" aria-labelledby="discoveryServiceTitle">
+              <h3 id="discoveryServiceTitle">Discovery Service</h3>
+              <p class="service-description">
                 Service registry
               </p>
               <span class="status healthy">🟢 Healthy</span>
-            </div>
+            </article>
           </div>
-        </div>
+        </section>
 
         <!-- Triage Tab -->
-        <div class="tab-content" id="triageTab">
-          <h2 style="margin-bottom: 20px; color: #333">
+        <section
+          class="tab-content"
+          id="triageTab"
+          role="tabpanel"
+          aria-labelledby="triageTabButton"
+          tabindex="0"
+          hidden
+        >
+          <h2 class="section-title">
             Submit Triage Request
           </h2>
           <div class="triage-form">
-            <label
-              style="
-                display: block;
-                margin-bottom: 12px;
-                color: #555;
-                font-weight: 500;
-              "
-              >Issue Description</label
-            >
+            <label for="triageDescription" class="triage-label">Issue Description</label>
             <textarea
               id="triageDescription"
               placeholder="Describe the issue..."
+              aria-describedby="triageHelp"
+              required
             ></textarea>
-            <button class="btn btn-submit" onclick="submitTriage()">
+            <p id="triageHelp" class="sr-only">
+              Describe the issue you want the A2A workflow to classify, assess,
+              route, and handle.
+            </p>
+            <button class="btn btn-submit" id="submitTriageButton" type="button">
               Process Triage
             </button>
-            <div class="error" id="triageError"></div>
+            <div
+              class="error"
+              id="triageError"
+              role="alert"
+              aria-live="assertive"
+              hidden
+            ></div>
           </div>
-        </div>
+        </section>
 
         <!-- History Tab -->
-        <div class="tab-content" id="historyTab">
-          <h2 style="margin-bottom: 20px; color: #333">Request History</h2>
-          <div id="historyList">
-            <p style="color: #999; text-align: center; padding: 40px">
+        <section
+          class="tab-content"
+          id="historyTab"
+          role="tabpanel"
+          aria-labelledby="historyTabButton"
+          tabindex="0"
+          hidden
+        >
+          <h2 class="section-title">Request History</h2>
+          <div id="historyStatus" class="sr-only" role="status" aria-live="polite"></div>
+          <div id="historyList" aria-live="polite" aria-relevant="additions text">
+            <p class="empty-state">
               No requests yet. Submit one from the Triage tab!
             </p>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
-
-    <script>
-      // Keep API/observability origins aligned with the page scheme to avoid
-      // mixed-content failures when the demo is served over HTTPS.
-      const API_HOST = window.location.hostname;
-      const PAGE_SCHEME =
-        window.location.protocol === 'https:' ? 'https' : 'http';
-      const API_URL = `${PAGE_SCHEME}://${API_HOST}:5056`;
-      const GRAFANA_URL = `${PAGE_SCHEME}://${API_HOST}:3001`;
-      const GRAFANA_OVERVIEW_URL = `${GRAFANA_URL}/d/a2a-tool-calling/a2a-tool-calling-overview?orgId=1&refresh=10s`;
-
-      document
-        .getElementById('observabilityLink')
-        .setAttribute('href', GRAFANA_OVERVIEW_URL);
-
-      console.log('Website Debug Info:');
-      console.log('- Hostname:', window.location.hostname);
-      console.log('- Full URL:', window.location.href);
-      console.log('- API_HOST:', API_HOST);
-      console.log('- API_URL:', API_URL);
-
-      document
-        .getElementById('loginForm')
-        .addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const username = document.getElementById('username').value;
-          const password = document.getElementById('password').value;
-
-          console.log('Login attempt to:', API_URL + '/auth/login');
-
-          try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.token) {
-              localStorage.setItem('token', data.token);
-              localStorage.setItem('userId', data.user_id);
-              document.getElementById('loginPage').style.display = 'none';
-              document.getElementById('dashboard').style.display = 'block';
-              loadServices();
-            } else {
-              console.error('Login failed:', data);
-              showError('loginError', 'Invalid credentials');
-            }
-          } catch (err) {
-            console.error('Login error:', err.message, err);
-            showError('loginError', 'Login failed: ' + err.message);
-          }
-        });
-
-      function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        document.getElementById('loginPage').style.display = 'flex';
-        document.getElementById('dashboard').style.display = 'none';
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
-      }
-
-      function escapeHtml(str) {
-        return String(str ?? '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      }
-
-      function switchTab(tab, event) {
-        document
-          .querySelectorAll('.tab-content')
-          .forEach((el) => el.classList.remove('active'));
-        document
-          .querySelectorAll('.tab')
-          .forEach((el) => el.classList.remove('active'));
-        document.getElementById(tab + 'Tab').classList.add('active');
-
-        // Only update button style if called from an onclick event
-        if (event && event.target) {
-          event.target.classList.add('active');
-        }
-      }
-
-      async function loadServices() {
-        try {
-          const response = await fetch(`${API_URL}/api/services`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          if (response.status === 401) logout();
-          // Services are static for now
-        } catch (err) {
-          console.error('Failed to load services:', err);
-        }
-      }
-
-      async function submitTriage() {
-        const input = document.getElementById('triageDescription').value;
-        if (!input) {
-          showError('triageError', 'Please enter a description');
-          return;
-        }
-
-        try {
-          const response = await fetch(`${API_URL}/api/triage`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify({ input }),
-          });
-
-          if (response.status === 401) {
-            logout();
-            return;
-          }
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            showError(
-              'triageError',
-              `Failed: ${errorData.error || 'Unknown error'}`,
-            );
-            return;
-          }
-
-          const data = await response.json();
-          document.getElementById('triageDescription').value = '';
-          addToHistory(data);
-          switchTab('history', null);
-        } catch (err) {
-          showError('triageError', 'Triage processing failed: ' + err.message);
-        }
-      }
-
-      function addToHistory(request) {
-        const historyList = document.getElementById('historyList');
-        if (historyList.innerHTML.includes('No requests yet')) {
-          historyList.innerHTML = '';
-        }
-
-        const item = document.createElement('div');
-        item.className = 'request-item';
-
-        // Build trace HTML
-        let traceHtml = '';
-        if (request.trace && request.trace.length > 0) {
-          traceHtml =
-            '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
-          traceHtml += '<strong>📊 Service Trace:</strong><br>';
-          request.trace.forEach((entry, idx) => {
-            traceHtml += `<div style="margin: 5px 0; font-size: 13px;">
-                        ${idx + 1}. <strong>${escapeHtml(entry.service)}</strong>: ${escapeHtml(entry.result)} (${escapeHtml(entry.timestamp_ms)}ms) ✓
-                    </div>`;
-          });
-          traceHtml += '</div>';
-        }
-
-        item.innerHTML = `
-                <h4>Request #${Math.random().toString(36).substr(2, 9).toUpperCase()}</h4>
-                <p><strong>Input:</strong> ${escapeHtml(request.input) || 'Processing...'}</p>
-                <p><strong>Classification:</strong> ${escapeHtml(request.classification) || 'Pending'}</p>
-                <p><strong>Priority:</strong> ${escapeHtml(request.priority) || 'Pending'}</p>
-                <p><strong>Status:</strong> ${escapeHtml(request.status) || 'In Progress'}</p>
-                <p><strong>Ticket ID:</strong> ${escapeHtml(request.ticket_id) || 'N/A'}</p>
-                <div class="flow">
-                    Classifier <span class="flow-arrow">→</span>
-                    Assessor <span class="flow-arrow">→</span>
-                    Router <span class="flow-arrow">→</span>
-                    Handler
-                </div>
-                ${traceHtml}
-            `;
-        historyList.insertBefore(item, historyList.firstChild);
-      }
-
-      function showError(id, message) {
-        const el = document.getElementById(id);
-        el.textContent = message;
-        el.style.display = 'block';
-      }
-
-      // Check if already logged in
-      window.addEventListener('load', () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          document.getElementById('loginPage').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-          loadServices();
-        }
-      });
-
-      // CORS handling
-      fetch(`${API_URL}`, {
-        mode: 'no-cors',
-        headers: { Origin: window.location.origin },
-      }).catch(() => {
-        // API not ready yet, that's OK
-      });
-    </script>
+    </section>
+    </main>
+    <script src="app.js"></script>
   </body>
 </html>

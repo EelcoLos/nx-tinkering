@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace A2ADemo.Classifier;
 
 public static class DemoTelemetry

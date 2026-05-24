@@ -1,5 +1,3 @@
-using FastEndpoints;
-
 namespace A2ADemo.ApiBackend;
 
 public sealed class ListServicesEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<IReadOnlyCollection<ServiceSummary>>

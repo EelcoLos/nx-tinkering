@@ -1,5 +1,3 @@
-using FastEndpoints;
-
 namespace A2ADemo.Discovery;
 
 public sealed class ListServicesEndpoint(ServiceRegistry registry) : EndpointWithoutRequest<IReadOnlyCollection<RegisteredService>>

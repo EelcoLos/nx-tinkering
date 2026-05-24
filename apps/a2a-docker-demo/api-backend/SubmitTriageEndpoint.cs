@@ -1,8 +1,4 @@
 using Microsoft.AspNetCore.Http.Features;
-using FastEndpoints;
-using FastEndpoints.A2A;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 namespace A2ADemo.ApiBackend;
 

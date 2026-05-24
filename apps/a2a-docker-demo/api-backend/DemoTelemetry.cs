@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace A2ADemo.ApiBackend;
 
 public static class DemoTelemetry
