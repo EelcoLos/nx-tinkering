@@ -1,9 +1,20 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace A2ADemo.ApiBackend;
 
 public sealed record SubmitTriageRequest(
     string? Input);
+
+public sealed class SubmitTriageRequestValidator : Validator<SubmitTriageRequest>
+{
+    public SubmitTriageRequestValidator()
+    {
+        RuleFor(request => request.Input)
+            .NotEmpty()
+            .WithMessage("input is required");
+    }
+}
 
 public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore store) : Endpoint<SubmitTriageRequest, TriageRecord>
 {
@@ -26,19 +37,14 @@ public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore 
 
     public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(req.Input))
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await HttpContext.Response.WriteAsJsonAsync(new { error = "input is required" }, cancellationToken: ct);
-            return;
-        }
+        var input = req.Input!.Trim();
 
         try
         {
             var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
                 ?? Activity.Current?.TraceId.ToString();
 
-            var record = await gateway.RunTriageAsync(req.Input.Trim(), correlationId, ct);
+            var record = await gateway.RunTriageAsync(input, correlationId, ct);
             store.Save(record);
             await Send.OkAsync(record, ct);
         }
@@ -47,7 +53,7 @@ public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore 
             var failedRecord = new TriageRecord
             {
                 Id = $"triage-{Guid.NewGuid():N}"[..19],
-                Input = req.Input.Trim(),
+                Input = input,
                 Status = "failed",
                 Error = ex.Message,
                 CreatedAt = DateTimeOffset.UtcNow,
