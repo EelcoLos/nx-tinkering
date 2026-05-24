@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>A2A Triage Protocol Demo Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="login">
+    <main class="login-page">
+      <section class="login-card" aria-describedby="loginHelp">
+        <h1 id="loginTitle">A2A Triage Demo</h1>
+        <form id="loginForm" aria-labelledby="loginTitle">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="admin or user"
+              autocomplete="username"
+              aria-describedby="loginHelp"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+          <div
+            class="error"
+            id="loginError"
+            role="alert"
+            aria-live="assertive"
+            hidden
+          ></div>
+          <div
+            class="success"
+            id="loginSuccess"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></div>
+        </form>
+        <p id="loginHelp" class="login-help">
+          Demo credentials:<br />
+          admin / demo123<br />
+          user / user456
+        </p>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

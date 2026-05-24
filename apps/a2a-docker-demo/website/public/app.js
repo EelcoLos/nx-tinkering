@@ -6,22 +6,12 @@ const API_URL = `${PAGE_SCHEME}://${API_HOST}:5056`;
 const GRAFANA_URL = `${PAGE_SCHEME}://${API_HOST}:3001`;
 const GRAFANA_OVERVIEW_URL = `${GRAFANA_URL}/d/a2a-tool-calling/a2a-tool-calling-overview?orgId=1&refresh=10s`;
 
-const loginPage = document.getElementById('loginPage');
-const dashboard = document.getElementById('dashboard');
-const loginForm = document.getElementById('loginForm');
-const loginError = document.getElementById('loginError');
-const loginSuccess = document.getElementById('loginSuccess');
-const triageError = document.getElementById('triageError');
-const triageDescription = document.getElementById('triageDescription');
-const historyList = document.getElementById('historyList');
-const historyStatus = document.getElementById('historyStatus');
-const observabilityLink = document.getElementById('observabilityLink');
-const logoutButton = document.getElementById('logoutButton');
-const submitTriageButton = document.getElementById('submitTriageButton');
-const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
-
-observabilityLink.setAttribute('href', GRAFANA_OVERVIEW_URL);
+const DASHBOARD_URL = 'index.html';
+const LOGIN_URL = 'login.html';
+const appState = {
+  login: null,
+  dashboard: null,
+};
 
 console.log('Website Debug Info:');
 console.log('- Hostname:', window.location.hostname);
@@ -29,24 +19,10 @@ console.log('- Full URL:', window.location.href);
 console.log('- API_HOST:', API_HOST);
 console.log('- API_URL:', API_URL);
 
-loginForm.addEventListener('submit', handleLogin);
-logoutButton.addEventListener('click', logout);
-submitTriageButton.addEventListener('click', submitTriage);
-triageDescription.addEventListener('input', () => clearMessage(triageError));
-
-tabs.forEach((tab, index) => {
-  tab.addEventListener('click', () =>
-    activateTab(tab.dataset.tab, { focusTab: false }),
-  );
-  tab.addEventListener('keydown', (event) => handleTabKeydown(event, index));
-});
-
 window.addEventListener('load', () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    showDashboard();
-    loadServices();
-  }
+  initializePage().catch((err) => {
+    console.error('Failed to initialize page:', err);
+  });
 });
 
 fetch(`${API_URL}`, {
@@ -56,10 +32,100 @@ fetch(`${API_URL}`, {
   // API not ready yet, that's OK
 });
 
+async function initializePage() {
+  const page = document.body.dataset.page;
+
+  if (page === 'login') {
+    initializeLoginPage();
+    return;
+  }
+
+  if (page === 'dashboard') {
+    await initializeDashboardPage();
+  }
+}
+
+function initializeLoginPage() {
+  if (localStorage.getItem('token')) {
+    redirectToDashboard();
+    return;
+  }
+
+  appState.login = {
+    loginForm: document.getElementById('loginForm'),
+    loginError: document.getElementById('loginError'),
+    loginSuccess: document.getElementById('loginSuccess'),
+  };
+
+  appState.login.loginForm.addEventListener('submit', handleLogin);
+}
+
+async function initializeDashboardPage() {
+  if (!localStorage.getItem('token')) {
+    redirectToLogin();
+    return;
+  }
+
+  await loadDashboardFragments();
+
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+  appState.dashboard = {
+    observabilityLink: document.getElementById('observabilityLink'),
+    logoutButton: document.getElementById('logoutButton'),
+    submitTriageButton: document.getElementById('submitTriageButton'),
+    triageError: document.getElementById('triageError'),
+    triageDescription: document.getElementById('triageDescription'),
+    historyList: document.getElementById('historyList'),
+    historyStatus: document.getElementById('historyStatus'),
+    servicesGrid: document.getElementById('servicesGrid'),
+    tabs,
+    panels,
+  };
+
+  appState.dashboard.observabilityLink.setAttribute(
+    'href',
+    GRAFANA_OVERVIEW_URL,
+  );
+  appState.dashboard.logoutButton.addEventListener('click', logout);
+  appState.dashboard.submitTriageButton.addEventListener('click', submitTriage);
+  appState.dashboard.triageDescription.addEventListener('input', () =>
+    clearMessage(appState.dashboard.triageError),
+  );
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () =>
+      activateTab(tab.dataset.tab, { focusTab: false }),
+    );
+    tab.addEventListener('keydown', (event) => handleTabKeydown(event, index));
+  });
+
+  activateTab('services', { focusTab: false });
+  await loadServices();
+}
+
+async function loadDashboardFragments() {
+  const panels = Array.from(document.querySelectorAll('[data-fragment]'));
+
+  await Promise.all(
+    panels.map(async (panel) => {
+      const response = await fetch(panel.dataset.fragment, {
+        cache: 'no-store',
+      });
+      if (!response.ok) {
+        throw new Error(`Unable to load ${panel.dataset.fragment}`);
+      }
+
+      panel.innerHTML = await response.text();
+    }),
+  );
+}
+
 async function handleLogin(event) {
   event.preventDefault();
-  clearMessage(loginError);
-  clearMessage(loginSuccess);
+  clearMessage(appState.login.loginError);
+  clearMessage(appState.login.loginSuccess);
 
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
@@ -73,49 +139,36 @@ async function handleLogin(event) {
       body: JSON.stringify({ username, password }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (response.ok && data.token) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('userId', data.user_id);
-      showMessage(loginSuccess, 'Login succeeded. Loading dashboard...');
-      showDashboard();
-      activateTab('services', { focusTab: false });
-      await loadServices();
+      showMessage(
+        appState.login.loginSuccess,
+        'Login succeeded. Redirecting...',
+      );
+      redirectToDashboard();
       return;
     }
 
     console.error('Login failed:', data);
-    showMessage(loginError, 'Invalid credentials');
+    showMessage(appState.login.loginError, 'Invalid credentials');
   } catch (err) {
     console.error('Login error:', err.message, err);
-    showMessage(loginError, `Login failed: ${err.message}`);
+    showMessage(appState.login.loginError, `Login failed: ${err.message}`);
   }
 }
 
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('userId');
-  clearMessage(loginError);
-  clearMessage(loginSuccess);
-  clearMessage(triageError);
-  loginForm.reset();
-  hideDashboard();
-  document.getElementById('username').focus();
-}
 
-function showDashboard() {
-  loginPage.hidden = true;
-  loginPage.style.display = 'none';
-  dashboard.hidden = false;
-  dashboard.style.display = 'block';
-}
+  if (appState.dashboard?.triageError) {
+    clearMessage(appState.dashboard.triageError);
+  }
 
-function hideDashboard() {
-  loginPage.hidden = false;
-  loginPage.style.display = 'flex';
-  dashboard.hidden = true;
-  dashboard.style.display = 'none';
+  redirectToLogin();
 }
 
 function escapeHtml(str) {
@@ -129,6 +182,7 @@ function escapeHtml(str) {
 
 function activateTab(tabName, options = {}) {
   const { focusTab = true, focusPanel = false } = options;
+  const { tabs, panels } = appState.dashboard;
 
   tabs.forEach((tab) => {
     const isActive = tab.dataset.tab === tabName;
@@ -151,6 +205,7 @@ function activateTab(tabName, options = {}) {
 }
 
 function handleTabKeydown(event, currentIndex) {
+  const { tabs } = appState.dashboard;
   const keyActions = {
     ArrowRight: () => focusTabByIndex((currentIndex + 1) % tabs.length),
     ArrowLeft: () =>
@@ -172,7 +227,7 @@ function handleTabKeydown(event, currentIndex) {
 }
 
 function focusTabByIndex(index) {
-  tabs[index].focus();
+  appState.dashboard.tabs[index].focus();
 }
 
 async function loadServices() {
@@ -185,19 +240,28 @@ async function loadServices() {
 
     if (response.status === 401) {
       logout();
+      return;
     }
+
+    if (!response.ok) {
+      throw new Error('Unable to load services');
+    }
+
+    const services = await response.json();
+    renderServices(services);
   } catch (err) {
     console.error('Failed to load services:', err);
+    renderServicesError();
   }
 }
 
 async function submitTriage() {
-  clearMessage(triageError);
-  const input = triageDescription.value.trim();
+  clearMessage(appState.dashboard.triageError);
+  const input = appState.dashboard.triageDescription.value.trim();
 
   if (!input) {
-    showMessage(triageError, 'Please enter a description');
-    triageDescription.focus();
+    showMessage(appState.dashboard.triageError, 'Please enter a description');
+    appState.dashboard.triageDescription.focus();
     return;
   }
 
@@ -217,23 +281,29 @@ async function submitTriage() {
     }
 
     if (!response.ok) {
-      const errorData = await response.json();
-      showMessage(triageError, `Failed: ${errorData.error || 'Unknown error'}`);
+      const errorData = await response.json().catch(() => ({}));
+      showMessage(
+        appState.dashboard.triageError,
+        `Failed: ${errorData.error || 'Unknown error'}`,
+      );
       return;
     }
 
     const data = await response.json();
-    triageDescription.value = '';
+    appState.dashboard.triageDescription.value = '';
     addToHistory(data);
     activateTab('history', { focusTab: true, focusPanel: true });
   } catch (err) {
-    showMessage(triageError, `Triage processing failed: ${err.message}`);
+    showMessage(
+      appState.dashboard.triageError,
+      `Triage processing failed: ${err.message}`,
+    );
   }
 }
 
 function addToHistory(request) {
-  if (historyList.textContent.includes('No requests yet')) {
-    historyList.innerHTML = '';
+  if (appState.dashboard.historyList.textContent.includes('No requests yet')) {
+    appState.dashboard.historyList.innerHTML = '';
   }
 
   const item = document.createElement('article');
@@ -266,8 +336,55 @@ function addToHistory(request) {
     ${traceHtml}
   `;
 
-  historyList.insertBefore(item, historyList.firstChild);
-  historyStatus.textContent = 'A triage request was added to request history.';
+  appState.dashboard.historyList.insertBefore(
+    item,
+    appState.dashboard.historyList.firstChild,
+  );
+  appState.dashboard.historyStatus.textContent =
+    'A triage request was added to request history.';
+}
+
+function renderServices(services) {
+  if (!Array.isArray(services) || services.length === 0) {
+    appState.dashboard.servicesGrid.innerHTML = `
+      <article class="service-card" role="listitem">
+        <p class="empty-state">No services are currently available.</p>
+      </article>
+    `;
+    return;
+  }
+
+  appState.dashboard.servicesGrid.innerHTML = services
+    .map((service) => {
+      const skills = Array.isArray(service.skills) ? service.skills : [];
+      const skillsHtml = skills.length
+        ? `<div class="skill-list">${skills.map((skill) => `<span class="skill-chip">${escapeHtml(skill)}</span>`).join('')}</div>`
+        : '<p class="service-meta">No published skills</p>';
+
+      return `
+        <article class="service-card" role="listitem">
+          <h3>${escapeHtml(service.name || service.service_id || 'Unknown service')}</h3>
+          <p class="service-description">${escapeHtml(service.description || 'No description available.')}</p>
+          <p class="service-meta">Base URL: ${escapeHtml(service.base_url || 'N/A')}</p>
+          <p class="service-meta">Port: ${escapeHtml(service.port ?? 'N/A')}</p>
+          <span class="status healthy">Healthy</span>
+          ${skillsHtml}
+        </article>
+      `;
+    })
+    .join('');
+}
+
+function renderServicesError() {
+  appState.dashboard.servicesGrid.innerHTML = `
+    <article class="service-card" role="listitem">
+      <h3>Service list unavailable</h3>
+      <p class="service-description">
+        The website could not load the current A2A service catalog.
+      </p>
+      <span class="status unhealthy">Unavailable</span>
+    </article>
+  `;
 }
 
 function showMessage(element, message) {
@@ -280,4 +397,12 @@ function clearMessage(element) {
   element.textContent = '';
   element.hidden = true;
   element.style.display = 'none';
+}
+
+function redirectToDashboard() {
+  window.location.replace(DASHBOARD_URL);
+}
+
+function redirectToLogin() {
+  window.location.replace(LOGIN_URL);
 }
