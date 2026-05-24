@@ -16,7 +16,7 @@ public sealed class TriageExceptionHandler(
             return false;
         }
 
-        logger.LogError(exception, "Triage request failed for {Path}", httpContext.Request.Path);
+        logger.LogError(exception, "Triage request failed.");
 
         var input = httpContext.Items.TryGetValue(SubmittedInputItemKey, out var submittedInput)
             ? submittedInput as string ?? string.Empty
