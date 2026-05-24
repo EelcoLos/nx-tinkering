@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="A2A" />
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.A2A" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />

@@ -1,6 +1,8 @@
+using AgentCardModel = A2A.AgentCard;
+
 namespace A2ADemo.ApiBackend;
 
-public sealed class GetServiceCardEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<A2AAgentCard>
+public sealed class GetServiceCardEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<AgentCardModel>
 {
     public override void Configure()
     {

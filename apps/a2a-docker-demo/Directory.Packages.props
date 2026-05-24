@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="A2A" Version="1.0.0-preview2" />
     <PackageVersion Include="FastEndpoints" Version="8.2.0-beta.40" />
     <PackageVersion Include="FastEndpoints.A2A" Version="1.0.0-beta.1" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
