@@ -193,6 +193,43 @@ npm start
 - **Keycloak**: http://localhost:8081
 - **Grafana (observability)**: http://localhost:3001
 
+### Local HTTPS
+
+The FastEndpoints services in this demo can run over HTTPS without changing the
+endpoint code. The A2A package already emits the agent-card `supportedInterfaces`
+URL from `ServiceBaseUrl`, so if the service URLs are configured as `https://...`,
+the published A2A discovery surface follows that.
+
+For local source-based runs on Windows/macOS, the workable path is:
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+Then start each .NET service with HTTPS URLs and matching service base URLs, for
+example:
+
+```powershell
+$env:ASPNETCORE_URLS = 'https://localhost:5056'
+$env:API_BACKEND_SERVICE_URL = 'https://localhost:5056'
+$env:IDENTITY_SERVICE_URL = 'https://localhost:5050'
+$env:CLASSIFIER_SERVICE_URL = 'https://localhost:5052'
+$env:ASSESSOR_SERVICE_URL = 'https://localhost:5053'
+$env:ROUTER_SERVICE_URL = 'https://localhost:5054'
+$env:HANDLER_SERVICE_URL = 'https://localhost:5055'
+dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
+```
+
+The website now follows the page scheme for API and Grafana links, so serving the
+UI over HTTPS will no longer force mixed `http://` requests to the API.
+
+Current limitation: the Docker stack is still HTTP internally. Moving the full
+compose stack to HTTPS requires certificate material plus trust distribution for
+every container-to-container hop, and Keycloak is currently bootstrapped in
+dev-mode HTTP on `8081`. If you want full Docker HTTPS next, the clean options are
+either a TLS reverse proxy for browser-facing routes or a shared internal CA with
+per-service certificates.
+
 Keycloak configuration is bootstrapped automatically by the `keycloak-init` service in compose. It creates:
 
 - Realm: `a2a-local`

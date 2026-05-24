@@ -455,11 +455,13 @@
     </div>
 
     <script>
-      // Dynamically determine API host based on website location
-      // Uses the same hostname as the website (works from any host/IP)
+      // Keep API/observability origins aligned with the page scheme to avoid
+      // mixed-content failures when the demo is served over HTTPS.
       const API_HOST = window.location.hostname;
-      const API_URL = `http://${API_HOST}:5056`;
-      const GRAFANA_URL = `http://${API_HOST}:3001`;
+      const PAGE_SCHEME =
+        window.location.protocol === 'https:' ? 'https' : 'http';
+      const API_URL = `${PAGE_SCHEME}://${API_HOST}:5056`;
+      const GRAFANA_URL = `${PAGE_SCHEME}://${API_HOST}:3001`;
       const GRAFANA_OVERVIEW_URL = `${GRAFANA_URL}/d/a2a-tool-calling/a2a-tool-calling-overview?orgId=1&refresh=10s`;
 
       document
