@@ -3,12 +3,11 @@ using FastEndpoints;
 
 namespace A2ADemo.ApiBackend;
 
-public sealed class GetServiceCardEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<AgentCard>
+public sealed class GetServiceCardEndpoint(DownstreamGateway gateway) : EndpointWithoutRequest<A2AAgentCard>
 {
     public override void Configure()
     {
         Get("/api/services/{id}/card");
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

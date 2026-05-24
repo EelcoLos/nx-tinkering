@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace A2ADemo.ApiBackend;
 
 public sealed record LoginRequest(
-    [property: JsonPropertyName("username")] string? Username,
-    [property: JsonPropertyName("password")] string? Password);
+    string? Username,
+    string? Password);
 
 public sealed class LoginEndpoint(AuthenticationGateway authenticationGateway) : Endpoint<LoginRequest, object>
 {

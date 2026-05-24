@@ -8,7 +8,6 @@ public sealed class GetServiceCardEndpoint(ServiceRegistry registry) : EndpointW
     public override void Configure()
     {
         Get("/services/{id}/card");
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

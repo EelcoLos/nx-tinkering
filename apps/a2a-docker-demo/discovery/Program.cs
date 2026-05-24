@@ -12,6 +12,7 @@ builder.Services.AddSingleton(new JwtService(settings.JwtSecretKey));
 builder.Services.AddSingleton<IdentityClient>();
 builder.Services.AddSingleton<RequestAuthorizer>();
 builder.Services.AddSingleton<ServiceRegistry>();
+builder.Services.AddAuthorization();
 builder.Services.AddFastEndpoints();
 builder.Services.AddServiceTelemetry(
     settings.OtelEnabled,
@@ -42,11 +43,13 @@ app.Use(async (context, next) =>
             return;
         }
 
+        context.User = RequestAuthorizer.CreatePrincipal(validatedToken);
         context.Items["validated_token"] = validatedToken;
     }
 
     await next();
 });
 
+app.UseAuthorization();
 app.UseFastEndpoints();
 app.Run();

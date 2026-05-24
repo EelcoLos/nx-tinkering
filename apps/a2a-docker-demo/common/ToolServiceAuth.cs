@@ -141,6 +141,28 @@ public sealed class IdentityClient(
 
 public sealed class RequestAuthorizer(IdentityClient identityClient)
 {
+    public static ClaimsPrincipal CreatePrincipal(ValidatedToken validatedToken)
+    {
+        var claims = new List<Claim>
+        {
+            new("sub", validatedToken.Subject),
+            new("type", validatedToken.Type)
+        };
+
+        if (!string.IsNullOrWhiteSpace(validatedToken.AgentId))
+        {
+            claims.Add(new Claim("agent_id", validatedToken.AgentId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(validatedToken.Username))
+        {
+            claims.Add(new Claim("username", validatedToken.Username));
+        }
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "A2ADemoToken");
+        return new ClaimsPrincipal(identity);
+    }
+
     public async Task<ValidatedToken?> ValidateBearerAsync(HttpContext context, string expectedType, CancellationToken ct)
     {
         var token = GetBearerToken(context.Request.Headers.Authorization);

@@ -1,24 +1,36 @@
 using A2ADemo.Common;
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Router;
 
 public sealed record RouteRequest(
-    [property: JsonPropertyName("priority")] string? Priority,
-    [property: JsonPropertyName("metadata")] A2AMetadata? Metadata);
+    string? Priority,
+    A2AMetadata? Metadata);
 
 public sealed record RouteResponse(
     [property: JsonPropertyName("next_handler")] string NextHandler,
-    [property: JsonPropertyName("result")] string Result);
+    string Result);
 
 public sealed class SkillEndpoint : Endpoint<RouteRequest, RouteResponse>
 {
     public override void Configure()
     {
         Post("/skills/route");
-        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "router",
+            tags: ["triage", "routing"],
+            configure: skill =>
+            {
+                skill.Name = "Router";
+                skill.Description = "Determines the next handler for a given priority.";
+                skill.Examples = ["Route this high priority request."];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
     }
 
     public override async Task HandleAsync(RouteRequest req, CancellationToken ct)

@@ -1,24 +1,36 @@
 using A2ADemo.Common;
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Classifier;
 
 public sealed record ClassifyRequest(
-    [property: JsonPropertyName("input")] string? Input,
-    [property: JsonPropertyName("metadata")] A2AMetadata? Metadata);
+    string? Input,
+    A2AMetadata? Metadata);
 
 public sealed record ClassifyResponse(
     [property: JsonPropertyName("classification_type")] string ClassificationType,
-    [property: JsonPropertyName("result")] string Result);
+    string Result);
 
 public sealed class SkillEndpoint : Endpoint<ClassifyRequest, ClassifyResponse>
 {
     public override void Configure()
     {
         Post("/skills/classify");
-        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "classifier",
+            tags: ["triage", "classification"],
+            configure: skill =>
+            {
+                skill.Name = "Classifier";
+                skill.Description = "Classifies incoming text into a triage category.";
+                skill.Examples = ["Classify this incident report."];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
     }
 
     public override async Task HandleAsync(ClassifyRequest req, CancellationToken ct)

@@ -1,19 +1,31 @@
 using Microsoft.AspNetCore.Http.Features;
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.ApiBackend;
 
 public sealed record SubmitTriageRequest(
-    [property: JsonPropertyName("input")] string? Input);
+    string? Input);
 
 public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore store) : Endpoint<SubmitTriageRequest, TriageRecord>
 {
     public override void Configure()
     {
         Post("/api/triage");
-        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "triage_orchestration",
+            tags: ["triage", "orchestration"],
+            configure: skill =>
+            {
+                skill.Name = "Triage Orchestration";
+                skill.Description = "Coordinates the multi-step triage workflow.";
+                skill.Examples = ["Triage this outage report."];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
     }
 
     public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)

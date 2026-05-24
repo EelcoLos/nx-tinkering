@@ -4,11 +4,11 @@ using System.Text.Json.Serialization;
 namespace A2ADemo.Identity;
 
 public sealed record LoginRequest(
-    [property: JsonPropertyName("username")] string? Username,
-    [property: JsonPropertyName("password")] string? Password);
+    string? Username,
+    string? Password);
 
 public sealed record LoginResponse(
-    [property: JsonPropertyName("token")] string? Token,
+    string? Token,
     [property: JsonPropertyName("user_id")] string? UserId);
 
 public sealed class LoginEndpoint(

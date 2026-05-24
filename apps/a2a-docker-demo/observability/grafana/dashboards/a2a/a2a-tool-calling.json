@@ -38,7 +38,7 @@
     },
     {
       "type": "table",
-      "title": "execute_tool classifier",
+      "title": "A2A skill classifier",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -92,7 +92,7 @@
     },
     {
       "type": "table",
-      "title": "execute_tool assessor",
+      "title": "A2A skill assessor",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -146,7 +146,7 @@
     },
     {
       "type": "table",
-      "title": "execute_tool router",
+      "title": "A2A skill router",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -200,7 +200,7 @@
     },
     {
       "type": "table",
-      "title": "execute_tool handler",
+      "title": "A2A skill handler",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -254,7 +254,7 @@
     },
     {
       "type": "table",
-      "title": "invoke_workflow a2a-triage",
+      "title": "A2A workflow a2a-triage",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -273,7 +273,7 @@
           },
           "queryType": "traceqlSearch",
           "limit": 50,
-          "query": "{ span.gen_ai.operation.name = \"invoke_workflow\" } with (most_recent=true)",
+          "query": "{ span.gen_ai.operation.name = \"invoke_workflow\" && span.gen_ai.workflow.name = \"a2a-triage\" } with (most_recent=true)",
           "refId": "A"
         }
       ],

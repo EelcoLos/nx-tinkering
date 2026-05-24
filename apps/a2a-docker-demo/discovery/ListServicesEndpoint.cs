@@ -7,7 +7,6 @@ public sealed class ListServicesEndpoint(ServiceRegistry registry) : EndpointWit
     public override void Configure()
     {
         Get("/services");
-        AllowAnonymous();
     }
 
     public override Task HandleAsync(CancellationToken ct) => Send.OkAsync(registry.GetAll(), ct);

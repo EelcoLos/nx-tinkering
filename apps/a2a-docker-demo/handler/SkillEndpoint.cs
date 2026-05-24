@@ -1,27 +1,39 @@
 using A2ADemo.Common;
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Handler;
 
 public sealed record HandleRequest(
-    [property: JsonPropertyName("input")] string? Input,
-    [property: JsonPropertyName("classification")] string? Classification,
-    [property: JsonPropertyName("priority")] string? Priority,
-    [property: JsonPropertyName("metadata")] A2AMetadata? Metadata);
+    string? Input,
+    string? Classification,
+    string? Priority,
+    A2AMetadata? Metadata);
 
 public sealed record HandleResponse(
-    [property: JsonPropertyName("status")] string Status,
+    string Status,
     [property: JsonPropertyName("ticket_id")] string TicketId,
-    [property: JsonPropertyName("summary")] string Summary);
+    string Summary);
 
 public sealed class SkillEndpoint : Endpoint<HandleRequest, HandleResponse>
 {
     public override void Configure()
     {
         Post("/skills/handle");
-        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "handler",
+            tags: ["triage", "handling"],
+            configure: skill =>
+            {
+                skill.Name = "Handler";
+                skill.Description = "Processes a routed request and returns the outcome.";
+                skill.Examples = ["Handle this critical defect request."];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
     }
 
     public override async Task HandleAsync(HandleRequest req, CancellationToken ct)

@@ -14,7 +14,6 @@ public sealed class RegisterServiceEndpoint(ServiceRegistry registry) : Endpoint
     public override void Configure()
     {
         Post("/register");
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(ServiceRegistrationRequest req, CancellationToken ct)

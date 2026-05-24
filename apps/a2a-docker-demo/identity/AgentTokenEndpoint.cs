@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace A2ADemo.Identity;
 
 public sealed record AgentTokenResult(
-    [property: JsonPropertyName("token")] string Token,
+    string Token,
     [property: JsonPropertyName("agent_id")] string AgentId);
 
 public sealed class AgentTokenEndpoint(

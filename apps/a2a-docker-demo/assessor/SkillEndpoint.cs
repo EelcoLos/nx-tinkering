@@ -1,24 +1,36 @@
 using A2ADemo.Common;
 using FastEndpoints;
+using FastEndpoints.A2A;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace A2ADemo.Assessor;
 
 public sealed record AssessRequest(
-    [property: JsonPropertyName("classification")] string? Classification,
-    [property: JsonPropertyName("metadata")] A2AMetadata? Metadata);
+    string? Classification,
+    A2AMetadata? Metadata);
 
 public sealed record AssessResponse(
-    [property: JsonPropertyName("priority")] string Priority,
-    [property: JsonPropertyName("result")] string Result);
+    string Priority,
+    string Result);
 
 public sealed class SkillEndpoint : Endpoint<AssessRequest, AssessResponse>
 {
     public override void Configure()
     {
         Post("/skills/assess");
-        AllowAnonymous();
+
+        this.A2ASkill(
+            id: "assessor",
+            tags: ["triage", "priority"],
+            configure: skill =>
+            {
+                skill.Name = "Assessor";
+                skill.Description = "Determines priority from a prior classification.";
+                skill.Examples = ["Assess the priority of this incident classification."];
+                skill.InputModes = ["application/json"];
+                skill.OutputModes = ["application/json"];
+            });
     }
 
     public override async Task HandleAsync(AssessRequest req, CancellationToken ct)

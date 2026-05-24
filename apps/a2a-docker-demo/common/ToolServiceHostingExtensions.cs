@@ -1,4 +1,5 @@
 using FastEndpoints;
+using FastEndpoints.A2A;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class ToolServiceHostingExtensions
         services.AddSingleton(new JwtService(settings.JwtSecretKey));
         services.AddSingleton<IdentityClient>();
         services.AddSingleton<RequestAuthorizer>();
+        services.AddAuthorization();
         services.AddFastEndpoints();
         services.AddServiceTelemetry(
             settings.OtelEnabled,
@@ -51,13 +53,52 @@ public static class ToolServiceHostingExtensions
                     return;
                 }
 
+                context.User = RequestAuthorizer.CreatePrincipal(validatedToken);
+                context.Items["validated_token"] = validatedToken;
+            }
+
+            if (context.Request.Path.StartsWithSegments("/a2a")
+                || context.Request.Path.StartsWithSegments("/.well-known"))
+            {
+                var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
+                var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);
+                if (validatedToken is null)
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" }, cancellationToken: context.RequestAborted);
+                    return;
+                }
+
+                context.User = RequestAuthorizer.CreatePrincipal(validatedToken);
                 context.Items["validated_token"] = validatedToken;
             }
 
             await next();
         });
 
+        app.UseAuthorization();
+
         return app;
+    }
+
+    public static IServiceCollection AddToolServiceA2A<TSettings>(
+        this IServiceCollection services,
+        TSettings settings,
+        string description)
+        where TSettings : class, IToolServiceSettings
+    {
+        services.AddA2A(options =>
+        {
+            options.AgentName = settings.ServiceName;
+            options.Description = description;
+            options.Version = "1.0.0";
+            options.Url = $"{settings.ServiceBaseUrl.TrimEnd('/')}/a2a";
+            options.SkillVisibilityFilter = (_, user, _) =>
+                user.Identity?.IsAuthenticated == true &&
+                user.HasClaim("type", "agent");
+        });
+
+        return services;
     }
 
     public static void RegisterToolServiceOnStarted<TRegistrar>(this WebApplication app)
