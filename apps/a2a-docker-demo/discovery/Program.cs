@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 var settings = builder.Services.AddConfiguredIdentitySettings<ServiceSettings>(ServiceSettings.Configure);
 
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton(sp => new JwtService(sp.GetRequiredService<IOptions<ServiceSettings>>().Value.JwtSecretKey));
+builder.Services.AddSingleton(sp => new JwtService(() => sp.GetRequiredService<IOptionsMonitor<ServiceSettings>>().CurrentValue.JwtSecretKey));
 builder.Services.AddSingleton<IdentityClient>();
 builder.Services.AddSingleton<RequestAuthorizer>();
 builder.Services.AddSingleton<ServiceRegistry>();

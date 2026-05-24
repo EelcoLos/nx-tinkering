@@ -9,7 +9,7 @@ if (!settings.OidcEnabled && (string.IsNullOrWhiteSpace(settings.JwtSecretKey) |
 }
 
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton(sp => new A2ADemo.Identity.JwtService(sp.GetRequiredService<IOptions<AuthSettings>>().Value.JwtSecretKey));
+builder.Services.AddSingleton(sp => new A2ADemo.Identity.JwtService(() => sp.GetRequiredService<IOptionsMonitor<AuthSettings>>().CurrentValue.JwtSecretKey));
 builder.Services.AddSingleton<OidcAuthClient>();
 builder.Services.AddSingleton<UserDatabase>();
 builder.Services.AddFastEndpoints();

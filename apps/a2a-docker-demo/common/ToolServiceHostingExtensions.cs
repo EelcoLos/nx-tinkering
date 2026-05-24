@@ -13,7 +13,7 @@ public static class ToolServiceHostingExtensions
         where TSettings : class, IToolServiceSettings
     {
         services.AddHttpClient();
-        services.AddSingleton(sp => new JwtService(sp.GetRequiredService<IOptions<TSettings>>().Value.JwtSecretKey));
+        services.AddSingleton(sp => new JwtService(() => sp.GetRequiredService<IOptionsMonitor<TSettings>>().CurrentValue.JwtSecretKey));
         services.AddSingleton<IdentityClient>();
         services.AddSingleton<RequestAuthorizer>();
         services.AddAuthorization();

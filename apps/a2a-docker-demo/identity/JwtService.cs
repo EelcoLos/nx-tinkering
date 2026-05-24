@@ -5,9 +5,9 @@ using System.Text;
 
 namespace A2ADemo.Identity;
 
-public sealed class JwtService(string jwtSecretKey)
+public sealed class JwtService(Func<string> getJwtSecretKey)
 {
-    private readonly SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(jwtSecretKey));
+    private SymmetricSecurityKey CreateKey() => new(Encoding.UTF8.GetBytes(getJwtSecretKey()));
 
     public string GenerateUserToken(string userId, string username)
     {
@@ -21,7 +21,7 @@ public sealed class JwtService(string jwtSecretKey)
                 new Claim("type", "user")
             ]),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            SigningCredentials = new SigningCredentials(CreateKey(), SecurityAlgorithms.HmacSha256)
         };
 
         return handler.WriteToken(handler.CreateToken(descriptor));
@@ -39,7 +39,7 @@ public sealed class JwtService(string jwtSecretKey)
                 new Claim("type", "agent")
             ]),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            SigningCredentials = new SigningCredentials(CreateKey(), SecurityAlgorithms.HmacSha256)
         };
 
         return handler.WriteToken(handler.CreateToken(descriptor));
@@ -53,7 +53,7 @@ public sealed class JwtService(string jwtSecretKey)
             return handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
+                IssuerSigningKey = CreateKey(),
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = true,
