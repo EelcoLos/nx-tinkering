@@ -436,9 +436,9 @@ See `.env.example` for all configuration options.
 1. Create `apps/a2a-docker-demo/new-service/service.cs` (copy from classifier.cs pattern)
 2. Add identity configuration to `.env.example` and `.env`:
    ```
-  NEW_SERVICE_AGENT_ID=new-service-agent
-  OIDC_NEW_SERVICE_CLIENT_ID=new-service-agent
-  OIDC_NEW_SERVICE_CLIENT_SECRET=new-service-agent-secret
+   NEW_SERVICE_AGENT_ID=new-service-agent
+   OIDC_NEW_SERVICE_CLIENT_ID=new-service-agent
+   OIDC_NEW_SERVICE_CLIENT_SECRET=new-service-agent-secret
    ```
 3. Add the new service to `docker-compose.yml` and `docker-compose.local.yml`
 4. Expose its protected `/.well-known/agent-card.json` and `/a2a` surfaces
