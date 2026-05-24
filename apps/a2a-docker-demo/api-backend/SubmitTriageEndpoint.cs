@@ -38,31 +38,13 @@ public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore 
     public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)
     {
         var input = req.Input!.Trim();
+        TriageExceptionHandler.StoreSubmittedInput(HttpContext, input);
 
-        try
-        {
-            var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
-                ?? Activity.Current?.TraceId.ToString();
+        var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
+            ?? Activity.Current?.TraceId.ToString();
 
-            var record = await gateway.RunTriageAsync(input, correlationId, ct);
-            store.Save(record);
-            await Send.OkAsync(record, ct);
-        }
-        catch (Exception ex)
-        {
-            var failedRecord = new TriageRecord
-            {
-                Id = $"triage-{Guid.NewGuid():N}"[..19],
-                Input = input,
-                Status = "failed",
-                Error = ex.Message,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
-            };
-
-            store.Save(failedRecord);
-            HttpContext.Response.StatusCode = StatusCodes.Status502BadGateway;
-            await HttpContext.Response.WriteAsJsonAsync(failedRecord, cancellationToken: ct);
-        }
+        var record = await gateway.RunTriageAsync(input, correlationId, ct);
+        store.Save(record);
+        await Send.OkAsync(record, ct);
     }
 }

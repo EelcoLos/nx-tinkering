@@ -15,6 +15,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddToolServiceInfrastructure(settings, DemoTelemetry.ActivitySourceName);
 builder.Services.AddToolServiceA2A(settings, "Website-facing A2A triage orchestrator.");
+builder.Services.AddExceptionHandler<TriageExceptionHandler>();
 builder.Services.AddSingleton<TriageStore>();
 builder.Services.AddSingleton<AuthenticationGateway>();
 builder.Services.AddSingleton<DownstreamGateway>();
@@ -22,6 +23,7 @@ builder.Services.AddSingleton<DownstreamGateway>();
 var app = builder.Build();
 
 app.UseCors("AllowAll");
+app.UseExceptionHandler();
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/health")
