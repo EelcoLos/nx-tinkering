@@ -127,6 +127,21 @@
       .btn-logout:hover {
         background: #c0392b;
       }
+      .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .btn-observability {
+        background: #1f6feb;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn-observability:hover {
+        background: #1854b5;
+      }
 
       /* Tabs */
       .tabs {
@@ -324,7 +339,17 @@
               Demonstrating Agent-to-Agent Protocol
             </p>
           </div>
-          <button class="btn btn-logout" onclick="logout()">Logout</button>
+          <div class="header-actions">
+            <a
+              class="btn btn-observability"
+              id="observabilityLink"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Open Observability</a
+            >
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+          </div>
         </div>
 
         <!-- Tabs -->
@@ -434,6 +459,12 @@
       // Uses the same hostname as the website (works from any host/IP)
       const API_HOST = window.location.hostname;
       const API_URL = `http://${API_HOST}:5056`;
+      const GRAFANA_URL = `http://${API_HOST}:3001`;
+      const GRAFANA_OVERVIEW_URL = `${GRAFANA_URL}/d/a2a-tool-calling/a2a-tool-calling-overview?orgId=1&refresh=10s`;
+
+      document
+        .getElementById('observabilityLink')
+        .setAttribute('href', GRAFANA_OVERVIEW_URL);
 
       console.log('Website Debug Info:');
       console.log('- Hostname:', window.location.hostname);

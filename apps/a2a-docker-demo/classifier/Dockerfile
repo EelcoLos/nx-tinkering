@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /build
 COPY Directory.Packages.props .
-COPY classifier/classifier.csproj .
-COPY classifier/Program.cs .
-RUN dotnet publish -c Release -o /app
+COPY common ./common
+COPY classifier ./classifier
+RUN dotnet publish ./classifier/classifier.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 WORKDIR /app

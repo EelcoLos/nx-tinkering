@@ -1,5 +1,7 @@
 using FastEndpoints;
 using Microsoft.IdentityModel.Tokens;
+using A2ADemo.Common;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -18,6 +20,13 @@ builder.Services.AddSingleton<IdentityClient>();
 builder.Services.AddSingleton<RequestAuthorizer>();
 builder.Services.AddSingleton<ServiceRegistrar>();
 builder.Services.AddFastEndpoints();
+
+builder.Services.AddServiceTelemetry(
+    settings.OtelEnabled,
+    settings.ServiceName,
+    settings.OtelServiceNamespace,
+    settings.OtelExporterEndpoint,
+    DemoTelemetry.ActivitySourceName);
 
 var app = builder.Build();
 
@@ -47,7 +56,6 @@ app.Use(async (context, next) =>
 });
 
 app.UseFastEndpoints();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.Lifetime.ApplicationStarted.Register(() =>
 {
     _ = Task.Run(async () =>
@@ -73,6 +81,9 @@ class ServiceSettings
     public string IdentityServiceUrl { get; init; } = "";
     public string JwtSecretKey { get; init; } = "";
     public string AgentId { get; init; } = "";
+    public bool OtelEnabled { get; init; }
+    public string OtelExporterEndpoint { get; init; } = "http://tempo:4317";
+    public string OtelServiceNamespace { get; init; } = "a2a-docker-demo";
 
     public static ServiceSettings Create(string serviceName, int port, string defaultBaseUrl)
     {
@@ -85,9 +96,18 @@ class ServiceSettings
             DiscoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_SERVICE_URL") ?? "http://discovery:5051",
             IdentityServiceUrl = Environment.GetEnvironmentVariable("IDENTITY_SERVICE_URL") ?? "http://identity:5050",
             JwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "your-256-bit-secret-key-must-be-min-32-chars",
-            AgentId = Environment.GetEnvironmentVariable($"{envPrefix}_AGENT_ID") ?? $"{serviceName}-agent"
+            AgentId = Environment.GetEnvironmentVariable($"{envPrefix}_AGENT_ID") ?? $"{serviceName}-agent",
+            OtelEnabled = bool.TryParse(Environment.GetEnvironmentVariable("OTEL_ENABLED"), out var enabled) && enabled,
+            OtelExporterEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://tempo:4317",
+            OtelServiceNamespace = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAMESPACE") ?? "a2a-docker-demo"
         };
     }
+}
+
+static class DemoTelemetry
+{
+    public const string ActivitySourceName = "a2a.tool.assessor";
+    public static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 }
 
 class JwtService
@@ -325,19 +345,8 @@ class ServiceRegistrar
             }
         };
 
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            using var message = new HttpRequestMessage(HttpMethod.Post, $"{_settings.DiscoveryServiceUrl}/register")
-            {
-                Content = JsonContent.Create(registration)
-            };
-            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            await client.SendAsync(message);
-        }
-        catch
-        {
-        }
+        var client = _httpClientFactory.CreateClient();
+        await client.TryPostServiceRegistrationAsync(_settings.DiscoveryServiceUrl, token, registration);
     }
 }
 
@@ -414,21 +423,30 @@ class SkillEndpoint : Endpoint<AssessRequest, AssessResponse>
 
     public override async Task HandleAsync(AssessRequest req, CancellationToken ct)
     {
-var classification = (req.Classification ?? string.Empty).Trim().ToLowerInvariant();
-var priority = classification switch
-{
-    "incident" => "critical",
-    "defect" => "high",
-    "feature_request" => "medium",
-    "inquiry" => "low",
-    _ => "normal"
-};
+        using var startedActivity = TelemetryExtensions.StartToolActivity(DemoTelemetry.ActivitySource, "assessor");
+        var activity = startedActivity ?? Activity.Current;
 
-var response = new AssessResponse
-{
-    Priority = priority,
-    Result = $"Priority assessed as {priority}."
-};
+        var classification = (req.Classification ?? string.Empty).Trim().ToLowerInvariant();
+        var priority = classification switch
+        {
+            "incident" => "critical",
+            "defect" => "high",
+            "feature_request" => "medium",
+            "inquiry" => "low",
+            _ => "normal"
+        };
+
+        activity?.SetTag("a2a.result", priority);
+        activity?.SetTag("gen_ai.response.finish_reasons", new[] { "stop" });
+        activity?.SetStatus(ActivityStatusCode.Ok);
+
+        var response = new AssessResponse
+        {
+            Priority = priority,
+            Result = $"Priority assessed as {priority}."
+        };
         await HttpContext.Response.WriteAsJsonAsync(response, cancellationToken: ct);
     }
 }
+
+sealed class HealthEndpoint : HealthEndpointBase;

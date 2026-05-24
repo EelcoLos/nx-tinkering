@@ -1,6 +1,11 @@
 using FastEndpoints;
+using A2ADemo.Common;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -34,6 +39,25 @@ builder.Services.AddSingleton<TriageStore>();
 builder.Services.AddSingleton<DownstreamGateway>();
 builder.Services.AddFastEndpoints();
 
+if (settings.OtelEnabled)
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService(settings.ServiceName, serviceNamespace: settings.OtelServiceNamespace))
+        .WithTracing(tracing =>
+        {
+            tracing
+                .AddSource(DemoTelemetry.ActivitySourceName)
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation();
+
+            if (Uri.TryCreate(settings.OtelExporterEndpoint, UriKind.Absolute, out var endpoint))
+            {
+                tracing.AddOtlpExporter(exporter => exporter.Endpoint = endpoint);
+            }
+        });
+}
+
 var app = builder.Build();
 
 // CORS must come early, before routing
@@ -66,7 +90,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.UseFastEndpoints();
 app.Lifetime.ApplicationStarted.Register(() =>
 {
@@ -97,6 +120,9 @@ class ServiceSettings
     public string HandlerServiceUrl { get; init; } = "http://handler:5055";
     public string JwtSecretKey { get; init; } = "";
     public string AgentId { get; init; } = "api-backend-agent";
+    public bool OtelEnabled { get; init; }
+    public string OtelExporterEndpoint { get; init; } = "http://tempo:4317";
+    public string OtelServiceNamespace { get; init; } = "a2a-docker-demo";
 
     public static ServiceSettings Create() => new ServiceSettings
     {
@@ -108,8 +134,17 @@ class ServiceSettings
         RouterServiceUrl = Environment.GetEnvironmentVariable("ROUTER_SERVICE_URL") ?? "http://router:5054",
         HandlerServiceUrl = Environment.GetEnvironmentVariable("HANDLER_SERVICE_URL") ?? "http://handler:5055",
         JwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "your-256-bit-secret-key-must-be-min-32-chars",
-        AgentId = Environment.GetEnvironmentVariable("API_BACKEND_AGENT_ID") ?? "api-backend-agent"
+        AgentId = Environment.GetEnvironmentVariable("API_BACKEND_AGENT_ID") ?? "api-backend-agent",
+        OtelEnabled = bool.TryParse(Environment.GetEnvironmentVariable("OTEL_ENABLED"), out var enabled) && enabled,
+        OtelExporterEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://tempo:4317",
+        OtelServiceNamespace = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAMESPACE") ?? "a2a-docker-demo"
     };
+}
+
+static class DemoTelemetry
+{
+    public const string ActivitySourceName = "a2a.triage";
+    public static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 }
 
 class JwtService
@@ -259,7 +294,7 @@ class RequestAuthorizer
     {
         if (string.IsNullOrWhiteSpace(authorizationHeader))
             return null;
-            
+
         const string prefix = "Bearer ";
         return authorizationHeader.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? authorizationHeader[prefix.Length..].Trim()
@@ -306,19 +341,8 @@ class ServiceRegistrar
             }
         };
 
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            using var message = new HttpRequestMessage(HttpMethod.Post, $"{_settings.DiscoveryServiceUrl}/register")
-            {
-                Content = JsonContent.Create(registration)
-            };
-            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            await client.SendAsync(message);
-        }
-        catch
-        {
-        }
+        var client = _httpClientFactory.CreateClient();
+        await client.TryPostServiceRegistrationAsync(_settings.DiscoveryServiceUrl, token, registration);
     }
 }
 
@@ -362,8 +386,15 @@ class DownstreamGateway
         return await response.Content.ReadFromJsonAsync<AgentCard>(cancellationToken: ct);
     }
 
-    public async Task<TriageRecord> RunTriageAsync(string input, CancellationToken ct)
+    public async Task<TriageRecord> RunTriageAsync(string input, string? correlationId, CancellationToken ct)
     {
+        using var startedWorkflowActivity = TelemetryExtensions.StartWorkflowActivity(DemoTelemetry.ActivitySource, "a2a-triage");
+        var workflowActivity = startedWorkflowActivity ?? Activity.Current;
+        workflowActivity?.SetTag("a2a.input.length", input.Length);
+        correlationId ??= TelemetryExtensions.GetCorrelationId(workflowActivity);
+        workflowActivity?.SetTag("correlationId", correlationId);
+        workflowActivity?.SetTag("a2a.correlation_id", correlationId);
+
         var startTime = DateTimeOffset.UtcNow;
         var agentToken = await _identityClient.GetAgentTokenAsync(ct);
         var client = _httpClientFactory.CreateClient();
@@ -371,6 +402,7 @@ class DownstreamGateway
         {
             Id = $"triage-{Guid.NewGuid():N}"[..19],
             Input = input,
+            CorrelationId = correlationId,
             Status = "processing",
             CreatedAt = startTime,
             UpdatedAt = startTime
@@ -388,6 +420,7 @@ class DownstreamGateway
         record.Trace.Add(new TraceEntry
         {
             Service = "Classifier",
+            CorrelationId = correlationId,
             Status = "completed",
             TimestampMs = (long)(DateTimeOffset.UtcNow - classifyStart).TotalMilliseconds,
             Result = classification.ClassificationType
@@ -405,6 +438,7 @@ class DownstreamGateway
         record.Trace.Add(new TraceEntry
         {
             Service = "Assessor",
+            CorrelationId = correlationId,
             Status = "completed",
             TimestampMs = (long)(DateTimeOffset.UtcNow - assessStart).TotalMilliseconds,
             Result = assessment.Priority
@@ -422,6 +456,7 @@ class DownstreamGateway
         record.Trace.Add(new TraceEntry
         {
             Service = "Router",
+            CorrelationId = correlationId,
             Status = "completed",
             TimestampMs = (long)(DateTimeOffset.UtcNow - routeStart).TotalMilliseconds,
             Result = routing.NextHandler
@@ -444,10 +479,13 @@ class DownstreamGateway
         record.Trace.Add(new TraceEntry
         {
             Service = "Handler",
+            CorrelationId = correlationId,
             Status = "completed",
             TimestampMs = (long)(DateTimeOffset.UtcNow - handleStart).TotalMilliseconds,
             Result = handling.TicketId
         });
+
+        workflowActivity?.SetStatus(ActivityStatusCode.Ok);
 
         return record;
     }
@@ -518,6 +556,7 @@ class TriageRecord
 {
     [JsonPropertyName("id")] public string Id { get; set; } = "";
     [JsonPropertyName("input")] public string Input { get; set; } = "";
+    [JsonPropertyName("correlation_id")] public string? CorrelationId { get; set; }
     [JsonPropertyName("classification")] public string? Classification { get; set; }
     [JsonPropertyName("priority")] public string? Priority { get; set; }
     [JsonPropertyName("next_handler")] public string? NextHandler { get; set; }
@@ -533,6 +572,7 @@ class TriageRecord
 class TraceEntry
 {
     [JsonPropertyName("service")] public string Service { get; set; } = "";
+    [JsonPropertyName("correlation_id")] public string? CorrelationId { get; set; }
     [JsonPropertyName("status")] public string Status { get; set; } = "";
     [JsonPropertyName("timestamp_ms")] public long TimestampMs { get; set; }
     [JsonPropertyName("result")] public string Result { get; set; } = "";
@@ -610,8 +650,8 @@ class LoginEndpoint : Endpoint<LoginRequest, object>
 
 class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() 
-    { 
+    public override void Configure()
+    {
         Get("/api/services");
         AllowAnonymous();
     }
@@ -670,7 +710,10 @@ class SubmitTriageEndpoint : Endpoint<SubmitTriageRequest, object>
 
         try
         {
-            var record = await gateway.RunTriageAsync(req.Input.Trim(), ct);
+            var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
+                ?? Activity.Current?.TraceId.ToString();
+
+            var record = await gateway.RunTriageAsync(req.Input.Trim(), correlationId, ct);
             store.Save(record);
             await HttpContext.Response.WriteAsJsonAsync(record, cancellationToken: ct);
         }
@@ -715,3 +758,5 @@ class GetTriageStatusEndpoint : Endpoint<EmptyRequest, object>
         await HttpContext.Response.WriteAsJsonAsync(record, cancellationToken: ct);
     }
 }
+
+sealed class HealthEndpoint : HealthEndpointBase;

@@ -1,0 +1,327 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "text",
+      "title": "A2A Tool Calling Traces",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "content": "This dashboard is preconfigured for semconv-aligned GenAI spans emitted by the A2A demo.\n\nGrafana's Tempo search API returns matched spans inside a nested payload while the visible table row stays rooted at the full trace. To keep tool calls discoverable, this dashboard splits recent traces by tool and remaps the displayed operation name to the matched semantic span for each panel.\n\nEach correlation_id is a clickable deep link into Grafana Explore for the full trace.",
+        "mode": "markdown"
+      }
+    },
+    {
+      "type": "table",
+      "title": "execute_tool classifier",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "limit": 50,
+          "query": "{ span.gen_ai.operation.name = \"execute_tool\" && span.gen_ai.tool.name = \"classifier\" } with (most_recent=true)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "nested": true,
+              "traceName": true,
+              "traceService": true
+            },
+            "indexByName": {
+              "traceID": 0,
+              "startTime": 1,
+              "traceDuration": 2
+            },
+            "renameByName": {
+              "traceID": "correlation_id",
+              "startTime": "trace_start",
+              "traceDuration": "trace_duration_ms"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "columnFilter": true,
+        "enablePagination": true
+      }
+    },
+    {
+      "type": "table",
+      "title": "execute_tool assessor",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "limit": 50,
+          "query": "{ span.gen_ai.operation.name = \"execute_tool\" && span.gen_ai.tool.name = \"assessor\" } with (most_recent=true)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "nested": true,
+              "traceName": true,
+              "traceService": true
+            },
+            "indexByName": {
+              "traceID": 0,
+              "startTime": 1,
+              "traceDuration": 2
+            },
+            "renameByName": {
+              "traceID": "correlation_id",
+              "startTime": "trace_start",
+              "traceDuration": "trace_duration_ms"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "columnFilter": true,
+        "enablePagination": true
+      }
+    },
+    {
+      "type": "table",
+      "title": "execute_tool router",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "limit": 50,
+          "query": "{ span.gen_ai.operation.name = \"execute_tool\" && span.gen_ai.tool.name = \"router\" } with (most_recent=true)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "nested": true,
+              "traceName": true,
+              "traceService": true
+            },
+            "indexByName": {
+              "traceID": 0,
+              "startTime": 1,
+              "traceDuration": 2
+            },
+            "renameByName": {
+              "traceID": "correlation_id",
+              "startTime": "trace_start",
+              "traceDuration": "trace_duration_ms"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "columnFilter": true,
+        "enablePagination": true
+      }
+    },
+    {
+      "type": "table",
+      "title": "execute_tool handler",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "limit": 50,
+          "query": "{ span.gen_ai.operation.name = \"execute_tool\" && span.gen_ai.tool.name = \"handler\" } with (most_recent=true)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "nested": true,
+              "traceName": true,
+              "traceService": true
+            },
+            "indexByName": {
+              "traceID": 0,
+              "startTime": 1,
+              "traceDuration": 2
+            },
+            "renameByName": {
+              "traceID": "correlation_id",
+              "startTime": "trace_start",
+              "traceDuration": "trace_duration_ms"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "columnFilter": true,
+        "enablePagination": true
+      }
+    },
+    {
+      "type": "table",
+      "title": "invoke_workflow a2a-triage",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "limit": 50,
+          "query": "{ span.gen_ai.operation.name = \"invoke_workflow\" } with (most_recent=true)",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "nested": true,
+              "traceName": true,
+              "traceService": true
+            },
+            "indexByName": {
+              "traceID": 0,
+              "startTime": 1,
+              "traceDuration": 2
+            },
+            "renameByName": {
+              "traceID": "correlation_id",
+              "startTime": "trace_start",
+              "traceDuration": "trace_duration_ms"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "columnFilter": true,
+        "enablePagination": true
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 40,
+  "style": "dark",
+  "tags": ["a2a", "otel", "genai", "tool-calling"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "A2A Tool Calling Overview",
+  "uid": "a2a-tool-calling",
+  "version": 2,
+  "weekStart": ""
+}

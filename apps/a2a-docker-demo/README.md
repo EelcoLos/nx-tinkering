@@ -126,7 +126,7 @@ User interface for the demo.
 ## Running Locally (for Development)
 
 ### Prerequisites
-- .NET 9 SDK
+- .NET 10 SDK
 - Node.js 18+
 - Docker (for full stack deployment)
 
@@ -137,45 +137,45 @@ cd apps/a2a-docker-demo
 cp .env.example .env
 # Edit .env and set proper values for:
 # - JWT_SECRET_KEY (min 32 characters)
-# - Agent credentials
-# - Demo user credentials
+# - OIDC_* values if using local Keycloak auth flow
+# - OTEL_* values for trace export to Tempo
 ```
 
 ### 2. Run Services (in separate terminals)
 
 Terminal 1 - Identity Service:
 ```bash
-dotnet run apps/a2a-docker-demo/identity/identity.cs
+dotnet run --project apps/a2a-docker-demo/identity/identity.csproj
 ```
 
 Terminal 2 - Discovery Service:
 ```bash
-dotnet run apps/a2a-docker-demo/discovery/discovery.cs
+dotnet run --project apps/a2a-docker-demo/discovery/discovery.csproj
 ```
 
 Terminal 3 - Classifier Service:
 ```bash
-dotnet run apps/a2a-docker-demo/classifier/classifier.cs
+dotnet run --project apps/a2a-docker-demo/classifier/classifier.csproj
 ```
 
 Terminal 4 - Assessor Service:
 ```bash
-dotnet run apps/a2a-docker-demo/assessor/assessor.cs
+dotnet run --project apps/a2a-docker-demo/assessor/assessor.csproj
 ```
 
 Terminal 5 - Router Service:
 ```bash
-dotnet run apps/a2a-docker-demo/router/router.cs
+dotnet run --project apps/a2a-docker-demo/router/router.csproj
 ```
 
 Terminal 6 - Handler Service:
 ```bash
-dotnet run apps/a2a-docker-demo/handler/handler.cs
+dotnet run --project apps/a2a-docker-demo/handler/handler.csproj
 ```
 
 Terminal 7 - API Backend:
 ```bash
-dotnet run apps/a2a-docker-demo/api-backend/api.cs
+dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
 ```
 
 Terminal 8 - React Website:
@@ -190,6 +190,30 @@ npm start
 - **Website**: http://localhost:8080
 - **API**: http://localhost:5056
 - **Identity Service**: http://localhost:5050
+- **Keycloak**: http://localhost:8081
+- **Grafana (observability)**: http://localhost:3001
+
+Keycloak configuration is bootstrapped automatically by the `keycloak-init` service in compose. It creates:
+
+- Realm: `a2a-local`
+- Demo users: `admin`, `user`
+- OIDC clients: `website-client`, `identity-facade`, `discovery-agent`, `classifier-agent`, `assessor-agent`, `router-agent`, `handler-agent`, `api-backend-agent`
+
+### Preloaded Grafana Dashboard
+
+Grafana is provisioned automatically with a Tempo datasource and a dashboard for tool-calling traces:
+
+- **Dashboard URL**: http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview
+- **Folder**: `A2A Demo`
+- **Dashboard**: `A2A Tool Calling Overview`
+
+The dashboard is preconfigured to surface spans emitted by the API backend orchestration flow, including:
+
+- `a2a.triage.run`
+- `a2a.tool.classifier`
+- `a2a.tool.assessor`
+- `a2a.tool.router`
+- `a2a.tool.handler`
 
 ## Running with Docker Stack
 

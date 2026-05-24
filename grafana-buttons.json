@@ -1,0 +1,222 @@
+[
+  {
+    "text": "",
+    "aria": "Undock menu",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Close menu",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Expand section: Starred",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Expand section: Alerting",
+    "title": null
+  },
+  {
+    "text": "Search...",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Help",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Move 15m backward",
+    "title": null
+  },
+  {
+    "text": "Last 30 minutes",
+    "aria": "Time range selected: Last 30 minutes",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Move time range forwards",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Zoom out time range",
+    "title": null
+  },
+  {
+    "text": "Refresh",
+    "aria": "Refresh",
+    "title": null
+  },
+  {
+    "text": "10s",
+    "aria": "Choose refresh time interval with current interval 10 seconds selected",
+    "title": null
+  },
+  {
+    "text": "Share",
+    "aria": "Copy link",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Share",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Menu for panel A2A Tool Calling Traces",
+    "title": "Menu"
+  },
+  {
+    "text": "",
+    "aria": "Menu for panel Recent A2A Tool Span Matches",
+    "title": "Menu"
+  },
+  {
+    "text": "matched_tool_spans",
+    "aria": null,
+    "title": "matched_tool_spans"
+  },
+  {
+    "text": "Trace ID",
+    "aria": null,
+    "title": "Trace ID"
+  },
+  {
+    "text": "Start time",
+    "aria": null,
+    "title": "Start time"
+  },
+  {
+    "text": "Service",
+    "aria": null,
+    "title": "Service"
+  },
+  {
+    "text": "",
+    "aria": "previous page",
+    "title": null
+  },
+  {
+    "text": "1",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "2",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "3",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "4",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "5",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "6",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "next page",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Menu for panel Workflow Span Matches",
+    "title": "Menu"
+  },
+  {
+    "text": "matched_workflow_spans",
+    "aria": null,
+    "title": "matched_workflow_spans"
+  },
+  {
+    "text": "Trace ID",
+    "aria": null,
+    "title": "Trace ID"
+  },
+  {
+    "text": "Start time",
+    "aria": null,
+    "title": "Start time"
+  },
+  {
+    "text": "Service",
+    "aria": null,
+    "title": "Service"
+  },
+  {
+    "text": "",
+    "aria": "previous page",
+    "title": null
+  },
+  {
+    "text": "1",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "2",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "3",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "4",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "5",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "6",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "next page",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Export",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Outline",
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Dock",
+    "title": null
+  }
+]

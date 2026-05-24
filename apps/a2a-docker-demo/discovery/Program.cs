@@ -1,4 +1,5 @@
 using FastEndpoints;
+using A2ADemo.Common;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,6 +18,12 @@ builder.Services.AddSingleton<IdentityClient>();
 builder.Services.AddSingleton<RequestAuthorizer>();
 builder.Services.AddSingleton<ServiceRegistry>();
 builder.Services.AddFastEndpoints();
+builder.Services.AddServiceTelemetry(
+    settings.OtelEnabled,
+    settings.ServiceName,
+    settings.OtelServiceNamespace,
+    settings.OtelExporterEndpoint,
+    settings.ServiceName);
 
 var app = builder.Build();
 app.Services.GetRequiredService<ServiceRegistry>().SeedSelf();
@@ -47,7 +54,6 @@ app.Use(async (context, next) =>
 });
 
 app.UseFastEndpoints();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.Run();
 
 class ServiceSettings
@@ -58,6 +64,9 @@ class ServiceSettings
     public string IdentityServiceUrl { get; init; } = "";
     public string JwtSecretKey { get; init; } = "";
     public string AgentId { get; init; } = "";
+    public bool OtelEnabled { get; init; }
+    public string OtelExporterEndpoint { get; init; } = "http://tempo:4317";
+    public string OtelServiceNamespace { get; init; } = "a2a-docker-demo";
 
     public static ServiceSettings Create(string serviceName, int port, string defaultBaseUrl)
     {
@@ -69,7 +78,10 @@ class ServiceSettings
             ServiceBaseUrl = Environment.GetEnvironmentVariable($"{envPrefix}_SERVICE_URL") ?? defaultBaseUrl,
             IdentityServiceUrl = Environment.GetEnvironmentVariable("IDENTITY_SERVICE_URL") ?? "http://identity:5050",
             JwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "your-256-bit-secret-key-must-be-min-32-chars",
-            AgentId = Environment.GetEnvironmentVariable($"{envPrefix}_AGENT_ID") ?? $"{serviceName}-agent"
+            AgentId = Environment.GetEnvironmentVariable($"{envPrefix}_AGENT_ID") ?? $"{serviceName}-agent",
+            OtelEnabled = bool.TryParse(Environment.GetEnvironmentVariable("OTEL_ENABLED"), out var enabled) && enabled,
+            OtelExporterEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://tempo:4317",
+            OtelServiceNamespace = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAMESPACE") ?? "a2a-docker-demo"
         };
     }
 }
@@ -172,8 +184,13 @@ class RequestAuthorizer
         return await _identityClient.ValidateTokenAsync(token, expectedType, ct);
     }
 
-    private static string? GetBearerToken(string authorizationHeader)
+    private static string? GetBearerToken(string? authorizationHeader)
     {
+        if (string.IsNullOrWhiteSpace(authorizationHeader))
+        {
+            return null;
+        }
+
         const string prefix = "Bearer ";
         return authorizationHeader.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? authorizationHeader[prefix.Length..].Trim()
@@ -292,8 +309,8 @@ class ValidatedToken
 
 class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() 
-    { 
+    public override void Configure()
+    {
         Get("/services");
         AllowAnonymous();
     }
@@ -307,8 +324,8 @@ class ListServicesEndpoint : Endpoint<EmptyRequest, object>
 
 class GetServiceCardEndpoint : Endpoint<EmptyRequest, object>
 {
-    public override void Configure() 
-    { 
+    public override void Configure()
+    {
         Get("/services/{id}/card");
         AllowAnonymous();
     }
@@ -331,7 +348,11 @@ class GetServiceCardEndpoint : Endpoint<EmptyRequest, object>
 
 class RegisterServiceEndpoint : Endpoint<ServiceRegistrationRequest, object>
 {
-    public override void Configure() => Post("/register");
+    public override void Configure()
+    {
+        Post("/register");
+        AllowAnonymous();
+    }
 
     public override async Task HandleAsync(ServiceRegistrationRequest req, CancellationToken ct)
     {
@@ -352,3 +373,5 @@ class RegisterServiceEndpoint : Endpoint<ServiceRegistrationRequest, object>
         }, cancellationToken: ct);
     }
 }
+
+sealed class HealthEndpoint : HealthEndpointBase;

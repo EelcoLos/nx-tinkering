@@ -18,4 +18,7 @@
     <Project Path="apps/a2a-docker-demo/identity/identity.csproj" />
     <Project Path="apps/a2a-docker-demo/router/router.csproj" />
   </Folder>
+  <Folder Name="/apps/a2a-docker-demo/common/">
+    <Project Path="apps/a2a-docker-demo/common/A2ADemo.Common.csproj" />
+  </Folder>
 </Solution>

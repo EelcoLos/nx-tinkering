@@ -1,4 +1,104 @@
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    ports:
+      - "8081:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+    command:
+      - start-dev
+    networks:
+      - a2a-network
+
+  keycloak-init:
+    image: quay.io/keycloak/keycloak:26.1
+    depends_on:
+      - keycloak
+    environment:
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_ADMIN_USER=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KEYCLOAK_REALM=a2a-local
+      - DEMO_USER_USERNAME=${DEMO_USER_USERNAME}
+      - DEMO_USER_PASSWORD=${DEMO_USER_PASSWORD}
+      - DEMO_USER2_USERNAME=${DEMO_USER2_USERNAME}
+      - DEMO_USER2_PASSWORD=${DEMO_USER2_PASSWORD}
+      - OIDC_USER_CLIENT_ID=${OIDC_USER_CLIENT_ID}
+      - OIDC_USER_CLIENT_SECRET=${OIDC_USER_CLIENT_SECRET}
+      - OIDC_IDENTITY_CLIENT_ID=${OIDC_IDENTITY_CLIENT_ID}
+      - OIDC_IDENTITY_CLIENT_SECRET=${OIDC_IDENTITY_CLIENT_SECRET}
+      - OIDC_DISCOVERY_CLIENT_ID=${OIDC_DISCOVERY_CLIENT_ID}
+      - OIDC_DISCOVERY_CLIENT_SECRET=${OIDC_DISCOVERY_CLIENT_SECRET}
+      - OIDC_CLASSIFIER_CLIENT_ID=${OIDC_CLASSIFIER_CLIENT_ID}
+      - OIDC_CLASSIFIER_CLIENT_SECRET=${OIDC_CLASSIFIER_CLIENT_SECRET}
+      - OIDC_ASSESSOR_CLIENT_ID=${OIDC_ASSESSOR_CLIENT_ID}
+      - OIDC_ASSESSOR_CLIENT_SECRET=${OIDC_ASSESSOR_CLIENT_SECRET}
+      - OIDC_ROUTER_CLIENT_ID=${OIDC_ROUTER_CLIENT_ID}
+      - OIDC_ROUTER_CLIENT_SECRET=${OIDC_ROUTER_CLIENT_SECRET}
+      - OIDC_HANDLER_CLIENT_ID=${OIDC_HANDLER_CLIENT_ID}
+      - OIDC_HANDLER_CLIENT_SECRET=${OIDC_HANDLER_CLIENT_SECRET}
+      - OIDC_API_BACKEND_CLIENT_ID=${OIDC_API_BACKEND_CLIENT_ID}
+      - OIDC_API_BACKEND_CLIENT_SECRET=${OIDC_API_BACKEND_CLIENT_SECRET}
+    volumes:
+      - ./keycloak/bootstrap:/opt/keycloak/bootstrap:ro
+    entrypoint:
+      - sh
+      - /opt/keycloak/bootstrap/init-keycloak.sh
+    restart: "no"
+    networks:
+      - a2a-network
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    ports:
+      - "4317:4317"
+      - "3200:3200"
+    command:
+      - -config.file=/etc/tempo.yaml
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml:ro
+    networks:
+      - a2a-network
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    volumes:
+      - ./observability/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - a2a-network
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - a2a-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_USERS_VIEWERS_CAN_EDIT=true
+    networks:
+      - a2a-network
+    depends_on:
+      - tempo
+      - prometheus
+
   identity:
     build:
       context: .
@@ -11,10 +111,52 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OIDC_TOKEN_ENDPOINT=${OIDC_TOKEN_ENDPOINT}
+      - OIDC_INTROSPECTION_ENDPOINT=${OIDC_INTROSPECTION_ENDPOINT}
+      - OIDC_USER_CLIENT_ID=${OIDC_USER_CLIENT_ID}
+      - OIDC_USER_CLIENT_SECRET=${OIDC_USER_CLIENT_SECRET}
+      - OIDC_IDENTITY_CLIENT_ID=${OIDC_IDENTITY_CLIENT_ID}
+      - OIDC_IDENTITY_CLIENT_SECRET=${OIDC_IDENTITY_CLIENT_SECRET}
+      - OIDC_DISCOVERY_CLIENT_ID=${OIDC_DISCOVERY_CLIENT_ID}
+      - OIDC_DISCOVERY_CLIENT_SECRET=${OIDC_DISCOVERY_CLIENT_SECRET}
+      - OIDC_CLASSIFIER_CLIENT_ID=${OIDC_CLASSIFIER_CLIENT_ID}
+      - OIDC_CLASSIFIER_CLIENT_SECRET=${OIDC_CLASSIFIER_CLIENT_SECRET}
+      - OIDC_ASSESSOR_CLIENT_ID=${OIDC_ASSESSOR_CLIENT_ID}
+      - OIDC_ASSESSOR_CLIENT_SECRET=${OIDC_ASSESSOR_CLIENT_SECRET}
+      - OIDC_ROUTER_CLIENT_ID=${OIDC_ROUTER_CLIENT_ID}
+      - OIDC_ROUTER_CLIENT_SECRET=${OIDC_ROUTER_CLIENT_SECRET}
+      - OIDC_HANDLER_CLIENT_ID=${OIDC_HANDLER_CLIENT_ID}
+      - OIDC_HANDLER_CLIENT_SECRET=${OIDC_HANDLER_CLIENT_SECRET}
+      - OIDC_API_BACKEND_CLIENT_ID=${OIDC_API_BACKEND_CLIENT_ID}
+      - OIDC_API_BACKEND_CLIENT_SECRET=${OIDC_API_BACKEND_CLIENT_SECRET}
+      - DISCOVERY_AGENT_ID=${DISCOVERY_AGENT_ID}
+      - CLASSIFIER_AGENT_ID=${CLASSIFIER_AGENT_ID}
+      - ASSESSOR_AGENT_ID=${ASSESSOR_AGENT_ID}
+      - ROUTER_AGENT_ID=${ROUTER_AGENT_ID}
+      - HANDLER_AGENT_ID=${HANDLER_AGENT_ID}
+      - API_BACKEND_AGENT_ID=${API_BACKEND_AGENT_ID}
+      - DEMO_USER_USERNAME=${DEMO_USER_USERNAME}
+      - DEMO_USER_PASSWORD=${DEMO_USER_PASSWORD}
+      - DEMO_USER2_USERNAME=${DEMO_USER2_USERNAME}
+      - DEMO_USER2_PASSWORD=${DEMO_USER2_PASSWORD}
     networks:
       - a2a-network
+    depends_on:
+      keycloak:
+        condition: service_started
+      keycloak-init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5050/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5050/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -33,13 +175,25 @@ services:
       - IDENTITY_SERVICE_URL=http://identity:5050
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - DISCOVERY_AGENT_ID=discovery-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
       identity:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5051/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5051/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -59,6 +213,10 @@ services:
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - CLASSIFIER_SERVICE_URL=http://classifier:5052
       - CLASSIFIER_AGENT_ID=classifier-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
@@ -67,7 +225,15 @@ services:
       discovery:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5052/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5052/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -87,6 +253,10 @@ services:
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ASSESSOR_SERVICE_URL=http://assessor:5053
       - ASSESSOR_AGENT_ID=assessor-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
@@ -95,7 +265,15 @@ services:
       discovery:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5053/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5053/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -115,6 +293,10 @@ services:
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - ROUTER_SERVICE_URL=http://router:5054
       - ROUTER_AGENT_ID=router-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
@@ -123,7 +305,15 @@ services:
       discovery:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5054/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5054/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -143,6 +333,10 @@ services:
       - DISCOVERY_SERVICE_URL=http://discovery:5051
       - HANDLER_SERVICE_URL=http://handler:5055
       - HANDLER_AGENT_ID=handler-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
@@ -151,7 +345,15 @@ services:
       discovery:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5055/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5055/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -175,6 +377,10 @@ services:
       - HANDLER_SERVICE_URL=http://handler:5055
       - API_BACKEND_SERVICE_URL=http://api-backend:5056
       - API_BACKEND_AGENT_ID=api-backend-agent
+      - OIDC_ENABLED=${OIDC_ENABLED}
+      - OTEL_ENABLED=${OTEL_ENABLED}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_SERVICE_NAMESPACE=${OTEL_SERVICE_NAMESPACE}
     networks:
       - a2a-network
     depends_on:
@@ -191,7 +397,15 @@ services:
       handler:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5056/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5056/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -210,7 +424,15 @@ services:
       api-backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -219,5 +441,3 @@ services:
 networks:
   a2a-network:
     driver: bridge
-
-
