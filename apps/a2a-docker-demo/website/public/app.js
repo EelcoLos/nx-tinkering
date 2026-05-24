@@ -35,7 +35,9 @@ submitTriageButton.addEventListener('click', submitTriage);
 triageDescription.addEventListener('input', () => clearMessage(triageError));
 
 tabs.forEach((tab, index) => {
-  tab.addEventListener('click', () => activateTab(tab.dataset.tab, { focusTab: false }));
+  tab.addEventListener('click', () =>
+    activateTab(tab.dataset.tab, { focusTab: false }),
+  );
   tab.addEventListener('keydown', (event) => handleTabKeydown(event, index));
 });
 
@@ -151,10 +153,12 @@ function activateTab(tabName, options = {}) {
 function handleTabKeydown(event, currentIndex) {
   const keyActions = {
     ArrowRight: () => focusTabByIndex((currentIndex + 1) % tabs.length),
-    ArrowLeft: () => focusTabByIndex((currentIndex - 1 + tabs.length) % tabs.length),
+    ArrowLeft: () =>
+      focusTabByIndex((currentIndex - 1 + tabs.length) % tabs.length),
     Home: () => focusTabByIndex(0),
     End: () => focusTabByIndex(tabs.length - 1),
-    Enter: () => activateTab(tabs[currentIndex].dataset.tab, { focusTab: true }),
+    Enter: () =>
+      activateTab(tabs[currentIndex].dataset.tab, { focusTab: true }),
     ' ': () => activateTab(tabs[currentIndex].dataset.tab, { focusTab: true }),
   };
 
