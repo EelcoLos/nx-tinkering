@@ -163,37 +163,37 @@ If you want to debug the .NET services directly, run them in separate terminals:
 
 Terminal 1 - Identity Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/identity/identity.csproj
+dotnet run identity/identity.csproj
 ```
 
 Terminal 2 - Discovery Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/discovery/discovery.csproj
+dotnet run discovery/discovery.csproj
 ```
 
 Terminal 3 - Classifier Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/classifier/classifier.csproj
+dotnet run classifier/classifier.csproj
 ```
 
 Terminal 4 - Assessor Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/assessor/assessor.csproj
+dotnet run assessor/assessor.csproj
 ```
 
 Terminal 5 - Router Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/router/router.csproj
+dotnet run router/router.csproj
 ```
 
 Terminal 6 - Handler Service:
 ```bash
-dotnet run --project apps/a2a-docker-demo/handler/handler.csproj
+dotnet run handler/handler.csproj
 ```
 
 Terminal 7 - API Backend:
 ```bash
-dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
+dotnet run api-backend/api-backend.csproj
 ```
 
 For the browser UI in source-based runs, keep the website container from the compose stack running or serve `website/public` from any static web server. The website is no longer a React app and does not have `npm start` scripts.
@@ -230,7 +230,7 @@ $env:CLASSIFIER_SERVICE_URL = 'https://localhost:5052'
 $env:ASSESSOR_SERVICE_URL = 'https://localhost:5053'
 $env:ROUTER_SERVICE_URL = 'https://localhost:5054'
 $env:HANDLER_SERVICE_URL = 'https://localhost:5055'
-dotnet run --project apps/a2a-docker-demo/api-backend/api-backend.csproj
+dotnet run api-backend/api-backend.csproj
 ```
 
 The website now follows the page scheme for API and Grafana links, so serving the
@@ -299,21 +299,15 @@ For local development on a single machine, prefer `docker compose -f docker-comp
 - **API Backend**: http://127.0.0.1:5056/health
 - **Identity**: http://127.0.0.1:5050/health
 
-**From Network (10.0.0.1 to 10.0.0.3):**
-- **Website**: http://10.0.0.3:8080
-- **API Backend**: http://10.0.0.3:5056/health
-- **Identity**: http://10.0.0.3:5050/health
 
 ### 4. Run End-to-End Tests
 
 ```bash
-# From host machine (10.0.0.1) to Docker Swarm (10.0.0.3)
-bash test-e2e.sh 10.0.0.3
 
-# From Docker host (127.0.0.1)
-bash test-e2e.sh 127.0.0.1
+# From Docker host (10.x.x.x or 192.x.x.x), test against
+bash test-e2e.sh 10.x.x.x
 
-# Uses default 10.0.0.3
+# Uses default 127.0.0.1
 bash test-e2e.sh
 ```
 
@@ -327,25 +321,25 @@ docker stack rm a2a-demo
 
 ### Quick Network Test
 ```bash
-# Test from 10.0.0.1 to 10.0.0.3
-curl http://10.0.0.3:5050/health
+# Test health localhost
+curl http://localhost:5050/health
 ```
 
 ### 1. User Login
 ```bash
-curl -X POST http://10.0.0.3:5050/auth/login \
+curl -X POST http://localhost:5050/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"demo123"}'
 ```
 
 ### 2. Get Agent Token
 ```bash
-curl -X GET "http://10.0.0.3:5050/auth/agent/token?agentId=classifier-agent"
+curl -X GET "http://localhost:5050/auth/agent/token?agentId=classifier-agent"
 ```
 
 ### 3. Submit Triage Request
 ```bash
-curl -X POST http://10.0.0.3:5056/api/triage \
+curl -X POST http://localhost:5056/api/triage \
   -H "Authorization: Bearer <USER_JWT>" \
   -H "Content-Type: application/json" \
   -d '{"input":"Server is down - critical issue"}'
@@ -353,16 +347,16 @@ curl -X POST http://10.0.0.3:5056/api/triage \
 
 ### 4. List Services
 ```bash
-curl http://10.0.0.3:5056/api/services \
+curl http://localhost:5056/api/services \
   -H "Authorization: Bearer <USER_JWT>"
 ```
 
 ### 5. Call Protected Agent Surfaces
 ```bash
-curl http://10.0.0.3:5051/services \
+curl http://localhost:5051/services \
   -H "Authorization: Bearer <AGENT_JWT>"
 
-curl http://10.0.0.3:5056/.well-known/agent-card.json \
+curl http://localhost:5056/.well-known/agent-card.json \
   -H "Authorization: Bearer <AGENT_JWT>"
 ```
 

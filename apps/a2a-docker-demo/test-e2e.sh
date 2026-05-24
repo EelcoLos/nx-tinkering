@@ -10,9 +10,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Detect host IP to test against
-# Default: 10.0.0.3 (Docker Swarm host)
-# Can be called from 10.0.0.1 (or any network) to test 10.0.0.3
-HOST_IP="${1:-10.0.0.3}"
+# Default: 127.0.0.1 (Docker Swarm host)
+HOST_IP="${1:-127.0.0.1}"
 echo "Testing against: $HOST_IP"
 echo
 
