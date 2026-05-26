@@ -38,7 +38,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "21.2.11",
     "@angular-devkit/core": "21.2.11",
-    "@angular-devkit/schematics": "21.2.11",
+    "@angular-devkit/schematics": "21.2.12",
     "@angular-eslint/eslint-plugin": "21.4.0",
     "@angular-eslint/eslint-plugin-template": "21.4.0",
     "@angular-eslint/template-parser": "21.4.0",
@@ -64,7 +64,7 @@
     "@nx/web": "22.7.1",
     "@nx/workspace": "22.7.1",
     "@playwright/test": "^1.60.0",
-    "@schematics/angular": "21.2.11",
+    "@schematics/angular": "21.2.12",
     "@swc-node/register": "1.11.1",
     "@swc/cli": "~0.8.1",
     "@swc/core": "1.15.33",
