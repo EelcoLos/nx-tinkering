@@ -14,38 +14,38 @@ public sealed class LoginEndpoint(
     UserDatabase userDatabase,
     JwtService jwtService) : Endpoint<LoginRequest, LoginResponse>
 {
-    private readonly AuthSettings settings = settingsOptions.Value;
+  private readonly AuthSettings settings = settingsOptions.Value;
 
-    public override void Configure()
+  public override void Configure()
+  {
+    Post("/auth/login");
+    AllowAnonymous();
+  }
+
+  public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
+  {
+    if (settings.OidcEnabled)
     {
-        Post("/auth/login");
-        AllowAnonymous();
+      var oidcResponse = await oidcAuthClient.LoginAsync(req, ct);
+      if (oidcResponse is null)
+      {
+        AddError("Invalid username or password");
+        await Send.ErrorsAsync(StatusCodes.Status401Unauthorized, ct);
+        return;
+      }
+
+      await Send.OkAsync(oidcResponse, ct);
+      return;
     }
 
-    public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
+    var user = userDatabase.GetByUsername(req.Username ?? string.Empty);
+    if (user is null || user.PasswordHash != req.Password)
     {
-        if (settings.OidcEnabled)
-        {
-            var oidcResponse = await oidcAuthClient.LoginAsync(req, ct);
-            if (oidcResponse is null)
-            {
-                AddError("Invalid username or password");
-                await Send.ErrorsAsync(StatusCodes.Status401Unauthorized, ct);
-                return;
-            }
-
-            await Send.OkAsync(oidcResponse, ct);
-            return;
-        }
-
-        var user = userDatabase.GetByUsername(req.Username ?? string.Empty);
-        if (user is null || user.PasswordHash != req.Password)
-        {
-            AddError("Invalid username or password");
-            await Send.ErrorsAsync(StatusCodes.Status401Unauthorized, ct);
-            return;
-        }
-
-        await Send.OkAsync(new LoginResponse(jwtService.GenerateUserToken(user.UserId, user.Username), user.UserId), ct);
+      AddError("Invalid username or password");
+      await Send.ErrorsAsync(StatusCodes.Status401Unauthorized, ct);
+      return;
     }
+
+    await Send.OkAsync(new LoginResponse(jwtService.GenerateUserToken(user.UserId, user.Username), user.UserId), ct);
+  }
 }

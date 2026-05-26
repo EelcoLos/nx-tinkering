@@ -9,190 +9,190 @@ public sealed class DownstreamGateway(
     ILogger<DownstreamGateway> logger,
     IOptions<ServiceSettings> settingsOptions)
 {
-    private readonly ServiceSettings settings = settingsOptions.Value;
+  private readonly ServiceSettings settings = settingsOptions.Value;
 
-    public async Task<IReadOnlyCollection<ServiceSummary>> GetServicesAsync(CancellationToken ct)
+  public async Task<IReadOnlyCollection<ServiceSummary>> GetServicesAsync(CancellationToken ct)
+  {
+    var token = await identityClient.GetAgentTokenAsync(ct);
+    var summaries = await Task.WhenAll(GetKnownServices().Select(async service =>
     {
-        var token = await identityClient.GetAgentTokenAsync(ct);
-        var summaries = await Task.WhenAll(GetKnownServices().Select(async service =>
-        {
-            var card = await GetAgentCardAsync(service, token, ct);
-            return ToServiceSummary(service, card);
-        }));
+      var card = await GetAgentCardAsync(service, token, ct);
+      return ToServiceSummary(service, card);
+    }));
 
-        return summaries;
+    return summaries;
+  }
+
+  public async Task<AgentCardModel?> GetServiceCardAsync(string serviceId, CancellationToken ct)
+  {
+    var service = GetKnownServices().FirstOrDefault(candidate =>
+        string.Equals(candidate.ServiceId, serviceId, StringComparison.OrdinalIgnoreCase));
+
+    if (service is null)
+    {
+      return null;
     }
 
-    public async Task<AgentCardModel?> GetServiceCardAsync(string serviceId, CancellationToken ct)
+    var token = await identityClient.GetAgentTokenAsync(ct);
+    return await GetAgentCardAsync(service, token, ct);
+  }
+
+  public async Task<TriageRecord> RunTriageAsync(string input, string? correlationId, CancellationToken ct)
+  {
+    using var startedWorkflowActivity = TelemetryExtensions.StartWorkflowActivity(DemoTelemetry.ActivitySource, "a2a-triage");
+    var workflowActivity = startedWorkflowActivity ?? Activity.Current;
+    workflowActivity?.SetTag("a2a.input.length", input.Length);
+    correlationId ??= TelemetryExtensions.GetCorrelationId(workflowActivity);
+    workflowActivity?.SetTag("correlationId", correlationId);
+    workflowActivity?.SetTag("a2a.correlation_id", correlationId);
+
+    var startTime = DateTimeOffset.UtcNow;
+    var agentToken = await identityClient.GetAgentTokenAsync(ct);
+    var record = new TriageRecord
     {
-        var service = GetKnownServices().FirstOrDefault(candidate =>
-            string.Equals(candidate.ServiceId, serviceId, StringComparison.OrdinalIgnoreCase));
+      Id = $"triage-{Guid.NewGuid():N}"[..19],
+      Input = input,
+      CorrelationId = correlationId,
+      Status = "processing",
+      CreatedAt = startTime,
+      UpdatedAt = startTime
+    };
 
-        if (service is null)
-        {
-            return null;
-        }
+    var classifyStart = DateTimeOffset.UtcNow;
+    var classification = await SendSkillAsync<ClassificationResponse>(settings.ClassifierServiceUrl, "classifier", new ClassifySkillInput(input), agentToken, ct);
+    record.Classification = classification.ClassificationType;
+    record.UpdatedAt = DateTimeOffset.UtcNow;
+    record.Trace.Add(new TraceEntry("Classifier", correlationId, "completed", (long)(DateTimeOffset.UtcNow - classifyStart).TotalMilliseconds, classification.ClassificationType));
 
-        var token = await identityClient.GetAgentTokenAsync(ct);
-        return await GetAgentCardAsync(service, token, ct);
+    var assessStart = DateTimeOffset.UtcNow;
+    var assessment = await SendSkillAsync<AssessmentResponse>(settings.AssessorServiceUrl, "assessor", new AssessSkillInput(classification.ClassificationType), agentToken, ct);
+    record.Priority = assessment.Priority;
+    record.UpdatedAt = DateTimeOffset.UtcNow;
+    record.Trace.Add(new TraceEntry("Assessor", correlationId, "completed", (long)(DateTimeOffset.UtcNow - assessStart).TotalMilliseconds, assessment.Priority));
+
+    var routeStart = DateTimeOffset.UtcNow;
+    var routing = await SendSkillAsync<RoutingResponse>(settings.RouterServiceUrl, "router", new RouteSkillInput(assessment.Priority), agentToken, ct);
+    record.NextHandler = routing.NextHandler;
+    record.UpdatedAt = DateTimeOffset.UtcNow;
+    record.Trace.Add(new TraceEntry("Router", correlationId, "completed", (long)(DateTimeOffset.UtcNow - routeStart).TotalMilliseconds, routing.NextHandler));
+
+    var handleStart = DateTimeOffset.UtcNow;
+    var handling = await SendSkillAsync<HandlingResponse>(settings.HandlerServiceUrl, "handler", new HandleSkillInput(input, classification.ClassificationType, assessment.Priority), agentToken, ct);
+
+    record.Status = handling.Status;
+    record.TicketId = handling.TicketId;
+    record.Summary = handling.Summary;
+    record.UpdatedAt = DateTimeOffset.UtcNow;
+    record.Trace.Add(new TraceEntry("Handler", correlationId, "completed", (long)(DateTimeOffset.UtcNow - handleStart).TotalMilliseconds, handling.TicketId));
+
+    workflowActivity?.SetStatus(ActivityStatusCode.Ok);
+    return record;
+  }
+
+  private async Task<T> SendSkillAsync<T>(string serviceBaseUrl, string skillId, object payload, string bearerToken, CancellationToken ct)
+  {
+    using var client = CreateA2AClient($"{serviceBaseUrl.TrimEnd('/')}/a2a", bearerToken);
+    var response = await client.SendMessageAsync(new SendMessageRequest
+    {
+      Message = new Message
+      {
+        MessageId = Guid.NewGuid().ToString("N"),
+        Role = Role.User,
+        Parts = [Part.FromData(JsonSerializer.SerializeToElement(payload))]
+      },
+      Metadata = new Dictionary<string, JsonElement>
+      {
+        ["skill"] = JsonSerializer.SerializeToElement(skillId)
+      }
+    }, ct);
+
+    var data = response.Message?.Parts?.FirstOrDefault(part => part.Data.HasValue)?.Data;
+    if (data is null)
+    {
+      throw new InvalidOperationException($"{serviceBaseUrl} returned no A2A data part.");
     }
 
-    public async Task<TriageRecord> RunTriageAsync(string input, string? correlationId, CancellationToken ct)
-    {
-        using var startedWorkflowActivity = TelemetryExtensions.StartWorkflowActivity(DemoTelemetry.ActivitySource, "a2a-triage");
-        var workflowActivity = startedWorkflowActivity ?? Activity.Current;
-        workflowActivity?.SetTag("a2a.input.length", input.Length);
-        correlationId ??= TelemetryExtensions.GetCorrelationId(workflowActivity);
-        workflowActivity?.SetTag("correlationId", correlationId);
-        workflowActivity?.SetTag("a2a.correlation_id", correlationId);
+    return data.Value.Deserialize<T>(A2AJsonUtilities.DefaultOptions)
+        ?? throw new InvalidOperationException($"{serviceBaseUrl} returned an unreadable A2A response payload.");
+  }
 
-        var startTime = DateTimeOffset.UtcNow;
-        var agentToken = await identityClient.GetAgentTokenAsync(ct);
-        var record = new TriageRecord
-        {
-            Id = $"triage-{Guid.NewGuid():N}"[..19],
-            Input = input,
-            CorrelationId = correlationId,
-            Status = "processing",
-            CreatedAt = startTime,
-            UpdatedAt = startTime
-        };
+  private async Task<AgentCardModel> GetAgentCardAsync(KnownA2AService service, string bearerToken, CancellationToken ct)
+  {
+    using var client = CreateAuthorizedHttpClient(bearerToken);
+    var resolver = new A2ACardResolver(new Uri(EnsureTrailingSlash(service.BaseUrl)), client, "/.well-known/agent-card.json", logger);
+    return await resolver.GetAgentCardAsync(ct)
+        ?? throw new InvalidOperationException($"{service.AgentCardUrl} returned an empty agent card.");
+  }
 
-        var classifyStart = DateTimeOffset.UtcNow;
-        var classification = await SendSkillAsync<ClassificationResponse>(settings.ClassifierServiceUrl, "classifier", new ClassifySkillInput(input), agentToken, ct);
-        record.Classification = classification.ClassificationType;
-        record.UpdatedAt = DateTimeOffset.UtcNow;
-        record.Trace.Add(new TraceEntry("Classifier", correlationId, "completed", (long)(DateTimeOffset.UtcNow - classifyStart).TotalMilliseconds, classification.ClassificationType));
-
-        var assessStart = DateTimeOffset.UtcNow;
-        var assessment = await SendSkillAsync<AssessmentResponse>(settings.AssessorServiceUrl, "assessor", new AssessSkillInput(classification.ClassificationType), agentToken, ct);
-        record.Priority = assessment.Priority;
-        record.UpdatedAt = DateTimeOffset.UtcNow;
-        record.Trace.Add(new TraceEntry("Assessor", correlationId, "completed", (long)(DateTimeOffset.UtcNow - assessStart).TotalMilliseconds, assessment.Priority));
-
-        var routeStart = DateTimeOffset.UtcNow;
-        var routing = await SendSkillAsync<RoutingResponse>(settings.RouterServiceUrl, "router", new RouteSkillInput(assessment.Priority), agentToken, ct);
-        record.NextHandler = routing.NextHandler;
-        record.UpdatedAt = DateTimeOffset.UtcNow;
-        record.Trace.Add(new TraceEntry("Router", correlationId, "completed", (long)(DateTimeOffset.UtcNow - routeStart).TotalMilliseconds, routing.NextHandler));
-
-        var handleStart = DateTimeOffset.UtcNow;
-        var handling = await SendSkillAsync<HandlingResponse>(settings.HandlerServiceUrl, "handler", new HandleSkillInput(input, classification.ClassificationType, assessment.Priority), agentToken, ct);
-
-        record.Status = handling.Status;
-        record.TicketId = handling.TicketId;
-        record.Summary = handling.Summary;
-        record.UpdatedAt = DateTimeOffset.UtcNow;
-        record.Trace.Add(new TraceEntry("Handler", correlationId, "completed", (long)(DateTimeOffset.UtcNow - handleStart).TotalMilliseconds, handling.TicketId));
-
-        workflowActivity?.SetStatus(ActivityStatusCode.Ok);
-        return record;
-    }
-
-    private async Task<T> SendSkillAsync<T>(string serviceBaseUrl, string skillId, object payload, string bearerToken, CancellationToken ct)
-    {
-        using var client = CreateA2AClient($"{serviceBaseUrl.TrimEnd('/')}/a2a", bearerToken);
-        var response = await client.SendMessageAsync(new SendMessageRequest
-        {
-            Message = new Message
-            {
-                MessageId = Guid.NewGuid().ToString("N"),
-                Role = Role.User,
-                Parts = [Part.FromData(JsonSerializer.SerializeToElement(payload))]
-            },
-            Metadata = new Dictionary<string, JsonElement>
-            {
-                ["skill"] = JsonSerializer.SerializeToElement(skillId)
-            }
-        }, ct);
-
-        var data = response.Message?.Parts?.FirstOrDefault(part => part.Data.HasValue)?.Data;
-        if (data is null)
-        {
-            throw new InvalidOperationException($"{serviceBaseUrl} returned no A2A data part.");
-        }
-
-        return data.Value.Deserialize<T>(A2AJsonUtilities.DefaultOptions)
-            ?? throw new InvalidOperationException($"{serviceBaseUrl} returned an unreadable A2A response payload.");
-    }
-
-    private async Task<AgentCardModel> GetAgentCardAsync(KnownA2AService service, string bearerToken, CancellationToken ct)
-    {
-        using var client = CreateAuthorizedHttpClient(bearerToken);
-        var resolver = new A2ACardResolver(new Uri(EnsureTrailingSlash(service.BaseUrl)), client, "/.well-known/agent-card.json", logger);
-        return await resolver.GetAgentCardAsync(ct)
-            ?? throw new InvalidOperationException($"{service.AgentCardUrl} returned an empty agent card.");
-    }
-
-    private IReadOnlyList<KnownA2AService> GetKnownServices() =>
-    [
-        new("api-backend", settings.ServiceBaseUrl),
+  private IReadOnlyList<KnownA2AService> GetKnownServices() =>
+  [
+      new("api-backend", settings.ServiceBaseUrl),
         new("classifier", settings.ClassifierServiceUrl),
         new("assessor", settings.AssessorServiceUrl),
         new("router", settings.RouterServiceUrl),
         new("handler", settings.HandlerServiceUrl)
-    ];
+  ];
 
-    private static ServiceSummary ToServiceSummary(KnownA2AService service, AgentCardModel card)
+  private static ServiceSummary ToServiceSummary(KnownA2AService service, AgentCardModel card)
+  {
+    var rpcUrl = card.SupportedInterfaces.FirstOrDefault()?.Url ?? $"{service.BaseUrl.TrimEnd('/')}/a2a";
+    var baseUrl = GetBaseUrl(rpcUrl, service.BaseUrl);
+    var port = Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) ? baseUri.Port : 0;
+
+    return new ServiceSummary(
+        service.ServiceId,
+        card.Name,
+        baseUrl,
+        port,
+        card.Description,
+        card.Skills.Select(skill => skill.Id).ToArray(),
+        DateTimeOffset.UtcNow);
+  }
+
+  private A2AClient CreateA2AClient(string endpointUrl, string bearerToken) =>
+      new(new Uri(endpointUrl), CreateAuthorizedHttpClient(bearerToken));
+
+  private HttpClient CreateAuthorizedHttpClient(string bearerToken)
+  {
+    var client = httpClientFactory.CreateClient();
+    client.DefaultRequestHeaders.Authorization = new("Bearer", bearerToken);
+    return client;
+  }
+
+  private static string EnsureTrailingSlash(string url) => url.EndsWith('/') ? url : $"{url}/";
+
+  private static string GetBaseUrl(string rpcUrl, string fallbackBaseUrl)
+  {
+    if (!Uri.TryCreate(rpcUrl, UriKind.Absolute, out var uri))
     {
-        var rpcUrl = card.SupportedInterfaces.FirstOrDefault()?.Url ?? $"{service.BaseUrl.TrimEnd('/')}/a2a";
-        var baseUrl = GetBaseUrl(rpcUrl, service.BaseUrl);
-        var port = Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) ? baseUri.Port : 0;
-
-        return new ServiceSummary(
-            service.ServiceId,
-            card.Name,
-            baseUrl,
-            port,
-            card.Description,
-            card.Skills.Select(skill => skill.Id).ToArray(),
-            DateTimeOffset.UtcNow);
+      return fallbackBaseUrl;
     }
 
-    private A2AClient CreateA2AClient(string endpointUrl, string bearerToken) =>
-        new(new Uri(endpointUrl), CreateAuthorizedHttpClient(bearerToken));
-
-    private HttpClient CreateAuthorizedHttpClient(string bearerToken)
+    var path = uri.AbsolutePath;
+    if (path.EndsWith("/a2a", StringComparison.OrdinalIgnoreCase))
     {
-        var client = httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new("Bearer", bearerToken);
-        return client;
+      path = path[..^4];
     }
 
-    private static string EnsureTrailingSlash(string url) => url.EndsWith('/') ? url : $"{url}/";
-
-    private static string GetBaseUrl(string rpcUrl, string fallbackBaseUrl)
+    if (!path.EndsWith('/'))
     {
-        if (!Uri.TryCreate(rpcUrl, UriKind.Absolute, out var uri))
-        {
-            return fallbackBaseUrl;
-        }
-
-        var path = uri.AbsolutePath;
-        if (path.EndsWith("/a2a", StringComparison.OrdinalIgnoreCase))
-        {
-            path = path[..^4];
-        }
-
-        if (!path.EndsWith('/'))
-        {
-            path += "/";
-        }
-
-        var builder = new UriBuilder(uri)
-        {
-            Path = path,
-            Query = string.Empty,
-            Fragment = string.Empty
-        };
-
-        return builder.Uri.ToString().TrimEnd('/');
+      path += "/";
     }
+
+    var builder = new UriBuilder(uri)
+    {
+      Path = path,
+      Query = string.Empty,
+      Fragment = string.Empty
+    };
+
+    return builder.Uri.ToString().TrimEnd('/');
+  }
 }
 
 internal sealed record KnownA2AService(string ServiceId, string BaseUrl)
 {
-    public string AgentCardUrl => $"{BaseUrl.TrimEnd('/')}/.well-known/agent-card.json";
+  public string AgentCardUrl => $"{BaseUrl.TrimEnd('/')}/.well-known/agent-card.json";
 }
 
 file sealed record ClassifySkillInput(string Input);
