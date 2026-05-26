@@ -22,28 +22,28 @@ var app = builder.Build();
 app.Services.GetRequiredService<ServiceRegistry>().SeedSelf();
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/health"))
-    {
-        await next();
-        return;
-    }
-
-    if (context.Request.Path.StartsWithSegments("/services"))
-    {
-        var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
-        var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);
-        if (validatedToken is null)
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" }, cancellationToken: context.RequestAborted);
-            return;
-        }
-
-        context.User = RequestAuthorizer.CreatePrincipal(validatedToken);
-        context.Items["validated_token"] = validatedToken;
-    }
-
+  if (context.Request.Path.StartsWithSegments("/health"))
+  {
     await next();
+    return;
+  }
+
+  if (context.Request.Path.StartsWithSegments("/services"))
+  {
+    var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
+    var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);
+    if (validatedToken is null)
+    {
+      context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+      await context.Response.WriteAsJsonAsync(new { error = "Invalid or expired token" }, cancellationToken: context.RequestAborted);
+      return;
+    }
+
+    context.User = RequestAuthorizer.CreatePrincipal(validatedToken);
+    context.Items["validated_token"] = validatedToken;
+  }
+
+  await next();
 });
 
 app.UseAuthorization();

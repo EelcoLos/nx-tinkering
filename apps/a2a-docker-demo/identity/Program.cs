@@ -5,7 +5,7 @@ var settings = builder.Services.AddConfiguredSettings<AuthSettings>(AuthSettings
 
 if (!settings.OidcEnabled && (string.IsNullOrWhiteSpace(settings.JwtSecretKey) || settings.JwtSecretKey.Length < 32))
 {
-    throw new InvalidOperationException("JWT_SECRET_KEY environment variable must be set and at least 32 characters long");
+  throw new InvalidOperationException("JWT_SECRET_KEY environment variable must be set and at least 32 characters long");
 }
 
 builder.Services.AddHttpClient();

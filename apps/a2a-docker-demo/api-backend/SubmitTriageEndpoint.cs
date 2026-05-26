@@ -8,43 +8,43 @@ public sealed record SubmitTriageRequest(
 
 public sealed class SubmitTriageRequestValidator : Validator<SubmitTriageRequest>
 {
-    public SubmitTriageRequestValidator()
-    {
-        RuleFor(request => request.Input)
-            .NotEmpty()
-            .WithMessage("input is required");
-    }
+  public SubmitTriageRequestValidator()
+  {
+    RuleFor(request => request.Input)
+        .NotEmpty()
+        .WithMessage("input is required");
+  }
 }
 
 public sealed class SubmitTriageEndpoint(DownstreamGateway gateway, TriageStore store) : Endpoint<SubmitTriageRequest, TriageRecord>
 {
-    public override void Configure()
-    {
-        Post("/api/triage");
+  public override void Configure()
+  {
+    Post("/api/triage");
 
-        this.A2ASkill(
-            id: "triage_orchestration",
-            tags: ["triage", "orchestration"],
-            configure: skill =>
-            {
-                skill.Name = "Triage Orchestration";
-                skill.Description = "Coordinates the multi-step triage workflow.";
-                skill.Examples = ["Triage this outage report."];
-                skill.InputModes = ["application/json"];
-                skill.OutputModes = ["application/json"];
-            });
-    }
+    this.A2ASkill(
+        id: "triage_orchestration",
+        tags: ["triage", "orchestration"],
+        configure: skill =>
+        {
+          skill.Name = "Triage Orchestration";
+          skill.Description = "Coordinates the multi-step triage workflow.";
+          skill.Examples = ["Triage this outage report."];
+          skill.InputModes = ["application/json"];
+          skill.OutputModes = ["application/json"];
+        });
+  }
 
-    public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)
-    {
-        var input = req.Input!.Trim();
-        TriageExceptionHandler.StoreSubmittedInput(HttpContext, input);
+  public override async Task HandleAsync(SubmitTriageRequest req, CancellationToken ct)
+  {
+    var input = req.Input!.Trim();
+    TriageExceptionHandler.StoreSubmittedInput(HttpContext, input);
 
-        var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
-            ?? Activity.Current?.TraceId.ToString();
+    var correlationId = HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.TraceId.ToString()
+        ?? Activity.Current?.TraceId.ToString();
 
-        var record = await gateway.RunTriageAsync(input, correlationId, ct);
-        store.Save(record);
-        await Send.OkAsync(record, ct);
-    }
+    var record = await gateway.RunTriageAsync(input, correlationId, ct);
+    store.Save(record);
+    await Send.OkAsync(record, ct);
+  }
 }
