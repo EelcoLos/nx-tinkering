@@ -46,7 +46,7 @@
     "@angular/compiler-cli": "21.2.14",
     "@angular/language-service": "21.2.14",
     "@babel/core": "^7.29.7",
-    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-react": "^7.29.7",
     "@eslint-react/eslint-plugin": "^5.8.5",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "10.0.1",
