@@ -1,24 +1,21 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { AppRoutingModule } from './app/app-routing.module';
+import { routes } from './app/app.routes';
 import {
-  HTTP_INTERCEPTORS,
   provideHttpClient,
-  withInterceptorsFromDi,
+  withInterceptors,
 } from '@angular/common/http';
-import { importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
-import { AuthInterceptor } from './app/auth.interceptor';
+import { provideRouter } from '@angular/router';
+import { provideZoneChangeDetection } from '@angular/core';
+import { authInterceptor } from './app/auth.interceptor';
 
 console.log('Starting bootstrap process...');
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(AppRoutingModule),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideRouter(routes),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-
-    // provideRouter(routes),
   ],
 })
   .then(() => {
