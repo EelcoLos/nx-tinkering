@@ -13,11 +13,10 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "api-client": ["libs/api-client/src/index.ts"],
+      "api-client": ["./libs/api-client/src/index.ts"],
       "fastendpoints-react-state": [
-        "libs/fastendpoints-react-state/src/index.ts"
+        "./libs/fastendpoints-react-state/src/index.ts"
       ]
     }
   },
