@@ -62,7 +62,7 @@ import { JsonPipe } from '@angular/common';
       }
     `,
   ],
-  imports: [JsonPipe, ReactiveFormsModule],
+  imports: [ReactiveFormsModule, JsonPipe],
   providers: [Client],
 })
 export class EndpointComponent {
