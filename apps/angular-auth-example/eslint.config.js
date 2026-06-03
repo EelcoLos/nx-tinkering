@@ -1,36 +1,53 @@
-const nx = require('@nx/eslint-plugin');
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
 const baseConfig = require('../../eslint.config.js');
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+});
 
 module.exports = [
   ...baseConfig,
-  ...nx.configs['flat/angular'],
-  ...nx.configs['flat/angular-template'],
-  {
-    files: ['**/*.ts'],
-    rules: {
-      '@angular-eslint/directive-selector': [
-        'error',
-        {
-          type: 'attribute',
-          prefix: 'app',
-          style: 'camelCase',
-        },
+  ...compat
+    .config({
+      extends: [
+        'plugin:@nx/angular',
+        'plugin:@angular-eslint/template/process-inline-templates',
       ],
-      '@angular-eslint/component-selector': [
-        'error',
-        {
-          type: 'element',
-          prefix: 'app',
-          style: 'kebab-case',
-        },
-      ],
-    },
-  },
-  {
-    files: ['**/*.html'],
-    // Override or add rules here
-    rules: {},
-  },
+    })
+    .map((config) => ({
+      ...config,
+      files: ['**/*.ts'],
+      rules: {
+        ...config.rules,
+        '@angular-eslint/directive-selector': [
+          'error',
+          {
+            type: 'attribute',
+            prefix: 'app',
+            style: 'camelCase',
+          },
+        ],
+        '@angular-eslint/component-selector': [
+          'error',
+          {
+            type: 'element',
+            prefix: 'app',
+            style: 'kebab-case',
+          },
+        ],
+      },
+    })),
+  ...compat
+    .config({ extends: ['plugin:@nx/angular-template'] })
+    .map((config) => ({
+      ...config,
+      files: ['**/*.html'],
+      rules: {
+        ...config.rules,
+      },
+    })),
   {
     files: ['**/*.ts'],
     rules: {

@@ -6,11 +6,11 @@ import { map } from 'rxjs';
 export const loginGuard: CanActivateFn = () => {
   const router = inject(Router);
   const apiService = inject(Client);
+  const loginUrl = router.createUrlTree(['/login']);
 
   const token = localStorage.getItem('token');
   if (!token) {
-    router.navigate(['/login']);
-    return false;
+    return loginUrl;
   }
 
   const request: ValidateTokenRequest = { token: token };
@@ -18,8 +18,7 @@ export const loginGuard: CanActivateFn = () => {
   return apiService.validatetoken(request).pipe(
     map((response) => {
       if (!response.isValid) {
-        router.navigate(['/login']);
-        return false;
+        return loginUrl;
       }
       return true;
     }),
