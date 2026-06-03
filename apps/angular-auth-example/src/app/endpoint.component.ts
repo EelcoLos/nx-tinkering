@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Client, MyRequest, MyResponse } from '../api-integration/api';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { catchError, map } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-endpoint',
@@ -62,7 +62,7 @@ import { CommonModule } from '@angular/common';
       }
     `,
   ],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule, JsonPipe],
   providers: [Client],
 })
 export class EndpointComponent {
