@@ -32,13 +32,13 @@ public static class TelemetryExtensions
                   .AddSource(activitySourceName)
                   .AddAspNetCoreInstrumentation(options =>
                   {
-                  if (excludedPrefixes.Length == 0)
-                  {
-                    return;
-                  }
+                    if (excludedPrefixes.Length == 0)
+                    {
+                      return;
+                    }
 
-                  options.Filter = httpContext => !IsExcludedAspNetCorePath(httpContext.Request.Path.Value, excludedPrefixes);
-                })
+                    options.Filter = httpContext => !IsExcludedAspNetCorePath(httpContext.Request.Path.Value, excludedPrefixes);
+                  })
                   .AddHttpClientInstrumentation();
 
           if (Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var endpoint))
