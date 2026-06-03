@@ -7,12 +7,12 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/angular:webpack-browser",
+      "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/angular-auth-example",
         "index": "apps/angular-auth-example/src/index.html",
-        "main": "apps/angular-auth-example/src/main.ts",
+        "browser": "apps/angular-auth-example/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/angular-auth-example/tsconfig.app.json",
         "inlineStyleLanguage": "scss",

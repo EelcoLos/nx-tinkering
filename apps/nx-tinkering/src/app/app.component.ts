@@ -5,8 +5,8 @@ import { NxWelcomeComponent } from './nx-welcome.component';
 @Component({
   imports: [NxWelcomeComponent, RouterModule],
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  template: '<app-nx-welcome></app-nx-welcome> <router-outlet></router-outlet>',
+  styles: [],
 })
 export class AppComponent {
   title = 'nx-tinkering';
