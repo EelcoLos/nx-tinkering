@@ -64,7 +64,7 @@
     "@nx/vite": "22.7.5",
     "@nx/web": "22.7.5",
     "@nx/workspace": "22.7.5",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.61.0",
     "@schematics/angular": "22.0.0",
     "@swc-node/register": "1.11.1",
     "@swc/cli": "~0.8.1",
