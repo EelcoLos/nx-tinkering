@@ -1,57 +1,35 @@
-const { FlatCompat } = require('@eslint/eslintrc');
-const js = require('@eslint/js');
 const baseConfig = require('../../eslint.config.js');
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+const nx = require('@nx/eslint-plugin');
 
 module.exports = [
+  // Include global base settings
   ...baseConfig,
-  ...compat
-    .config({
-      extends: [
-        'plugin:@nx/angular',
-        'plugin:@angular-eslint/template/process-inline-templates',
-      ],
-    })
-    .map((config) => ({
-      ...config,
-      files: ['**/*.ts'],
-      rules: {
-        ...config.rules,
-        '@angular-eslint/directive-selector': [
-          'error',
-          {
-            type: 'attribute',
-            prefix: 'app',
-            style: 'camelCase',
-          },
-        ],
-        '@angular-eslint/component-selector': [
-          'error',
-          {
-            type: 'element',
-            prefix: 'app',
-            style: 'kebab-case',
-          },
-        ],
-      },
-    })),
-  ...compat
-    .config({ extends: ['plugin:@nx/angular-template'] })
-    .map((config) => ({
-      ...config,
-      files: ['**/*.html'],
-      rules: {
-        ...config.rules,
-      },
-    })),
+
+  // 1. Unpack Angular TypeScript rules directly into the array
+  ...nx.configs['flat/angular'],
+
+  // 2. Apply your custom rules to TypeScript files
   {
     files: ['**/*.ts'],
     rules: {
+      '@angular-eslint/directive-selector': [
+        'error',
+        { type: 'attribute', prefix: 'app', style: 'camelCase' },
+      ],
+      '@angular-eslint/component-selector': [
+        'error',
+        { type: 'element', prefix: 'app', style: 'kebab-case' },
+      ],
       '@angular-eslint/prefer-standalone': 'off',
     },
+  },
+
+  // 3. Unpack Angular template HTML rules directly into the array
+  ...nx.configs['flat/angular-template'],
+
+  // 4. Apply your custom rules to HTML files
+  {
+    files: ['**/*.html'],
+    rules: {},
   },
 ];
