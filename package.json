@@ -110,6 +110,16 @@
     "typescript": "6.0.3",
     "uuid": "^11.1.1",
     "webpack-dev-server": "^5.2.4",
-    "ws": "^8.20.1"
+    "ws": "^8.20.1",
+    "form-data": "^4.0.6",
+    "js-yaml": "4.2.0",
+    "@angular/compiler-cli": {
+      "@babel/core": "^7.29.6"
+    },
+    "@angular-devkit/build-angular": {
+      "@babel/core": "^7.29.6",
+      "vite": "^7.3.5",
+      "esbuild": "0.28.1"
+    }
   }
 }
