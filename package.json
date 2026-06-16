@@ -36,9 +36,9 @@
     "zone.js": "0.16.2"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "^0.2200.0",
-    "@angular-devkit/build-angular": "22.0.0",
-    "@angular-devkit/core": "22.0.0",
+    "@angular-devkit/architect": "^0.2200.1",
+    "@angular-devkit/build-angular": "22.0.1",
+    "@angular-devkit/core": "22.0.1",
     "@angular-devkit/schematics": "22.0.0",
     "@angular-eslint/eslint-plugin": "22.0.0",
     "@angular-eslint/eslint-plugin-template": "22.0.0",
