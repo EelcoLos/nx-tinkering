@@ -80,7 +80,7 @@
     "@typescript-eslint/eslint-plugin": "8.62.1",
     "@typescript-eslint/parser": "8.62.1",
     "@typescript-eslint/utils": "8.62.1",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "^6.0.3",
     "@vitest/ui": "~4.1.9",
     "angular-eslint": "^22.0.0",
     "babel-jest": "^30.4.1",
