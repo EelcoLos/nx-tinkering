@@ -21,7 +21,7 @@
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.12.2" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.6.0" />
     <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="2.0.0" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
     <!-- Scalar -->
     <PackageVersion Include="Scalar.AspNetCore" Version="2.16.10" />
