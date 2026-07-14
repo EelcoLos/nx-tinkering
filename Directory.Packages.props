@@ -24,7 +24,7 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
     <!-- Scalar -->
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.16.10" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.16.11" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
     <!-- xunit -->
