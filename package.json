@@ -48,7 +48,7 @@
     "@angular/language-service": "22.0.5",
     "@babel/core": "^7.29.7",
     "@babel/preset-react": "^7.29.7",
-    "@eslint-react/eslint-plugin": "^5.11.3",
+    "@eslint-react/eslint-plugin": "^5.14.8",
     "@eslint/eslintrc": "^3.3.6",
     "@eslint/js": "10.0.1",
     "@hey-api/openapi-ts": "^0.99.0",
