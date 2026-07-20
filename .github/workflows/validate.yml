@@ -42,7 +42,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dotnet-
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Set up .NET
@@ -83,7 +83,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dotnet-
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Set up .NET
@@ -124,7 +124,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dotnet-
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Set up .NET
