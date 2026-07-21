@@ -1,11 +1,4 @@
-const { FlatCompat } = require('@eslint/eslintrc');
-const js = require('@eslint/js');
 const nxEslintPlugin = require('@nx/eslint-plugin');
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
 
 module.exports = [
   { plugins: { '@nx': nxEslintPlugin } },
@@ -28,27 +21,22 @@ module.exports = [
       ],
     },
   },
-  ...compat.config({ extends: ['plugin:@nx/typescript'] }).map((config) => ({
-    ...config,
-    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
-    rules: {
-      ...config.rules,
-    },
-  })),
-  ...compat.config({ extends: ['plugin:@nx/javascript'] }).map((config) => ({
-    ...config,
-    files: ['**/*.js', '**/*.jsx', '**/*.cjs', '**/*.mjs'],
-    rules: {
-      ...config.rules,
-    },
-  })),
-  ...compat.config({ env: { jest: true } }).map((config) => ({
-    ...config,
+  ...nxEslintPlugin.configs['flat/typescript'],
+  ...nxEslintPlugin.configs['flat/javascript'],
+  {
     files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.jsx'],
-    rules: {
-      ...config.rules,
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
     },
-  })),
+  },
   {
     ignores: ['**/vite.config.*.timestamp*'],
   },
