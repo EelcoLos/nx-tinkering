@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <!-- Code coverage -->
@@ -19,10 +20,12 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <!-- Microsoft.Identity -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.13.2" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.6.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.19.2" />
     <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="2.0.0" />
+    <!-- ponytail: pinned to 2.x, Microsoft.AspNetCore.OpenApi 10.0.10's source generator isn't compatible with OpenApi v3 (IOpenApiMediaType.Example became read-only) -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.11.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.10" />
     <!-- Scalar -->
     <PackageVersion Include="Scalar.AspNetCore" Version="2.16.16" />
     <!-- Testing -->

@@ -18,7 +18,11 @@
       "fastendpoints-react-state": [
         "./libs/fastendpoints-react-state/src/index.ts"
       ]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }
