@@ -125,5 +125,17 @@
       "vite": "^7.3.5",
       "esbuild": "0.28.1"
     }
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.5.1": true,
+    "less@4.6.4": true,
+    "less@4.5.1": true,
+    "@swc/core@1.15.46": true,
+    "esbuild@0.28.1": true,
+    "lmdb@3.5.4": true,
+    "nx@23.1.0": true,
+    "oxc-resolver@11.6.1": true,
+    "unrs-resolver@1.11.1": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
