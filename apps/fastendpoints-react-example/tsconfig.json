@@ -5,7 +5,8 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "ignoreDeprecations": "6.0"
   },
   "files": [],
   "include": [],
