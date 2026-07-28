@@ -15,7 +15,6 @@
     "@angular/core": "22.0.8",
     "@angular/forms": "22.0.8",
     "@angular/platform-browser": "22.0.8",
-    "@angular/platform-browser-dynamic": "22.0.8",
     "@angular/router": "22.0.8",
     "@microsoft/kiota-abstractions": "^1.0.0-preview.103",
     "@microsoft/kiota-serialization-form": "^1.0.0-preview.103",
@@ -36,8 +35,8 @@
     "zone.js": "0.16.2"
   },
   "devDependencies": {
+    "@angular/build": "22.0.8",
     "@angular-devkit/architect": "^0.2200.8",
-    "@angular-devkit/build-angular": "22.0.8",
     "@angular-devkit/core": "22.0.8",
     "@angular-devkit/schematics": "22.0.8",
     "@angular-eslint/eslint-plugin": "^22.1.0",
@@ -121,7 +120,7 @@
     "@angular/compiler-cli": {
       "@babel/core": "^7.29.6"
     },
-    "@angular-devkit/build-angular": {
+    "@angular/build": {
       "@babel/core": "^7.29.6",
       "vite": "^7.3.5",
       "esbuild": "0.28.1"
