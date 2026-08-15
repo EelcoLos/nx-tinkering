@@ -115,8 +115,9 @@
     "piscina": "^5.2.0",
     "ws": "^8.20.1",
     "form-data": "^4.0.6",
-    "js-yaml": "4.3.0",
-    "brace-expansion": "5.0.7",
+    "js-yaml": "4.3.1",
+    "brace-expansion": "5.0.9",
+    "less": "^4.9.0",
     "@angular/compiler-cli": {
       "@babel/core": "^7.29.7"
     },
