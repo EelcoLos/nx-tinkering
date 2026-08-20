@@ -76,10 +76,7 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}",
-        "{workspaceRoot}\\coverage\\apps\\angular-auth-example"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "passWithNoTests": true
       },
