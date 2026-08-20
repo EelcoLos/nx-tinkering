@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   setupFiles: ['zone.js'],
   displayName: 'angular-auth-example',
   preset: '../../jest.preset.js',
