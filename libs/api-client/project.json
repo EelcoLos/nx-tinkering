@@ -16,10 +16,18 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}",
+        "{workspaceRoot}\\coverage\\libs\\api-client"
+      ],
       "options": {
-        "jestConfig": "libs/api-client/jest.config.ts"
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "coverage": true
+        }
       }
     }
   }

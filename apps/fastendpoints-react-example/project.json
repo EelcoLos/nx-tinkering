@@ -6,10 +6,18 @@
   "tags": [],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}",
+        "{workspaceRoot}\\coverage\\apps\\fastendpoints-react-example"
+      ],
       "options": {
-        "jestConfig": "apps/fastendpoints-react-example/jest.config.cts"
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "coverage": true
+        }
       }
     }
   }
