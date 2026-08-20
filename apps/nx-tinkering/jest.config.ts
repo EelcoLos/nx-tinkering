@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   setupFiles: ['zone.js'],
   displayName: 'nx-tinkering',
   preset: '../../jest.preset.js',
