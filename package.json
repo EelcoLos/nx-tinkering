@@ -102,31 +102,7 @@
     "vite": "^8.2.2",
     "vitest": "~4.1.11"
   },
-  "overrides": {
-    "axios": "^1.18.0",
-    "ip-address": "^10.1.1",
-    "ox": "^0.14.0",
-    "tmp": "^0.2.7",
-    "typescript": "6.0.3",
-    "uuid": "^11.1.1",
-    "webpack-dev-server": "^5.2.6",
-    "http-proxy-middleware": "^3.0.7",
-    "hono": "^4.12.25",
-    "piscina": "^5.2.0",
-    "ws": "^8.20.1",
-    "form-data": "^4.0.6",
-    "js-yaml": "4.3.1",
-    "brace-expansion": "5.0.9",
-    "less": "^4.9.0",
-    "@angular/compiler-cli": {
-      "@babel/core": "^7.29.7"
-    },
-    "@angular/build": {
-      "@babel/core": "^7.29.7",
-      "vite": "^7.3.5",
-      "esbuild": "0.28.1"
-    }
-  },
+  "overrides": {},
   "allowScripts": {
     "@parcel/watcher@2.5.1": true,
     "less@4.6.4": true,
