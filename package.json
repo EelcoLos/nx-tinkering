@@ -104,18 +104,19 @@
   },
   "overrides": {
     "js-yaml": "^4.3.2",
-    "qs": "^6.16.0"
+    "qs": "^6.16.0",
+    "smol-toml": "^1.8.0"
   },
   "allowScripts": {
-    "@parcel/watcher@2.5.1": true,
+    "@parcel/watcher@2.6.0": true,
     "less@4.6.4": true,
     "less@4.5.1": true,
-    "@swc/core@1.16.1": true,
-    "esbuild@0.28.1": true,
+    "@swc/core@1.16.2": true,
+    "esbuild@0.28.2": true,
     "lmdb@3.5.6": true,
-    "nx@23.1.1": true,
+    "nx@23.2.0": true,
     "oxc-resolver@11.6.1": true,
-    "unrs-resolver@1.11.1": true,
+    "unrs-resolver@1.12.2": true,
     "msgpackr-extract@3.0.4": true
   }
 }
