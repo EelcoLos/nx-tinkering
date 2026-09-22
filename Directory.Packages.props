@@ -19,7 +19,7 @@
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
     <!-- Microsoft.Identity -->
-    <PackageVersion Include="Microsoft.Identity.Web" Version="4.14.2" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.15.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.22.0" />
     <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="2.1.2" />
     <!-- ponytail: pinned to 2.x, Microsoft.AspNetCore.OpenApi 10.0.10's source generator isn't compatible with OpenApi v3 (IOpenApiMediaType.Example became read-only) -->
