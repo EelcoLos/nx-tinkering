@@ -102,9 +102,11 @@
     "vitest": "~5.0.2"
   },
   "overrides": {
+    "brace-expansion@5.0.9": "5.0.12",
     "js-yaml": "^4.3.2",
     "qs": "^6.16.0",
-    "smol-toml": "^1.8.0"
+    "smol-toml": "^1.8.0",
+    "undici": "^7.29.1"
   },
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,
