@@ -1,7 +1,7 @@
-/// <reference types='vitest' />
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import react from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const appRoot = dirname(fileURLToPath(import.meta.url));
@@ -27,13 +27,11 @@ export default defineConfig(() => ({
     port: 4300,
     host: 'localhost',
   },
-  plugins: [react()],
+  // React Compiler (babel-plugin-react-compiler) via the plugin-react preset.
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   build: {
     outDir: resolve(appRoot, '../../dist/apps/fastendpoints-react-example'),
     emptyOutDir: true,
     reportCompressedSize: true,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
   },
 }));
