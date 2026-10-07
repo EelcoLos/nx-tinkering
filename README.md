@@ -1,71 +1,71 @@
-# Projects in this Workspace
+# nx-tinkering
 
-## A2A demo
+An Nx 23 monorepo for trying out .NET 10 (FastEndpoints), Angular 22 and React 19 ideas side by side.
+Each app has its own README with details; this page is the map.
 
-- Location: `apps/a2a-demo`.
-- Purpose: local keyless proof-of-concept for A2A v1 interoperability using stable `A2A` + `A2A.AspNetCore` primitives.
-- Runbook: see `apps/a2a-demo/README.md` for start order, commands, and expected output.
-- Scope: standalone single-file apps; intentionally not wired into Nx project graph or `nx-tinker.slnx`.
+Run tasks through Nx: `npx nx run-many -t lint test build`, or `npx nx affected -t ...`.
+.NET packages use central package management (`Directory.Packages.props`); tests run on xunit.v3 with
+Microsoft.Testing.Platform (`global.json`). TypeScript projects use Vitest.
 
-## A2A demo (FastEndpoints)
+## Projects
 
-- Location: `apps/a2a-demo-fastendpoints`.
-- Purpose: local keyless proof-of-concept with the same specialist/coordinator design, implemented with `FastEndpoints.A2A` skill opt-in and dispatcher routes.
-- Runbook: see `apps/a2a-demo-fastendpoints/README.md`.
-- Scope: standalone single-file apps; intentionally not wired into Nx project graph or `nx-tinker.slnx`.
+| Project                                                                                                          | Stack                                                            | In Nx graph          |
+| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------- |
+| `apps/dotnet-fe-auth` + `apps/angular-auth-example`                                                              | FastEndpoints JWT API + zoneless Angular client                  | yes                  |
+| `apps/fastendpoints-react-api` + `apps/fastendpoints-react-example` (+ `-e2e`), `libs/fastendpoints-react-state` | FastEndpoints JWT API + React client comparing Orval and Hey API | yes                  |
+| `apps/nx-tinkering` (+ `-e2e`)                                                                                   | Plain Angular welcome app                                        | yes                  |
+| `apps/api-demo` (+ `.Test`)                                                                                      | FastEndpoints API with OpenAPI + Scalar                          | yes                  |
+| `apps/fakelogger-demo` (+ `.Test`)                                                                               | `FakeLogger<T>` log assertions                                   | yes                  |
+| `apps/ms-graph-demo` (+ `.Test`)                                                                                 | Entra-secured API calling Microsoft Graph                        | yes                  |
+| `libs/my-dotnet-lib`                                                                                             | Minimal NuGet library                                            | yes                  |
+| `apps/a2a-docker-demo`                                                                                           | Multi-agent A2A system on Docker Compose                         | yes                  |
+| `apps/a2a-demo`, `apps/a2a-demo-fastendpoints`                                                                   | Single-file A2A coordinator/specialist                           | no (file-based apps) |
+| `apps/fe_onefile`, `apps/strongytypedid`, `apps/x402-demo`                                                       | Single-file FastEndpoints apps                                   | no (file-based apps) |
 
-## FakeLogger demo
+File-based apps run with `dotnet run <file>.cs` and still take package versions from `Directory.Packages.props`.
 
-- Location: `apps/fakelogger-demo` (app) and `apps/fakelogger-demo.Test` (tests).
-- Purpose: demonstrates capturing and asserting on ILogger output from `MyService` in unit tests. `MyService` logs a start message and a "Work done" message with a structured `Result` value (expected value: 42).
-- Test approach: the tests use the official testing helpers from the `Microsoft.Extensions.Diagnostics.Testing` package (exposed under `Microsoft.Extensions.Logging.Testing`) — specifically `FakeLogger<T>` and `FakeLogRecord` — to collect emitted log records and assert on level, message and structured state.
+## FastEndpoints + Angular (`dotnet-fe-auth`, `angular-auth-example`)
 
-How to run the demo tests locally (PowerShell):
+A FastEndpoints JWT API (FastEndpoints.Security) and a zoneless Angular 22 client using Signal Forms. The client
+is generated from the API's OpenAPI document with Orval (Angular mode).
 
-```powershell
-# run tests for the fakelogger demo
-dotnet test .\apps\fakelogger-demo.Test\fakelogger-demo.Test.csproj --no-restore --verbosity minimal
-```
+1. Set a signing key once: `dotnet user-secrets set "Jwt:SigningKey" "<32+ byte secret>" --project apps/dotnet-fe-auth`
+2. Start the API: `npx nx run dotnet-fe-auth:run` (Scalar UI at https://localhost:5001/scalar/v1)
+3. Create the dev cert once (`npm run dev-cert`), then `npx nx serve angular-auth-example`; `/api` is proxied to the API.
+4. After changing endpoints: `npx nx run angular-auth-example:generate-client`
 
-Notes:
-- Ensure you have a .NET SDK compatible with the projects' TargetFramework (check the projects' csproj files).
-- If you modify logging or test packages, run `dotnet restore` before running `dotnet test`.
-- The repository previously included a local FakeLogger shim during iteration; tests now use the official `Microsoft.Extensions.Diagnostics.Testing` helpers. If tests fail, verify the test project's package references and the project reference to the app are intact.
+The token lives in `localStorage` to keep the demo small; real apps should prefer HttpOnly cookies or a BFF.
 
-## Angular and dotnet fastendpoint combination
-Considering https://github.com/EelcoLos/nx-tinkering/issues/240, there is a 2 part project, namely `dotnet-fe-auth` and `angular-auth-example` that represent the option that would normally be a dotnet new creation, namely `dotnet new angular -o Project`. However, this is a project that would be intertwined with **controllers** and an old angular version, which makes it hard to maintain both. Second, there is no real interaction between the two itself... you have to still create the services to call the controller api.
-This combination has `nswag` in between, creating said interaction.
+## FastEndpoints + React (`fastendpoints-react-*`)
 
-### dotnet-fe-auth
+- React 19 + Vite 8 with the React Compiler, react-router v8, `<form action>` + `useActionState`
+- Two OpenAPI clients from the same FastEndpoints spec: Hey API + TanStack Query and Orval + React Query
+  (`npx nx run fastendpoints-react-example:generate-clients`)
+- JWT via FastEndpoints.Security; both clients send `Authorization: Bearer`
+- A slim Redux Toolkit slice (`libs/fastendpoints-react-state`) for the stack toggle and token
+- Vitest unit tests; Playwright e2e with the API mocked via `page.route`
 
-`dotnet-fe-auth` is a .NET backend project that provides authentication services using JWT tokens. It includes endpoints for validating tokens and integrates with FastEndpoints for rapid API development. The project is configured to use symmetric key encryption for JWT tokens.
+See `apps/fastendpoints-react-example/README.md` for run steps and demo credentials.
 
-#### Key Features:
-- JWT Authentication
-- Token Validation Endpoint
-- FastEndpoints Integration
-- Swagger Documentation
+## Other .NET demos
 
-#### How to Run:
-1. Navigate to the `dotnet-fe-auth` directory.
-2. Run `dotnet build` to build the project.
-3. Run `dotnet run` to start the server.
-4. The server will be available at `https://localhost:5001`.
+- **api-demo**: FastEndpoints API with an OpenAPI document and Scalar UI. `ApiDemo.Test` tests the endpoint with `Factory.Create`.
+- **fakelogger-demo**: `FakeLogger<T>` from `Microsoft.Extensions.Diagnostics.Testing`, asserting level, message and
+  structured state (`GetStructuredStateValue`). Run with `npx nx test fakelogger-demo.Test`.
+- **ms-graph-demo**: Entra-secured API exposing its own `access_as_user` scope and `Users.List` app role, calling
+  Microsoft Graph on behalf of the user or as the app via Microsoft.Identity.Web. App registration steps are in its README.
+- **my-dotnet-lib**: minimal library packed by the inferred `npx nx run libs-my-dotnet-lib:pack`.
+- **fe_onefile**: a whole FastEndpoints API in one file: `dotnet run apps/fe_onefile/FE_OneFile.cs`.
+- **strongytypedid**: Vogen strongly typed IDs in JSON bodies and route params: `dotnet run apps/strongytypedid/app.cs`.
+- **x402-demo**: `/x402/premium` gated behind x402 v2 payments, with a MetaMask test page: `dotnet run apps/x402-demo/app.cs`.
 
-### angular-auth-example
+## A2A demos
 
-`angular-auth-example` is an Angular frontend project that demonstrates authentication using JWT tokens. It includes a login form, protected routes, and integration with the `dotnet-fe-auth` backend for token validation.
+Both target the A2A v1.0 spec. The .NET SDKs (`A2A`/`A2A.AspNetCore` and `FastEndpoints.A2A`) are still prerelease.
 
-#### Key Features:
-- Login Form
-- JWT Token Storage in LocalStorage
-- Protected Routes with Angular Guards
-- HTTP Interceptor for Adding JWT Token to Requests
-
-#### How to Run:
-1. Before ever running, make sure you ran the `npm run dev-cert` command in the root of the repository to generate a development certificate.
-2. Run `npx nx serve angular-auth-example` to start the development server.
-3. The application will be available at `https://localhost:4200`.
-
-This app is dependant on the `dotnet-fe-auth` backend project to be running in order to authenticate users and validate tokens.
-
+- **a2a-demo**: keyless coordinator → specialist agents on the A2A .NET SDK. See `apps/a2a-demo/README.md`.
+- **a2a-demo-fastendpoints**: the same design with FastEndpoints.A2A skills. See `apps/a2a-demo-fastendpoints/README.md`.
+- **a2a-docker-demo**: an API backend orchestrating four specialist agents (classifier, assessor, router, handler)
+  over A2A JSON-RPC, with agent JWTs from an identity service in front of Keycloak. Each agent publishes a public
+  agent card declaring its bearer security scheme; traces go to Tempo/Grafana.
+  Run `docker compose -f apps/a2a-docker-demo/docker-compose.local.yml up --build -d`.
