@@ -4,7 +4,7 @@
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Ports 5050-5056 and 8080 available
+- Ports 5050-5056, 8080, 8081 (Keycloak), 3001 (Grafana), 3200 and 4317 (Tempo) available
 
 ### 1. Setup Environment
 ```bash
@@ -13,15 +13,10 @@ cp .env.example .env
 ```
 
 ### 2. Build Images
+All Dockerfiles expect the demo root (`apps/a2a-docker-demo`) as build context, because they copy
+`Directory.Packages.props` and `common/` next to the service:
 ```bash
-docker build -t a2a-identity -f identity/Dockerfile identity
-docker build -t a2a-discovery -f discovery/Dockerfile discovery
-docker build -t a2a-classifier -f classifier/Dockerfile classifier
-docker build -t a2a-assessor -f assessor/Dockerfile assessor
-docker build -t a2a-router -f router/Dockerfile router
-docker build -t a2a-handler -f handler/Dockerfile handler
-docker build -t a2a-api -f api-backend/Dockerfile api-backend
-docker build -t a2a-website -f website/Dockerfile website
+docker compose -f docker-compose.local.yml build
 ```
 
 ### 3. Start Stack
@@ -59,8 +54,8 @@ docker compose -f docker-compose.local.yml down -v
 
 ### 1. Build and Push Images
 ```bash
-docker build -t <registry>/a2a-identity:1.0 -f identity/Dockerfile identity
-docker build -t <registry>/a2a-discovery:1.0 -f discovery/Dockerfile discovery
+docker build -t <registry>/a2a-identity:1.0 -f identity/Dockerfile .
+docker build -t <registry>/a2a-discovery:1.0 -f discovery/Dockerfile .
 # ... build remaining services ...
 docker push <registry>/a2a-*:1.0
 ```
