@@ -63,6 +63,8 @@ export const createNodesV2: CreateNodesV2 = [
                     '{workspaceRoot}/Directory.Build.targets',
                     '{workspaceRoot}/Directory.Packages.props',
                     '{workspaceRoot}/global.json',
+                    // Sources of `#:project` references (dependency edges from createDependencies).
+                    '^production',
                   ],
                   // Only valid because the root Directory.Build.props redirects output to dist/;
                   // without it file-based builds go to %TEMP%/dotnet/runfile (outside the workspace).

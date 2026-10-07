@@ -8,7 +8,8 @@
       "inputs": [
         "default",
         "{workspaceRoot}/scripts/**/*",
-        "{workspaceRoot}/tools/nx-plugins/**/*"
+        "{workspaceRoot}/tools/nx-plugins/**/*",
+        "{workspaceRoot}/apps/a2a-docker-demo/docker-compose*.yml"
       ]
     }
   }
