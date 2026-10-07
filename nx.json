@@ -5,11 +5,11 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/eslint.config.*",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/jest.config.*",
+      "!{projectRoot}/vitest.config.*",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
       "!{projectRoot}/**/*.Tests/**/*",
@@ -28,24 +28,9 @@
       "inputs": [
         "default",
         "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.js",
+        "{workspaceRoot}/eslint.config.*",
         "{workspaceRoot}/tools/eslint-rules/**/*"
       ]
-    },
-    "@nx/jest:jest": {
-      "cache": true,
-      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
-      }
     },
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
@@ -125,15 +110,12 @@
       }
     }
   ],
-  "release": {
-    "projects": ["libs/*"]
-  },
   "generators": {
     "@nx/angular:application": {
       "e2eTestRunner": "playwright",
       "linter": "eslint",
       "style": "scss",
-      "unitTestRunner": "jest"
+      "unitTestRunner": "vitest-angular"
     },
     "@nx/angular:component": {
       "type": "component"
@@ -191,10 +173,10 @@
     },
     "@nx/react": {
       "application": {
-        "babel": true,
         "style": "css",
         "linter": "eslint",
-        "bundler": "vite"
+        "bundler": "vite",
+        "unitTestRunner": "vitest"
       },
       "component": {
         "style": "css"
@@ -202,7 +184,7 @@
       "library": {
         "style": "css",
         "linter": "eslint",
-        "unitTestRunner": "jest"
+        "unitTestRunner": "vitest"
       }
     }
   },
