@@ -6,8 +6,8 @@ Usage
 
 - Restore (CI restores via `dotnet restore nx-tinker.slnx`), then build a Release package with Nx:
 
-  nx run libs-my-dotnet-lib:restore
-  nx run libs-my-dotnet-lib:pack
+  npx nx run libs-my-dotnet-lib:restore
+  npx nx run libs-my-dotnet-lib:pack
 
 - Or run dotnet directly from the library folder:
 
