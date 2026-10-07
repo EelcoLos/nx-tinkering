@@ -1,3 +1,5 @@
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const processor = require('../../scripts/process-dependabot-alerts');
 
@@ -145,14 +147,16 @@ describe('process-dependabot-alerts mapping', () => {
   });
 
   test('falls back to repo root when no matches', () => {
-    const repoRootPkg = path.resolve(__dirname, '../../package.json');
+    const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dependabot-'));
+    const repoRootPkg = path.join(repoRoot, 'package.json');
+    fs.writeFileSync(repoRootPkg, '{"name":"fixture"}\n', 'utf8');
     const alert = {
       dependency: { package: { name: 'nonexistent-pkg', ecosystem: 'npm' } },
     };
     const candidate = processor.mapAlertToCandidate(
       alert,
       [repoRootPkg],
-      path.resolve(__dirname, '../../'),
+      repoRoot,
     );
     expect(candidate).not.toBeNull();
     expect(candidate.path).toBe(repoRootPkg);

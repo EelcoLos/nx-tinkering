@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Fetch dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v3.1.0
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           skip-commit-verification: true
@@ -54,25 +54,25 @@ jobs:
       pull-requests: write
     steps:
       - name: "Checkout code for override cleanup"
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "lts/*"
           cache: "npm"
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: "10.0.x"
       - name: Restore NuGet packages
         run: dotnet restore nx-tinker.slnx
       - name: Derive appropriate SHAs for `nx affected`
         id: setSHAs
-        uses: nrwl/nx-set-shas@v5
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
       - name: Install dependencies
         run: npm ci
       - name: Set user to github actions
@@ -89,6 +89,8 @@ jobs:
             --dependency-names "$DEPENDENCY_NAMES" \
             --report-path "tmp/dependabot-override-report.json"
       - name: Commit override cleanup
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if [ ! -f tmp/dependabot-override-report.json ]; then
             echo "No override report found"
@@ -98,7 +100,7 @@ jobs:
           if [ -f tmp/dependabot-override-commit-message.txt ]; then
             git add package.json package-lock.json
             if git commit -F tmp/dependabot-override-commit-message.txt; then
-              git push origin ${{ github.event.pull_request.head.ref }} --force
+              git push origin "$HEAD_REF" --force
             else
               echo "No override cleanup changes to commit"
             fi
@@ -122,7 +124,7 @@ jobs:
       )
     steps:
       - name: "Checkout code for Dependabot automation"
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
@@ -148,10 +150,12 @@ jobs:
           .github/set-package-version.sh "${{ steps.nx-target.outputs['nx-version'] }}"
       - name: "Commit package.json version change"
         if: ${{ steps.nx-target.outputs.skip != 'true' }}
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           git add package.json
           git commit -m "chore: sync package.json version to nx@${{ steps.nx-target.outputs['nx-version'] }}" || echo "no changes to commit"
-          git push origin ${{ github.event.pull_request.head.ref }} --force
+          git push origin "$HEAD_REF" --force
       - name: "Run nx migrate and create commits"
         if: ${{ steps.nx-target.outputs.skip != 'true' }}
         run: |
@@ -169,6 +173,8 @@ jobs:
           git add .
       - name: "Check for changes, push if there are"
         id: check-changes
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           # Fetch the main branch
           git fetch origin main
@@ -179,7 +185,7 @@ jobs:
             echo "Changes found"
             git add .
             git commit -m "chore(deps): nx migrate"
-            git push origin ${{ github.event.pull_request.head.ref }} --force
+            git push origin "$HEAD_REF" --force
           fi
         continue-on-error: true
 
