@@ -4,8 +4,8 @@ Zoneless Angular app (Signal Forms) that logs in against `dotnet-fe-auth`, store
 
 ## Run
 
-1. Start the backend: `npx nx run dotnet-fe-auth:run` (see `apps/dotnet-fe-auth/README.md` for the signing key).
-2. Create the dev certificate once: `npm run dev-cert`.
+1. Run `npm run setup` once (repo root): it exports the dev certificate and sets the API signing key.
+2. Start the backend: `npx nx run dotnet-fe-auth:run`.
 3. `npx nx serve angular-auth-example`. Requests to `/api` are proxied to `https://localhost:5001`.
 
 ## API client
