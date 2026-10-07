@@ -5,31 +5,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>DotnetFeAuth</RootNamespace>
+    <UserSecretsId>5b0d7c6e-3f7a-4c56-9a3e-8f2f1d6c4b21</UserSecretsId>
+    <OpenApiExportPath>wwwroot/api</OpenApiExportPath>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Security" />
     <PackageReference Include="FastEndpoints.OpenApi" />
-    <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
-  <PackageReference Include="Microsoft.Kiota.Abstractions" />
-  <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <NormalizedOutDir>$([System.String]::Copy('$(OutDir)').Replace('\', '/'))</NormalizedOutDir>
-    <RunOpenApiExportOnBuild Condition="$([System.String]::Copy('$(NormalizedOutDir)').Contains('/dist/apps/dotnet-fe-auth/'))">true</RunOpenApiExportOnBuild>
-  </PropertyGroup>
-
-  <Target Name="ExportOpenApiJson" AfterTargets="Build" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --exportopenapijson true" />
-  </Target>
-
-  <Target Name="GenerateKiotaClients" AfterTargets="ExportOpenApiJson" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --generateclients true" />
-  </Target>
-
 
 </Project>
