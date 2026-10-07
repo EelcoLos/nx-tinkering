@@ -1,5 +1,8 @@
 {
-  "tasks": {
-    "build": "npx nx --run-many -t build -p dotnet-fe-auth angular-auth-example"
-  }
+  "name": "nx-tinkering",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" }
+  },
+  "postCreateCommand": "npm ci && npx nx run-many -t build -p dotnet-fe-auth angular-auth-example"
 }
