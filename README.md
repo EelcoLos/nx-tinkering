@@ -7,6 +7,25 @@ Run tasks through Nx: `npx nx run-many -t lint test build`, or `npx nx affected 
 .NET packages use central package management (`Directory.Packages.props`); tests run on xunit.v3 with
 Microsoft.Testing.Platform (`global.json`). TypeScript projects use Vitest.
 
+## Setup
+
+Requires Node, the .NET SDK from `global.json`, and Docker for `a2a-docker-demo`. Once per clone:
+
+```sh
+npm ci
+npm run setup
+```
+
+`npm run setup` (`scripts/setup.js`) is safe to re-run and only fills in what is missing:
+
+- exports the HTTPS dev cert to `apps/angular-auth-example/ssl/` (run `dotnet dev-certs https --trust` once if your browser warns)
+- generates a `Jwt:SigningKey` user-secret for `dotnet-fe-auth` and `fastendpoints-react-api`, never overwriting an existing one
+- copies `apps/a2a-docker-demo/.env.example` to `.env`
+
+After that, every launch config in `.vscode/launch.json` and every `.http` file works locally. Exceptions: `ms-graph-demo` needs
+an Entra app registration (see its README), `x402-demo` needs a pay-to address, and `a2a-docker-demo` needs the stack running
+(`npx nx run a2a-docker-demo:compose-up`).
+
 ## Projects
 
 | Project                                                                                                          | Stack                                                            | In Nx graph           |
@@ -31,9 +50,9 @@ File-based apps run with `dotnet run <file>.cs` and still take package versions 
 A FastEndpoints JWT API (FastEndpoints.Security) and a zoneless Angular 22 client using Signal Forms. The client
 is generated from the API's OpenAPI document with Orval (Angular mode).
 
-1. Set a signing key once: `dotnet user-secrets set "Jwt:SigningKey" "<32+ byte secret>" --project apps/dotnet-fe-auth`
+1. Run [Setup](#setup) once (signing key and dev cert).
 2. Start the API: `npx nx run dotnet-fe-auth:run` (Scalar UI at https://localhost:5001/scalar/v1)
-3. Create the dev cert once (`npm run dev-cert`), then `npx nx serve angular-auth-example`; `/api` is proxied to the API.
+3. `npx nx serve angular-auth-example`; `/api` is proxied to the API.
 4. After changing endpoints: `npx nx run angular-auth-example:generate-client`
 
 The token lives in `localStorage` to keep the demo small; real apps should prefer HttpOnly cookies or a BFF.
