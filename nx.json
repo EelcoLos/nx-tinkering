@@ -42,6 +42,9 @@
     "@angular/build:unit-test": {
       "cache": true,
       "inputs": ["default", "^production"]
+    },
+    "build:release": {
+      "dependsOn": ["restore", "^build:release"]
     }
   },
   "plugins": [
@@ -63,6 +66,7 @@
         "solutionFile": "nx-tinker.slnx",
         "build": {
           "targetName": "build",
+          "dependsOn": ["restore", "^build"],
           "configurations": {
             "production": {
               "configuration": "Release",
