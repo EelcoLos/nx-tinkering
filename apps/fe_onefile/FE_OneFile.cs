@@ -1,5 +1,6 @@
 #:sdk Microsoft.NET.Sdk.Web
 #:package FastEndpoints@8.*-*
+#:property ManagePackageVersionsCentrally=false
 
 using FastEndpoints;
 using System.Text.Json.Serialization;
