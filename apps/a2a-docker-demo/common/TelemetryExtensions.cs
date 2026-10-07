@@ -92,7 +92,7 @@ public static class TelemetryExtensions
       return;
     }
 
-    activity.SetTag("gen_ai.system", "fastendpoints-a2a");
+    activity.SetTag("gen_ai.provider.name", "fastendpoints-a2a");
     activity.SetTag("gen_ai.operation.name", "execute_tool");
     activity.SetTag("gen_ai.tool.name", toolName);
     activity.SetTag("gen_ai.output.type", "json");
@@ -107,7 +107,7 @@ public static class TelemetryExtensions
       return;
     }
 
-    activity.SetTag("gen_ai.system", "fastendpoints-a2a");
+    activity.SetTag("gen_ai.provider.name", "fastendpoints-a2a");
     activity.SetTag("gen_ai.operation.name", "invoke_workflow");
     activity.SetTag("gen_ai.workflow.name", workflowName);
     activity.SetTag("gen_ai.output.type", "json");

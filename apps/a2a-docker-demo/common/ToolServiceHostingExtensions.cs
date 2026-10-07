@@ -53,8 +53,13 @@ public static class ToolServiceHostingExtensions
         context.Items["validated_token"] = validatedToken;
       }
 
-      if (context.Request.Path.StartsWithSegments("/a2a")
-              || context.Request.Path.StartsWithSegments("/.well-known"))
+      if (PublicAgentCard.IsAgentCardRequest(context))
+      {
+        await PublicAgentCard.HandleAsync(context, next);
+        return;
+      }
+
+      if (context.Request.Path.StartsWithSegments("/a2a"))
       {
         var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
         var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);
