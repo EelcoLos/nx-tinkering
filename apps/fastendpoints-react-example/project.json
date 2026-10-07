@@ -5,6 +5,41 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "generate-clients": {
+      "description": "Regenerate the Orval and Hey API clients from the exported OpenAPI spec",
+      "executor": "nx:noop",
+      "dependsOn": ["generate-orval", "generate-hey-api"]
+    },
+    "generate-orval": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["fastendpoints-react-api:openapi"],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/orval.config.ts",
+        "{workspaceRoot}/apps/fastendpoints-react-api/wwwroot/api/v1.json",
+        { "externalDependencies": ["orval"] }
+      ],
+      "outputs": ["{projectRoot}/src/generated/orval"],
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "orval --config orval.config.ts"
+      }
+    },
+    "generate-hey-api": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["fastendpoints-react-api:openapi"],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/openapi-ts.config.ts",
+        "{workspaceRoot}/apps/fastendpoints-react-api/wwwroot/api/v1.json",
+        { "externalDependencies": ["@hey-api/openapi-ts"] }
+      ],
+      "outputs": ["{projectRoot}/src/generated/hey-api"],
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "openapi-ts --file openapi-ts.config.ts"
+      }
+    },
     "test": {
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
