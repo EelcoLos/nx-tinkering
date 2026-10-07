@@ -70,7 +70,7 @@
         },
         "security": [
           {
-            "JWTBearerAuth": [ ]
+            "JWTBearerAuth": []
           }
         ]
       }
@@ -105,7 +105,6 @@
         "description": "the dto used to send an error response to the client"
       },
       "LoginRequest": {
-        "const": null,
         "required": [
           "email",
           "password"
@@ -113,14 +112,12 @@
         "type": "object",
         "properties": {
           "email": {
-            "const": null,
             "minLength": 1,
             "pattern": "^[^@]+@[^@]+$",
             "type": "string",
             "format": "email"
           },
           "password": {
-            "const": null,
             "minLength": 1,
             "type": "string"
           }

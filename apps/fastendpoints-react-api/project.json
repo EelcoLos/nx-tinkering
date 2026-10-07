@@ -12,7 +12,11 @@
       "outputs": ["{projectRoot}/wwwroot/api/v1.json"],
       "options": {
         "cwd": "{projectRoot}",
-        "command": "dotnet run --no-build --no-launch-profile -- --export-openapi-docs true --urls http://127.0.0.1:0"
+        "commands": [
+          "dotnet run --no-build --no-launch-profile -- --export-openapi-docs true --urls http://127.0.0.1:0",
+          "node strip-null-const.mjs"
+        ],
+        "parallel": false
       }
     }
   }
