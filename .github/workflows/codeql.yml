@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '0 5 * * 0'
 
+permissions:
+  contents: read
+
 env:
   DOTNET_VERSION: '10.0.x'
 
@@ -19,7 +22,7 @@ jobs:
       language: ${{steps.custom-trigger.outputs.language}}
     steps:
       - name: Check out
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
@@ -59,16 +62,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.38.2
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           languages: ${{ matrix.language }}
 
       - name: Restore npm cache for javascript-typescript
         id: cache-npm
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
@@ -84,14 +87,14 @@ jobs:
 
       - name: Set up .NET
         if: contains(matrix.language, 'csharp')
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: restore nuget cache for csharp
         if: contains(matrix.language, 'csharp')
         id: cache-nuget
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('apps/**/*.csproj', 'apps/api-test/*.csproj', 'apps/api-integration-test/*.csproj', 'libs/**/*.csproj') }}
@@ -104,9 +107,9 @@ jobs:
 
       - name: Autobuild
         if: ${{!contains(matrix.language, 'csharp')}}
-        uses: github/codeql-action/autobuild@v4.38.2
+        uses: github/codeql-action/autobuild@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.38.2
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           category: '/language:${{matrix.language}}'
