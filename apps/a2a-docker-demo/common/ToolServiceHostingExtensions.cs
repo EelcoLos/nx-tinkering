@@ -59,7 +59,8 @@ public static class ToolServiceHostingExtensions
         return;
       }
 
-      if (context.Request.Path.StartsWithSegments("/a2a"))
+      if (context.Request.Path.StartsWithSegments("/a2a")
+              || context.Request.Path.StartsWithSegments("/.well-known"))
       {
         var authorizer = context.RequestServices.GetRequiredService<RequestAuthorizer>();
         var validatedToken = await authorizer.ValidateBearerAsync(context, "agent", context.RequestAborted);
