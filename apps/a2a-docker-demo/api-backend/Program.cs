@@ -34,6 +34,12 @@ app.Use(async (context, next) =>
     return;
   }
 
+  if (PublicAgentCard.IsAgentCardRequest(context))
+  {
+    await PublicAgentCard.HandleAsync(context, next);
+    return;
+  }
+
   if (context.Request.Path.StartsWithSegments("/a2a")
       || context.Request.Path.StartsWithSegments("/.well-known"))
   {

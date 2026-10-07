@@ -1,0 +1,11 @@
+{
+  "name": "workspace-scripts-tests",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "test": {
+      "inputs": ["default", "{workspaceRoot}/scripts/**/*"]
+    }
+  }
+}

@@ -3,9 +3,9 @@
   "version": "23.2.1",
   "license": "MIT",
   "scripts": {
-    "format:write": "npx prettier -w apps/**/*.ts libs/**/*.ts && dotnet format nx-tinker.slnx && npx nx affected -t lint --fix --base=origin/main",
+    "format:write": "nx format:write --base=origin/main && dotnet format nx-tinker.slnx",
     "dev-cert": "dotnet dev-certs https -ep apps/angular-auth-example/ssl/localhost.pem -np --format pem",
-    "test": "jest --runInBand"
+    "test": "nx run-many -t test"
   },
   "private": true,
   "dependencies": {
@@ -111,8 +111,6 @@
   },
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,
-    "less@4.6.4": true,
-    "less@4.5.1": true,
     "@swc/core@1.16.13": true,
     "esbuild@0.28.2": true,
     "lmdb@3.5.6": true,

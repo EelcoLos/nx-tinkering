@@ -1,495 +1,154 @@
-# A2A Protocol Docker Demo - Triage Workflow
+# A2A Docker Demo - Triage Workflow
 
-This is a comprehensive demonstration of the FastEndpoints A2A (Agent-to-Agent) protocol with real network communication, service discovery, and identity management. The demo implements a triage workflow where multiple specialist A2A services work together to classify, assess, route, and handle incoming requests.
+A Docker Compose demo of the [A2A (Agent-to-Agent) protocol](https://a2a-protocol.org/latest/specification/)
+built with [FastEndpoints.A2A](https://fast-endpoints.com/). A website submits a request, the API backend
+orchestrates four specialist agents over A2A JSON-RPC (classify, assess, route, handle), and every hop is
+traced to Grafana/Tempo. Identity is handled by a small identity service in front of Keycloak.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Docker Stack Network                            │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│  ┌──────────────────────────┐  ┌──────────────────┐  ┌────────────┐ │
-│  │  Identity Service        │  │  Static Website  │  │  API       │ │
-│  │  (Port 5050)             │  │  (Port 8080)     │  │  Backend   │ │
-│  │  - User authentication   │  │  - User login    │  │  (Port     │ │
-│  │  - Agent token issuance  │  │  - Dashboard     │  │  5056)     │ │
-│  │  - Token validation      │  └──────────────────┘  └────────────┘ │
-│  └──────────────────────────┘           │                    │      │
-│           ▲                              └────┬───────────────┘      │
-│           │ (JWT validation)                  │                     │
-│    ┌──────┴──────────────────────────────────┘                      │
-│    │                                                                  │
-│  ┌──────────────────────────┐  ┌──────────────────┐                 │
-│  │ Discovery Service        │  │ Classifier       │                 │
-│  │ (Port 5051)              │  │ (Port 5052)      │                 │
-│  │ - Service registry       │  │ - A2A Specialist │                 │
-│  │ - Agent lookup           │  │ - JWT-protected  │                 │
-│  └──────────────────────────┘  └──────────────────┘                 │
-│           ▲                             │                           │
-│           │                             ▼                           │
-│  ┌────────────────────────────┐  ┌──────────────────┐               │
-│  │ Router Service             │  │ Assessor         │               │
-│  │ (Port 5054)                │  │ (Port 5053)      │               │
-│  │ - A2A Specialist           │  │ - A2A Specialist │               │
-│  │ - JWT-protected            │  │ - JWT-protected  │               │
-│  └────────────────────────────┘  └──────────────────┘               │
-│           │                             │                           │
-│           └──────────┬──────────────────┘                           │
-│                      ▼                                              │
-│                ┌──────────────────┐                                 │
-│                │ Handler          │                                 │
-│                │ (Port 5055)      │                                 │
-│                │ - A2A Specialist │                                 │
-│                │ - JWT-protected  │                                 │
-│                └──────────────────┘                                 │
-│                                                                      │
-└──────────────────────────────────────────────────────────────────────┘
+ Browser ──► website (nginx, :8080)
+    │
+    ▼  user JWT
+ api-backend (:5056)  ── DownstreamGateway: central orchestrator ──┐
+    │  login                                                        │ agent JWT, A2A SendMessage
+    ▼                                                               ▼
+ identity (:5050) ──► Keycloak (:8081)       classifier (:5052) → assessor (:5053) → router (:5054) → handler (:5055)
+
+ discovery (:5051)  legacy registry, not used by the triage flow
+ Tempo / Prometheus / Grafana (:3001)  traces and health metrics
 ```
+
+The specialists never call each other. `api-backend/DownstreamGateway.cs` fetches an agent token from the
+identity service, then calls each specialist's `/a2a` endpoint in sequence and feeds the result of one step
+into the next:
+
+1. `classifier` turns the input text into a classification
+2. `assessor` turns the classification into a priority
+3. `router` turns the priority into the next handler
+4. `handler` creates a ticket and returns the outcome
 
 ## Services
 
-### Identity Service (Port 5050)
-Central authentication and token issuance service for both users and agents.
+| Service     | Port | Nx project       | Key files                                                                        |
+| ----------- | ---- | ---------------- | -------------------------------------------------------------------------------- |
+| identity    | 5050 | `identity`       | `identity/LoginEndpoint.cs`, `AgentTokenEndpoint.cs`, `ValidateTokenEndpoint.cs` |
+| discovery   | 5051 | `discovery`      | `discovery/ServiceRegistry.cs`                                                   |
+| classifier  | 5052 | `classifier`     | `classifier/SkillEndpoint.cs`                                                    |
+| assessor    | 5053 | `assessor`       | `assessor/SkillEndpoint.cs`                                                      |
+| router      | 5054 | `router`         | `router/SkillEndpoint.cs`                                                        |
+| handler     | 5055 | `handler`        | `handler/SkillEndpoint.cs`                                                       |
+| api-backend | 5056 | `api-backend`    | `api-backend/DownstreamGateway.cs`, `SubmitTriageEndpoint.cs`                    |
+| website     | 8080 | -                | `website/public/` (static HTML/CSS/JS)                                           |
+| common      | -    | `A2ADemo.Common` | shared auth, hosting and telemetry helpers                                       |
 
-**Endpoints:**
-- `POST /auth/login` - User login (returns JWT)
-- `GET /auth/agent/token` - Demo agent token issuance by `agentId`
-- `POST /auth/validate` - Token validation
-- `GET /health` - Health check
+### Skills
 
-**Demo Users:**
-- Username: `admin`, Password: `demo123`
-- Username: `user`, Password: `user456`
+Each specialist exposes one FastEndpoints endpoint as an A2A skill. The orchestrator selects it with
+`metadata.skill` on the A2A `SendMessage` call.
 
-### Discovery Service (Port 5051)
-Legacy registry service retained for compatibility experiments. The active triage flow no longer depends on service self-registration and discovers specialists directly from their protected agent cards.
+| Skill id                             | REST route              | Input                                 | Output                                                                                                              |
+| ------------------------------------ | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `classifier`                         | `POST /skills/classify` | `input`                               | `classification_type`: `incident`, `defect`, `feature_request`, `inquiry`, `general`                                |
+| `assessor`                           | `POST /skills/assess`   | `classification`                      | `priority`: `critical`, `high`, `medium`, `low`, `normal`                                                           |
+| `router`                             | `POST /skills/route`    | `priority`                            | `next_handler`: `urgent-handler`, `priority-handler`, `standard-handler`, `self-service-handler`, `general-handler` |
+| `handler`                            | `POST /skills/handle`   | `input`, `classification`, `priority` | `status`, `ticket_id`, `summary`                                                                                    |
+| `triage_orchestration` (api-backend) | `POST /api/triage`      | `input`                               | full triage record                                                                                                  |
 
-**Endpoints:**
-- `GET /services` - List the registry contents (agent JWT required)
-- `GET /services/{id}/card` - Get a legacy registered card (agent JWT required)
-- `GET /health` - Health check
+### Endpoints
 
-### Classifier Service (Port 5052)
-First specialist in the triage flow. Analyzes incoming requests and determines their type and urgency.
+- **identity**: `POST /auth/login`, `GET /auth/agent/token?agentId=...`, `POST /auth/validate`
+- **discovery**: `GET /services`, `GET /services/{id}/card` (agent JWT)
+- **api-backend**: `POST /api/auth/login`, `GET /api/services`, `GET /api/services/{id}/card`,
+  `POST /api/triage`, `GET /api/triage/{id}` (all except login need a user JWT)
+- **every A2A service** (specialists and api-backend):
+  - `GET /.well-known/agent-card.json` - public. The card declares the agent bearer scheme in
+    `securitySchemes`/`securityRequirements`; skills are only listed when a valid agent JWT is sent.
+  - `POST /a2a` - A2A JSON-RPC endpoint (agent JWT)
+  - `POST /skills/...` - REST form of the skill (agent JWT)
+- **all services**: `GET /health`
 
-**Skills:**
-- `classifier_skill` - Classifies requests as technical_issue, inquiry, defect, feature_request, or general
+## Running
 
-**Urgency Levels:** critical, high, normal, low
-
-### Assessor Service (Port 5053)
-Second specialist. Assigns priority levels based on classification.
-
-**Skills:**
-- `assessor_skill` - Assigns priority (1-5) and determines handler assignment
-
-**Output:** Priority level, assigned handler
-
-### Router Service (Port 5054)
-Third specialist. Routes requests to appropriate handlers based on priority.
-
-**Skills:**
-- `router_skill` - Determines routing queue and estimated wait time
-
-**Routing Queues:** urgent_queue, standard_queue, low_priority_queue
-
-### Handler Service (Port 5055)
-Final specialist. Processes and resolves triage requests, creates tickets.
-
-**Skills:**
-- `handler_skill` - Executes resolution, creates tickets
-
-**Output:** Ticket ID, resolution strategy
-
-### API Backend (Port 5056)
-HTTP gateway for the website. Coordinates the triage workflow.
-
-**Endpoints:**
-- `POST /api/auth/login` - Forward user login to identity service
-- `GET /api/services` - List available services (user JWT required)
-- `POST /api/triage` - Submit triage request (user JWT required)
-- `GET /api/triage/{id}` - Fetch a triage result by id (user JWT required)
-- `GET /.well-known/agent-card.json` - A2A agent card (agent JWT required)
-- `POST /a2a` - A2A JSON-RPC endpoint (agent JWT required)
-- `GET /health` - Health check
-
-### Static Website (Port 8080)
-User interface for the demo, served as static files by nginx in Docker.
-
-**Features:**
-- Interactive login
-- Service discovery viewer
-- Triage request form
-- Request history with flow visualization
-- Observability deep-link to Grafana
-
-## Running Locally (for Development)
-
-### Prerequisites
-- .NET 10 SDK
-- Docker
-
-### 1. Setup Environment
+### Docker Compose (recommended)
 
 ```bash
 cd apps/a2a-docker-demo
-cp .env.example .env
-# Edit .env and set proper values for:
-# - JWT_SECRET_KEY (min 32 characters)
-# - OIDC_* values if using local Keycloak auth flow
-# - OTEL_* values for trace export to Tempo
-```
-
-### 2. Recommended Local Stack
-
-For the full experience, including Keycloak, Grafana, Tempo, and the static website:
-
-```bash
+cp .env.example .env   # set JWT_SECRET_KEY (32+ chars); OIDC_* and OTEL_* defaults match the compose stack
 docker compose -f docker-compose.local.yml up --build -d
+./test-stack.sh        # health and login smoke test (test-e2e.sh [host] adds auth checks)
 ```
 
-Then open:
+| URL                                                                | What                                                                 |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| http://localhost:8080                                              | website (log in as `admin` / `demo123` or `user` / `user456`)        |
+| http://localhost:5056/health                                       | API backend                                                          |
+| http://localhost:8081                                              | Keycloak (realm `a2a-local`, created by the `keycloak-init` service) |
+| http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview | Grafana tool-calling dashboard                                       |
 
-- **Website**: http://localhost:8080
-- **API Backend**: http://localhost:5056/health
-- **Identity Service**: http://localhost:5050/health
-- **Keycloak**: http://localhost:8081
-- **Grafana (observability)**: http://localhost:3001
+Stop with `docker compose -f docker-compose.local.yml down -v`. For a Docker Swarm deployment see
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
-### 3. Optional Source-Based Service Runs
+### From source
 
-If you want to debug the .NET services directly, run them in separate terminals:
-
-Terminal 1 - Identity Service:
-```bash
-dotnet run identity/identity.csproj
-```
-
-Terminal 2 - Discovery Service:
-```bash
-dotnet run discovery/discovery.csproj
-```
-
-Terminal 3 - Classifier Service:
-```bash
-dotnet run classifier/classifier.csproj
-```
-
-Terminal 4 - Assessor Service:
-```bash
-dotnet run assessor/assessor.csproj
-```
-
-Terminal 5 - Router Service:
-```bash
-dotnet run router/router.csproj
-```
-
-Terminal 6 - Handler Service:
-```bash
-dotnet run handler/handler.csproj
-```
-
-Terminal 7 - API Backend:
-```bash
-dotnet run api-backend/api-backend.csproj
-```
-
-For the browser UI in source-based runs, keep the website container from the compose stack running or serve `website/public` from any static web server. The website is no longer a React app and does not have `npm start` scripts.
-
-### 4. Access the Application
-
-- **Website**: http://localhost:8080
-- **API**: http://localhost:5056
-- **Identity Service**: http://localhost:5050
-- **Keycloak**: http://localhost:8081
-- **Grafana (observability)**: http://localhost:3001
-
-### Local HTTPS
-
-The FastEndpoints services in this demo can run over HTTPS without changing the
-endpoint code. The A2A package already emits the agent-card `supportedInterfaces`
-URL from `ServiceBaseUrl`, so if the service URLs are configured as `https://...`,
-the published A2A discovery surface follows that.
-
-For local source-based runs on Windows/macOS, the workable path is:
-
-```powershell
-dotnet dev-certs https --trust
-```
-
-Then start each .NET service with HTTPS URLs and matching service base URLs, for
-example:
-
-```powershell
-$env:ASPNETCORE_URLS = 'https://localhost:5056'
-$env:API_BACKEND_SERVICE_URL = 'https://localhost:5056'
-$env:IDENTITY_SERVICE_URL = 'https://localhost:5050'
-$env:CLASSIFIER_SERVICE_URL = 'https://localhost:5052'
-$env:ASSESSOR_SERVICE_URL = 'https://localhost:5053'
-$env:ROUTER_SERVICE_URL = 'https://localhost:5054'
-$env:HANDLER_SERVICE_URL = 'https://localhost:5055'
-dotnet run api-backend/api-backend.csproj
-```
-
-The website now follows the page scheme for API and Grafana links, so serving the
-UI over HTTPS will no longer force mixed `http://` requests to the API.
-
-Current limitation: the Docker stack is still HTTP internally. Moving the full
-compose stack to HTTPS requires certificate material plus trust distribution for
-every container-to-container hop, and Keycloak is currently bootstrapped in
-dev-mode HTTP on `8081`. If you want full Docker HTTPS next, the clean options are
-either a TLS reverse proxy for browser-facing routes or a shared internal CA with
-per-service certificates.
-
-Keycloak configuration is bootstrapped automatically by the `keycloak-init` service in compose. It creates:
-
-- Realm: `a2a-local`
-- Demo users: `admin`, `user`
-- OIDC clients: `website-client`, `identity-facade`, `discovery-agent`, `classifier-agent`, `assessor-agent`, `router-agent`, `handler-agent`, `api-backend-agent`
-
-### Preloaded Grafana Dashboard
-
-Grafana is provisioned automatically with a Tempo datasource and a dashboard for tool-calling traces:
-
-- **Dashboard URL**: http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview
-- **Folder**: `A2A Demo`
-- **Dashboard**: `A2A Tool Calling Overview`
-
-The dashboard is preconfigured to surface spans emitted by the API backend orchestration flow, including:
-
-- `invoke_workflow a2a-triage`
-- `execute_tool classifier`
-- `execute_tool assessor`
-- `execute_tool router`
-- `execute_tool handler`
-
-## Running with Docker Stack
-
-### Prerequisites
-- Docker Swarm initialized (`docker swarm init`)
-- Portainer (optional, for GUI management)
-
-### 1. Deploy Stack
+Build everything with Nx from the repository root:
 
 ```bash
-cd apps/a2a-docker-demo
-cp .env.example .env
-# Edit .env with production values
-
-docker stack deploy -c docker-compose.yml a2a-demo
+npx nx run-many -t build -p identity discovery classifier assessor router handler api-backend
 ```
 
-### 2. Verify Services
+Run a service with `dotnet run --project apps/a2a-docker-demo/<service>/<service>.csproj`. Service URLs default
+to the compose host names (`http://classifier:5052` etc.), so set the `*_SERVICE_URL` variables from
+`.env.example` to `http://localhost:<port>` and `ASPNETCORE_URLS` per service. Serve `website/public` with any
+static web server, for example the `serve a2a website` VS Code task.
+
+The services also run over HTTPS: trust the dev certificate (`dotnet dev-certs https --trust`) and use `https://`
+in `ASPNETCORE_URLS` and the `*_SERVICE_URL` variables. The card's `supportedInterfaces` URL follows the service
+base URL. The compose stack itself is HTTP only.
+
+## Trying the A2A surface
 
 ```bash
-docker service ls
-docker stack ps a2a-demo
-```
-
-All services should show `1/1` replicas in the REPLICAS column.
-
-For local development on a single machine, prefer `docker compose -f docker-compose.local.yml up --build -d` over Swarm.
-
-### 3. Access Services
-
-**From Docker Host (127.0.0.1):**
-- **Website**: http://127.0.0.1:8080
-- **API Backend**: http://127.0.0.1:5056/health
-- **Identity**: http://127.0.0.1:5050/health
-
-
-### 4. Run End-to-End Tests
-
-```bash
-
-# From Docker host (10.x.x.x or 192.x.x.x), test against
-bash test-e2e.sh 10.x.x.x
-
-# Uses default 127.0.0.1
-bash test-e2e.sh
-```
-
-### 5. Remove Stack
-
-```bash
-docker stack rm a2a-demo
-```
-
-## Testing the A2A Protocol
-
-### Quick Network Test
-```bash
-# Test health localhost
-curl http://localhost:5050/health
-```
-
-### 1. User Login
-```bash
-curl -X POST http://localhost:5050/auth/login \
-  -H "Content-Type: application/json" \
+# user login (through the API backend or directly against identity)
+curl -X POST http://localhost:5056/api/auth/login -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"demo123"}'
+
+# submit a triage request
+curl -X POST http://localhost:5056/api/triage -H "Authorization: Bearer <USER_JWT>" \
+  -H "Content-Type: application/json" -d '{"input":"Server is down - critical issue"}'
+
+# public agent card (no skills), then the same card with an agent token (skills included)
+curl http://localhost:5052/.well-known/agent-card.json
+TOKEN=$(curl -s "http://localhost:5050/auth/agent/token?agentId=classifier-agent" | jq -r .token)
+curl http://localhost:5052/.well-known/agent-card.json -H "Authorization: Bearer $TOKEN"
 ```
 
-### 2. Get Agent Token
-```bash
-curl -X GET "http://localhost:5050/auth/agent/token?agentId=classifier-agent"
-```
+User tokens carry `type: user`, agent tokens `type: agent` plus `agent_id`. Agent surfaces reject user tokens.
+With `OIDC_ENABLED=true` the identity service gets tokens from Keycloak (one client per agent); otherwise it signs
+local JWTs with `JWT_SECRET_KEY`.
 
-### 3. Submit Triage Request
-```bash
-curl -X POST http://localhost:5056/api/triage \
-  -H "Authorization: Bearer <USER_JWT>" \
-  -H "Content-Type: application/json" \
-  -d '{"input":"Server is down - critical issue"}'
-```
+## Observability
 
-### 4. List Services
-```bash
-curl http://localhost:5056/api/services \
-  -H "Authorization: Bearer <USER_JWT>"
-```
+All services export OpenTelemetry traces to Tempo (`OTEL_EXPORTER_OTLP_ENDPOINT`). The orchestrator emits an
+`invoke_workflow a2a-triage` span with `execute_tool classifier|assessor|router|handler` children, tagged with the
+GenAI semantic conventions (`gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.tool.name`). Grafana is
+provisioned with Tempo and Prometheus data sources and two dashboards in the `A2A Demo` folder.
 
-### 5. Call Protected Agent Surfaces
-```bash
-curl http://localhost:5051/services \
-  -H "Authorization: Bearer <AGENT_JWT>"
+## Extending the demo
 
-curl http://localhost:5056/.well-known/agent-card.json \
-  -H "Authorization: Bearer <AGENT_JWT>"
-```
+To add a specialist:
 
-## JWT Token Format
+1. Copy one of the specialist folders (for example `classifier/`), rename the project, and change
+   `SkillEndpoint.cs` (route, `this.A2ASkill(id: ...)`, logic) and `ServiceSettings.cs` (name, port, env vars).
+2. Add the agent id and OIDC client to `.env.example`, `keycloak/bootstrap/init-keycloak.sh` and both compose files.
+3. Add the service URL to `api-backend/ServiceSettings.cs` and a step in `DownstreamGateway.RunTriageAsync`
+   (plus an entry in `GetKnownServices`).
 
-### User JWT Claims
-```json
-{
-  "sub": "user_id",
-  "username": "admin",
-  "type": "user",
-  "iat": 1234567890,
-  "exp": 1234571490
-}
-```
+Demo users come from `identity/AuthSettings.cs` (`DEMO_USER_*` variables) and, with OIDC enabled, from the
+Keycloak bootstrap script.
 
-### Agent JWT Claims
-```json
-{
-  "sub": "agent_id",
-  "agent_id": "classifier-agent",
-  "type": "agent",
-  "iat": 1234567890,
-  "exp": 1234571490
-}
-```
+## Security
 
-## A2A Communication Flow
-
-```
-User Request (with user JWT)
-    ↓
-[API Backend] validates user JWT
-    ↓
-Calls Classifier Service (with agent JWT in metadata)
-    ↓
-[Classifier] validates agent JWT
-    ↓
-Calls Assessor Service (with agent JWT)
-    ↓
-[Assessor] validates agent JWT
-    ↓
-Calls Router Service (with agent JWT)
-    ↓
-[Router] validates agent JWT
-    ↓
-Calls Handler Service (with agent JWT)
-    ↓
-[Handler] validates agent JWT
-    ↓
-Returns result through the chain
-```
-
-**All 401 responses indicate JWT validation failures.**
-
-## Environment Variables
-
-See `.env.example` for all configuration options.
-
-**Key Variables:**
-- `JWT_SECRET_KEY` - Secret for signing JWT tokens
-- `OIDC_ENABLED` - Toggle Keycloak-backed auth vs local JWT fallback
-- `OIDC_*_CLIENT_ID` / `OIDC_*_CLIENT_SECRET` - OIDC client credentials for user and agent flows
-- `*_AGENT_ID` - Logical agent identifiers advertised in tokens and service metadata
-- `OTEL_EXPORTER_OTLP_ENDPOINT` - Tempo/OTLP endpoint for traces
-
-## Extending the Demo
-
-### Adding a New Specialist Service
-
-1. Create `apps/a2a-docker-demo/new-service/service.cs` (copy from classifier.cs pattern)
-2. Add identity configuration to `.env.example` and `.env`:
-   ```
-   NEW_SERVICE_AGENT_ID=new-service-agent
-   OIDC_NEW_SERVICE_CLIENT_ID=new-service-agent
-   OIDC_NEW_SERVICE_CLIENT_SECRET=new-service-agent-secret
-   ```
-3. Add the new service to `docker-compose.yml` and `docker-compose.local.yml`
-4. Expose its protected `/.well-known/agent-card.json` and `/a2a` surfaces
-5. Update [api-backend/DownstreamGateway.cs](api-backend/DownstreamGateway.cs) to include the new service in the orchestrated flow
-6. If you still want the legacy discovery service to show it, add an explicit registry entry there as well
-
-### Adding New Users
-
-Edit the `UserDatabase` seeding in `identity.cs` and rebuild.
-
-### Customizing Triage Logic
-
-Edit the classification, assessment, routing, and handling logic in respective service files.
-
-## Troubleshooting
-
-### Services Can't Find Each Other
-- Ensure all services are running and reachable
-- Check `docker network ls` for correct network
-- Verify environment variables point to correct URLs
-
-### 401 Unauthorized Errors
-- Verify JWT token is valid and not expired
-- Check JWT_SECRET_KEY is consistent across all services
-- Verify OIDC client mappings and `*_AGENT_ID` values match what services are using
-- Remember that `/a2a`, `/.well-known/agent-card.json`, and discovery `/services` require an agent token, not a user token
-
-### Discovery Service Shows No Services
-- The current triage flow does not depend on dynamic discovery registration
-- The legacy registry only contains entries that are explicitly seeded or added
-- Use `/api/services` on the API backend to inspect the active orchestrated service list
-
-## Architecture Notes
-
-- **Project-based .NET services**: Each service has its own directory with Program.cs, .csproj, and Dockerfile
-- **Multi-stage Docker builds**: Services compile with the .NET 10 Alpine SDK and run on the .NET 10 Alpine ASP.NET runtime
-- **Static website**: The browser UI is plain HTML/CSS/JS served by nginx
-- **In-memory registries**: Discovery and identity services use in-memory storage (suitable for demo)
-- **JWT validation at boundaries**: Each service validates tokens on incoming requests
-- **Protected A2A surfaces**: Agent cards and `/a2a` endpoints require agent bearer tokens
-- **Docker Swarm optimized**: Configured for deployment on Docker Stack with overlay network
-- **Known-service orchestration**: The API backend fetches protected agent cards from known service base URLs and then calls their A2A endpoints
-
-## Security Considerations
-
-This is a **demonstration project**. For production:
-
-- Use strong, randomly generated JWT_SECRET_KEY
-- Implement token refresh/rotation
-- Use persistent database for users and services (not in-memory)
-- Implement rate limiting
-- Add request logging and monitoring
-- Use HTTPS/TLS for all communication
-- Implement proper CORS policies
-- Add authentication to all sensitive endpoints
-- Implement audit logging for authorization events
-
-## License
-
-MIT
+This is a demo: in-memory users, an unauthenticated agent token endpoint and permissive CORS. See
+[SECURITY.md](SECURITY.md) before reusing any of it.
