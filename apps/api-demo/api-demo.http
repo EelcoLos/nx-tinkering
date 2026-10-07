@@ -1,0 +1,19 @@
+# api-demo: FastEndpoints API (no auth).
+# Start: dotnet run --project apps/api-demo/ApiDemo.csproj --launch-profile http
+@host = http://localhost:5266
+
+### Create user (anonymous)
+POST {{host}}/api/user/create
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "age": 30
+}
+
+### OpenAPI document
+GET {{host}}/openapi/v1.json
+
+### Scalar API reference (Development only)
+GET {{host}}/scalar/v1

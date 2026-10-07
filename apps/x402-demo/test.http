@@ -1,7 +1,20 @@
-@x402_demo_HostAddress = http://localhost:5000
+# x402-demo: single-file FastEndpoints app with x402 payments.
+# Start (from this folder): dotnet run app.cs  (port and X402:* settings come from app.run.json;
+# X402:PayTo must be set, e.g. in app.run.local.json, for real payments)
+@host = http://localhost:5000
+# Base64 payment payload signed by the payer's wallet for the requirements in the
+# PAYMENT-REQUIRED header of the 402 response (the test page at "/" builds it).
+@paymentSignature =
 
-GET {{x402_demo_HostAddress}}/openapi/v1.json
+### Browser test page (HTML; pays with MetaMask)
+GET {{host}}/
 
-###
+### OpenAPI document
+GET {{host}}/openapi/v1.json
 
-GET {{x402_demo_HostAddress}}/x402/premium
+### Protected resource without payment (expect 402 + PAYMENT-REQUIRED header)
+GET {{host}}/x402/premium
+
+### Protected resource with a payment payload (set @paymentSignature first)
+GET {{host}}/x402/premium
+PAYMENT-SIGNATURE: {{paymentSignature}}

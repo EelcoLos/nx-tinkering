@@ -1,0 +1,300 @@
+# a2a-docker-demo: all seven services, ports as published by docker-compose.yml (.env.example).
+# Start the stack: docker compose -f apps/a2a-docker-demo/docker-compose.yml up --build
+# One file on purpose: a user token (identity/api-backend login) and an agent token
+# (identity /auth/agent/token) are reused across every service, and request variables
+# such as {{agentToken.response...}} only resolve within the same file.
+@identity   = http://localhost:5050
+@discovery  = http://localhost:5051
+@classifier = http://localhost:5052
+@assessor   = http://localhost:5053
+@router     = http://localhost:5054
+@handler    = http://localhost:5055
+@apiBackend = http://localhost:5056
+
+# Demo users from .env.example: admin / demo123, user / user456.
+@username = admin
+@password = demo123
+
+############################################################
+# identity (5050)
+############################################################
+
+### identity: health
+GET {{identity}}/health
+
+### identity: user login (OIDC password grant via Keycloak when OIDC_ENABLED=true, else local JWT)
+# @name login
+POST {{identity}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### identity: agent token (DEMO ONLY: anonymous; agentId must be a configured agent when OIDC is on)
+# @name agentToken
+GET {{identity}}/auth/agent/token?agentId=api-backend-agent
+
+###
+@userToken  = {{login.response.body.$.token}}
+@agentJwt   = {{agentToken.response.body.$.token}}
+
+### identity: validate a token (returns subject / type / agent_id / username)
+POST {{identity}}/auth/validate
+Content-Type: application/json
+
+{
+  "token": "{{agentJwt}}"
+}
+
+############################################################
+# discovery (5051), /services needs an agent token
+############################################################
+
+### discovery: health
+GET {{discovery}}/health
+
+### discovery: list registered services
+GET {{discovery}}/services
+Authorization: Bearer {{agentJwt}}
+
+### discovery: card of one registered service
+GET {{discovery}}/services/discovery/card
+Authorization: Bearer {{agentJwt}}
+
+############################################################
+# A2A tool services: classifier (5052), assessor (5053), router (5054), handler (5055)
+# Agent card is public (skills are only listed with an agent token);
+# /a2a and /skills/* require an agent token.
+############################################################
+
+### classifier: health
+GET {{classifier}}/health
+
+### classifier: agent card (anonymous; no skills listed)
+GET {{classifier}}/.well-known/agent-card.json
+
+### classifier: agent card with agent token (skills listed)
+GET {{classifier}}/.well-known/agent-card.json
+Authorization: Bearer {{agentJwt}}
+
+### classifier: A2A JSON-RPC SendMessage (A2A v1.0; metadata.skill picks the skill)
+POST {{classifier}}/a2a
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "http-file-classifier-1",
+      "role": "ROLE_USER",
+      "parts": [
+        { "data": { "Input": "Production is down, urgent outage" } }
+      ]
+    },
+    "metadata": {
+      "skill": "classifier"
+    }
+  }
+}
+
+### classifier: skill endpoint directly
+POST {{classifier}}/skills/classify
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "input": "Production is down, urgent outage"
+}
+
+### assessor: health
+GET {{assessor}}/health
+
+### assessor: agent card
+GET {{assessor}}/.well-known/agent-card.json
+Authorization: Bearer {{agentJwt}}
+
+### assessor: A2A JSON-RPC SendMessage
+POST {{assessor}}/a2a
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "http-file-assessor-1",
+      "role": "ROLE_USER",
+      "parts": [
+        { "data": { "Classification": "incident" } }
+      ]
+    },
+    "metadata": {
+      "skill": "assessor"
+    }
+  }
+}
+
+### assessor: skill endpoint directly
+POST {{assessor}}/skills/assess
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "classification": "incident"
+}
+
+### router: health
+GET {{router}}/health
+
+### router: agent card
+GET {{router}}/.well-known/agent-card.json
+Authorization: Bearer {{agentJwt}}
+
+### router: A2A JSON-RPC SendMessage
+POST {{router}}/a2a
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "http-file-router-1",
+      "role": "ROLE_USER",
+      "parts": [
+        { "data": { "Priority": "critical" } }
+      ]
+    },
+    "metadata": {
+      "skill": "router"
+    }
+  }
+}
+
+### router: skill endpoint directly
+POST {{router}}/skills/route
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "priority": "critical"
+}
+
+### handler: health
+GET {{handler}}/health
+
+### handler: agent card
+GET {{handler}}/.well-known/agent-card.json
+Authorization: Bearer {{agentJwt}}
+
+### handler: A2A JSON-RPC SendMessage
+POST {{handler}}/a2a
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "http-file-handler-1",
+      "role": "ROLE_USER",
+      "parts": [
+        { "data": { "Input": "Production is down", "Classification": "incident", "Priority": "critical" } }
+      ]
+    },
+    "metadata": {
+      "skill": "handler"
+    }
+  }
+}
+
+### handler: skill endpoint directly
+POST {{handler}}/skills/handle
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "input": "Production is down",
+  "classification": "incident",
+  "priority": "critical"
+}
+
+############################################################
+# api-backend (5056): website-facing; /api/* needs a USER token, /a2a an agent token
+############################################################
+
+### api-backend: health
+GET {{apiBackend}}/health
+
+### api-backend: login (proxied to identity; also served at /auth/login)
+# @name apiLogin
+POST {{apiBackend}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+@apiUserToken = {{apiLogin.response.body.$.token}}
+
+### api-backend: list services (via discovery)
+GET {{apiBackend}}/api/services
+Authorization: Bearer {{apiUserToken}}
+
+### api-backend: card of one service
+GET {{apiBackend}}/api/services/classifier/card
+Authorization: Bearer {{apiUserToken}}
+
+### api-backend: submit triage (classifier -> assessor -> router -> handler)
+# @name triage
+POST {{apiBackend}}/api/triage
+Authorization: Bearer {{apiUserToken}}
+Content-Type: application/json
+
+{
+  "input": "Production is down, urgent outage"
+}
+
+### api-backend: triage status by id
+GET {{apiBackend}}/api/triage/{{triage.response.body.$.id}}
+Authorization: Bearer {{apiUserToken}}
+
+### api-backend: agent card (public)
+GET {{apiBackend}}/.well-known/agent-card.json
+Authorization: Bearer {{agentJwt}}
+
+### api-backend: A2A JSON-RPC SendMessage to triage_orchestration
+POST {{apiBackend}}/a2a
+Authorization: Bearer {{agentJwt}}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "http-file-triage-1",
+      "role": "ROLE_USER",
+      "parts": [
+        { "data": { "Input": "Production is down, urgent outage" } }
+      ]
+    },
+    "metadata": {
+      "skill": "triage_orchestration"
+    }
+  }
+}

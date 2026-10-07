@@ -1,3 +1,6 @@
+# a2a-demo coordinator (A2A .NET SDK 1.0.0-preview2, A2A v1.0 JSON-RPC binding).
+# Start (from this folder): dotnet run coordinator.cs
+# SendMessage delegates to the specialist, which must be running on http://localhost:5062.
 @host = http://localhost:5063
 
 ### Server info
@@ -5,3 +8,22 @@ GET {{host}}/
 
 ### Well-known agent card
 GET {{host}}/.well-known/agent-card.json
+
+### A2A JSON-RPC SendMessage (delegates to the specialist)
+POST {{host}}/a2a/coordinator
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "SendMessage",
+  "params": {
+    "message": {
+      "messageId": "local-client-2",
+      "role": "ROLE_USER",
+      "parts": [
+        { "text": "delegate this" }
+      ]
+    }
+  }
+}

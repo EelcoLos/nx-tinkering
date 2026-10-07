@@ -1,7 +1,7 @@
-# dotnet-fe-auth: FastEndpoints API with JWT bearer auth (used by angular-auth-example).
+# fastendpoints-react-api: FastEndpoints API with JWT bearer auth.
 # Requires Jwt:SigningKey (32+ bytes) via user-secrets or the Jwt__SigningKey env var.
-# HTTPS: http://localhost:5000 redirects to https://localhost:5001.
-@host = https://localhost:5001
+# HTTPS only: http://localhost:5003 redirects (307) to https://localhost:5002.
+@host = https://localhost:5002
 
 ### Login (demo password: SecureDevPassword123!)
 # @name login
@@ -14,31 +14,22 @@ Content-Type: application/json
 }
 
 ###
-@token = {{login.response.body.$.token}}
+@token = {{login.response.body.$.accessToken}}
 
 ### Validate token (protected)
 GET {{host}}/api/validate-token
 Authorization: Bearer {{token}}
 
-### Create user (protected)
-POST {{host}}/api/user/create
-Authorization: Bearer {{token}}
+### Validate token without auth (expect 401)
+GET {{host}}/api/validate-token
+
+### Login with a wrong password (expect 400)
+POST {{host}}/api/login
 Content-Type: application/json
 
 {
-  "firstName": "Jane",
-  "lastName": "Doe",
-  "age": 30
-}
-
-### Create user without auth (expect 401)
-POST {{host}}/api/user/create
-Content-Type: application/json
-
-{
-  "firstName": "Jane",
-  "lastName": "Doe",
-  "age": 30
+  "email": "any@mail.com",
+  "password": "wrong"
 }
 
 ### OpenAPI document (Development only)

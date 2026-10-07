@@ -1,12 +1,12 @@
+# a2a-demo-fastendpoints specialist (FastEndpoints.A2A 1.0.0-beta.5, A2A v1.0 JSON-RPC binding).
+# Start (from this folder): dotnet run specialist.cs
+# There is no "/" route on this app.
 @host = http://localhost:5162
-
-### Server info
-GET {{host}}/
 
 ### Well-known agent card
 GET {{host}}/.well-known/agent-card.json
 
-### Direct A2A JSON-RPC call to specialist skill
+### A2A JSON-RPC SendMessage; metadata.skill selects the skill, the data part is the request DTO
 POST {{host}}/a2a
 Content-Type: application/json
 
@@ -17,17 +17,21 @@ Content-Type: application/json
   "params": {
     "message": {
       "messageId": "local-client-1",
-      "role": "user",
+      "role": "ROLE_USER",
       "parts": [
-        {
-          "data": {
-            "Input": "hello specialist"
-          }
-        }
+        { "data": { "Input": "hello specialist" } }
       ]
     },
     "metadata": {
       "skill": "specialist_uppercase"
     }
   }
+}
+
+### Same skill as a plain FastEndpoints endpoint (anonymous)
+POST {{host}}/skills/specialist-uppercase
+Content-Type: application/json
+
+{
+  "input": "hello specialist"
 }

@@ -1,14 +1,26 @@
-@dotnet_fe_auth_HostAddress = http://localhost:5000
+# strongytypedid: single-file FastEndpoints app with a Vogen UserId (no auth).
+# Start (from this folder): dotnet run app.cs
+@host = http://localhost:5000
+
+### Create user (returns a new UserId)
 # @name create
-POST {{dotnet_fe_auth_HostAddress}}/api/user/create
+POST {{host}}/api/user/create
 Content-Type: application/json
 
 {
-  "firstName": "string",
-  "lastName": "string",
-  "age": 0
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "age": 30
 }
 
-###
+### Get user by the id returned above
+GET {{host}}/api/user/{{create.response.body.$.id}}
 
-GET {{dotnet_fe_auth_HostAddress}}/api/user/{{create.response.body.id}}
+### Get user with an invalid id (expect 400)
+GET {{host}}/api/user/not-a-guid
+
+### OpenAPI document
+GET {{host}}/openapi/v1.json
+
+### Scalar API reference
+GET {{host}}/scalar/v1

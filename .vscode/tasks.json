@@ -29,7 +29,12 @@
       "label": "watch",
       "command": "dotnet",
       "type": "process",
-      "args": ["watch", "run", "--project", "${workspaceFolder}/nx-tinker.slnx"],
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/nx-tinker.slnx"
+      ],
       "problemMatcher": "$msCompile"
     },
     {
@@ -145,6 +150,300 @@
         "reveal": "always",
         "panel": "dedicated"
       }
+    },
+    {
+      "label": "build api-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/apps/api-demo/ApiDemo.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build ms-graph-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/apps/ms-graph-demo/MsGraphDemo.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build dotnet-fe-auth",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/apps/dotnet-fe-auth/dotnet-fe-auth.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build fastendpoints-react-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/apps/fastendpoints-react-api/fastendpoints-react-api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build fe_onefile",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "FE_OneFile.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/fe_onefile"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build strongytypedid",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "app.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/strongytypedid"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build x402-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "app.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/x402-demo"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build a2a-demo-coordinator",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "coordinator.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/a2a-demo/coordinator"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build a2a-demo-specialist",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "specialist.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/a2a-demo/specialist"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build a2a-demo-fastendpoints-coordinator",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "coordinator.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/a2a-demo-fastendpoints/coordinator"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build a2a-demo-fastendpoints-specialist",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "specialist.cs",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/a2a-demo-fastendpoints/specialist"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "serve angular-auth-example",
+      "type": "shell",
+      "command": "npx nx run angular-auth-example:serve",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Local:"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "serve nx-tinkering",
+      "type": "shell",
+      "command": "npx nx run nx-tinkering:serve",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Local:"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "serve fastendpoints-react-example",
+      "type": "shell",
+      "command": "npx nx run fastendpoints-react-example:serve",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Local:"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "nx: test",
+      "type": "shell",
+      "command": "npx nx run ${input:testProject}:test",
+      "problemMatcher": []
+    },
+    {
+      "label": "nx: lint",
+      "type": "shell",
+      "command": "npx nx run ${input:lintProject}:lint",
+      "problemMatcher": []
+    },
+    {
+      "label": "nx: e2e",
+      "type": "shell",
+      "command": "npx nx run ${input:e2eProject}:e2e",
+      "problemMatcher": []
+    },
+    {
+      "label": "nx: affected (lint test build)",
+      "type": "shell",
+      "command": "npx nx affected -t lint test build",
+      "problemMatcher": []
+    },
+    {
+      "label": "a2a-docker-demo: compose up",
+      "type": "shell",
+      "command": "npx nx run a2a-docker-demo:compose-up",
+      "problemMatcher": []
+    },
+    {
+      "label": "a2a-docker-demo: compose down",
+      "type": "shell",
+      "command": "npx nx run a2a-docker-demo:compose-down",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testProject",
+      "type": "pickString",
+      "description": "Nx project to test",
+      "options": [
+        "ApiDemo.Test",
+        "MsGraphDemo.Test",
+        "angular-auth-example",
+        "fakelogger-demo.Test",
+        "fastendpoints-react-example",
+        "fastendpoints-react-state",
+        "nx-tinkering",
+        "workspace-scripts-tests"
+      ]
+    },
+    {
+      "id": "lintProject",
+      "type": "pickString",
+      "description": "Nx project to lint",
+      "options": [
+        "angular-auth-example",
+        "fastendpoints-react-api",
+        "fastendpoints-react-example",
+        "fastendpoints-react-example-e2e",
+        "fastendpoints-react-state",
+        "nx-tinkering",
+        "nx-tinkering-e2e",
+        "workspace-scripts-tests"
+      ]
+    },
+    {
+      "id": "e2eProject",
+      "type": "pickString",
+      "description": "Nx project to e2e",
+      "options": [
+        "a2a-docker-demo",
+        "fastendpoints-react-example-e2e",
+        "nx-tinkering-e2e"
+      ]
     }
   ]
 }
