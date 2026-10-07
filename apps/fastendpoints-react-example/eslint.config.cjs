@@ -21,6 +21,8 @@ module.exports = (async () => {
         '@typescript-eslint/no-explicit-any': 'off', // Newly enabled by typescript-eslint v8 recommended
         '@typescript-eslint/no-non-null-assertion': 'off', // Newly enabled by typescript-eslint v8 recommended
         '@eslint-react/no-unnecessary-use-prefix': 'off', // Newly enabled by @eslint-react recommended
+        '@typescript-eslint/no-empty-interface': 'off', // Hey API 0.99 runtime emits an empty extension interface
+        '@typescript-eslint/no-inferrable-types': 'off', // Hey API 0.99 runtime annotates RegExp literals
       },
     },
   ];
