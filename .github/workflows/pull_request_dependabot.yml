@@ -89,6 +89,8 @@ jobs:
             --dependency-names "$DEPENDENCY_NAMES" \
             --report-path "tmp/dependabot-override-report.json"
       - name: Commit override cleanup
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if [ ! -f tmp/dependabot-override-report.json ]; then
             echo "No override report found"
@@ -98,7 +100,7 @@ jobs:
           if [ -f tmp/dependabot-override-commit-message.txt ]; then
             git add package.json package-lock.json
             if git commit -F tmp/dependabot-override-commit-message.txt; then
-              git push origin ${{ github.event.pull_request.head.ref }} --force
+              git push origin "$HEAD_REF" --force
             else
               echo "No override cleanup changes to commit"
             fi
@@ -148,10 +150,12 @@ jobs:
           .github/set-package-version.sh "${{ steps.nx-target.outputs['nx-version'] }}"
       - name: "Commit package.json version change"
         if: ${{ steps.nx-target.outputs.skip != 'true' }}
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           git add package.json
           git commit -m "chore: sync package.json version to nx@${{ steps.nx-target.outputs['nx-version'] }}" || echo "no changes to commit"
-          git push origin ${{ github.event.pull_request.head.ref }} --force
+          git push origin "$HEAD_REF" --force
       - name: "Run nx migrate and create commits"
         if: ${{ steps.nx-target.outputs.skip != 'true' }}
         run: |
@@ -169,6 +173,8 @@ jobs:
           git add .
       - name: "Check for changes, push if there are"
         id: check-changes
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           # Fetch the main branch
           git fetch origin main
@@ -179,7 +185,7 @@ jobs:
             echo "Changes found"
             git add .
             git commit -m "chore(deps): nx migrate"
-            git push origin ${{ github.event.pull_request.head.ref }} --force
+            git push origin "$HEAD_REF" --force
           fi
         continue-on-error: true
 
