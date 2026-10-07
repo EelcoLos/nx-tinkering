@@ -1,5 +1,5 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.*-*
+#:package FastEndpoints
 
 using FastEndpoints;
 using System.Text.Json.Serialization;

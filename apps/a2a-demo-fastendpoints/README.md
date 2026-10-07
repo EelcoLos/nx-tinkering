@@ -1,6 +1,8 @@
 # A2A Demo FastEndpoints (Single-File .NET PoC)
 
 This folder mirrors the design of apps/a2a-demo, but uses FastEndpoints.A2A skill opt-in and dispatcher wiring.
+It targets the A2A v1.0 spec; FastEndpoints.A2A (1.0.0-beta.5) and the A2A .NET client SDK (1.0.0-preview2) are prerelease.
+Versions come from the root Directory.Packages.props.
 
 Scope:
 
@@ -64,4 +66,4 @@ Use VS Code REST Client on:
 ## Notes
 
 - This demo uses FastEndpoints A2A opt-in metadata with this.A2ASkill(...) in each endpoint Configure() method.
-- FastEndpoints currently supports A2A SendMessage with JSON-RPC binding; this demo stays within that path.
+- FastEndpoints.A2A 1.0.0-beta.5 still only dispatches A2A SendMessage over the JSON-RPC binding (no streaming, tasks or HTTP+JSON/gRPC bindings); this demo stays within that path.

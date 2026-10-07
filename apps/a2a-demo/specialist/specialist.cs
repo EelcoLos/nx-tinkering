@@ -1,19 +1,20 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package A2A@1.*-*
-#:package A2A.AspNetCore@1.*-*
-#:property ManagePackageVersionsCentrally=false
+#:package A2A
+#:package A2A.AspNetCore
+#:property PublishAot=false
 
 using A2A;
 using A2A.AspNetCore;
 using System.Linq;
-using System.Text.Json;
 
 const string HostUrl = "http://localhost:5062";
 const string EndpointPath = "/a2a/specialist";
 
+var card = SpecialistAgent.GetAgentCard($"{HostUrl}{EndpointPath}");
+
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls(HostUrl);
-builder.Services.AddA2AAgent<SpecialistAgent>(SpecialistAgent.GetAgentCard($"{HostUrl}{EndpointPath}"));
+builder.Services.AddA2AAgent<SpecialistAgent>(card);
 
 var app = builder.Build();
 
@@ -24,9 +25,7 @@ app.MapGet("/", () => Results.Json(new
     card = $"{HostUrl}/.well-known/agent-card.json"
 }));
 
-app.MapGet("/.well-known/agent-card.json", (AgentCard card)
-    => Results.Text(JsonSerializer.Serialize(card, A2AJsonUtilities.DefaultOptions), "application/json"));
-
+app.MapWellKnownAgentCard(card);
 app.MapA2A(EndpointPath);
 
 app.Run();

@@ -1,8 +1,7 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.*-*
-#:package FastEndpoints.A2A@1.0.0-beta.1
-#:package A2A@1.*-*
-#:property ManagePackageVersionsCentrally=false
+#:package FastEndpoints
+#:package FastEndpoints.A2A
+#:package A2A
 
 using A2A;
 using FastEndpoints;

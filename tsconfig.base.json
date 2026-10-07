@@ -19,9 +19,7 @@
       ]
     },
     "strict": false,
-    "noUncheckedSideEffectImports": false,
-    "esModuleInterop": false,
-    "ignoreDeprecations": "6.0"
+    "noUncheckedSideEffectImports": false
   },
   "exclude": ["node_modules", "tmp"]
 }

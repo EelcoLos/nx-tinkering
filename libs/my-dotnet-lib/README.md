@@ -1,20 +1,16 @@
 # MyDotNetLib
 
-This is a minimal .NET library that demonstrates packaging a NuGet package via an Nx `pack` target.
+This is a minimal .NET library that demonstrates packaging a NuGet package via the `pack` target that `@nx/dotnet` infers.
 
 Usage
 
-- Build and create a NuGet package with Nx:
+- Restore (CI restores via `dotnet restore nx-tinker.slnx`), then build a Release package with Nx:
 
-  nx run libs-my-dotnet-lib:pack
-
-Or use the `release` target (alias for pack) so it integrates with Nx release flows that look for a `release` target:
-
-  nx run libs-my-dotnet-lib:release
+  npx nx run libs-my-dotnet-lib:restore
+  npx nx run libs-my-dotnet-lib:pack
 
 - Or run dotnet directly from the library folder:
 
-  dotnet restore
-  dotnet pack -c Release -o ../../dist/packages
+  dotnet pack -c Release
 
-The produced .nupkg files will be placed in `dist/packages`.
+The produced .nupkg files will be placed in `dist/packages` (`PackageOutputPath` in the csproj).

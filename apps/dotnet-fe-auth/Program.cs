@@ -1,30 +1,34 @@
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
-using FastEndpoints.OpenApi.Kiota;
-using Kiota.Builder;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using DotnetFeAuth;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<FETokenHandler>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+var jwt = builder.Configuration.GetSection("Jwt");
+var signingKey = jwt["SigningKey"];
+if (Encoding.UTF8.GetByteCount(signingKey ?? "") < 32 && builder.IsNotExportMode())
+{
+  throw new InvalidOperationException(
+      "Jwt:SigningKey is missing or shorter than 32 bytes (required for HS256). See apps/dotnet-fe-auth/README.md (dotnet user-secrets).");
+}
+
+builder.Services
+    .AddAuthenticationJwtBearer(
+        s => s.SigningKey = signingKey,
+        o =>
+        {
+          o.TokenValidationParameters.ValidateIssuer = true;
+          o.TokenValidationParameters.ValidIssuer = jwt["Issuer"];
+          o.TokenValidationParameters.ValidateAudience = true;
+          o.TokenValidationParameters.ValidAudience = jwt["Audience"];
+        })
+    .Configure<JwtCreationOptions>(o =>
     {
-      options.TokenValidationParameters = new TokenValidationParameters
-      {
-        ValidateIssuer = true,
-        ValidIssuer = "https://localhost:5001",
-        ValidateAudience = true,
-        ValidAudience = "https://localhost:5001",
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-256-bit-secret-your-256-bit-secret"))
-      };
+      o.SigningKey = signingKey!;
+      o.Issuer = jwt["Issuer"];
+      o.Audience = jwt["Audience"];
     });
 
 builder.Services.AddAuthorization()
@@ -56,20 +60,6 @@ if (app.Environment.IsDevelopment())
   app.MapScalarApiReference(o => o.AddDocuments("v1"));
 }
 
-await app.ExportOpenApiJsonAndExitAsync(
-    "v1",
-    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "api"),
-    "specification.json");
-
-await app.GenerateApiClientsAndExitAsync(
-    c =>
-    {
-      c.OpenApiDocumentName = "v1";
-      c.Language = GenerationLanguage.TypeScript;
-      c.OutputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "angular-auth-example", "src", "api-client");
-      c.ClientNamespaceName = "DotnetFeAuth";
-      c.ClientClassName = "DotnetFeAuthClient";
-    });
-
+await app.ExportOpenApiDocsAndExitAsync("v1");
 
 app.Run();
