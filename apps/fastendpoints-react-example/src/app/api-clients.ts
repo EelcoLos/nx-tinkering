@@ -22,14 +22,21 @@ export const orvalFetch = async <T>(
   }
 
   const response = await fetch(url, { ...options, headers });
-  const body = [204, 205, 304].includes(response.status)
-    ? ''
-    : await response.text();
-  const data = body ? JSON.parse(body) : undefined;
+  const isJson = response.headers
+    .get('content-type')
+    ?.includes('json');
 
   if (!response.ok) {
-    throw data ?? new Error(`${response.status} ${response.statusText}`);
+    // Keep the API's ErrorResponse body when there is one; otherwise (e.g. a
+    // proxy HTML error page or an empty 401) throw an Error with the status.
+    throw isJson
+      ? await response.json()
+      : Object.assign(
+          new Error(`${response.status} ${response.statusText}`),
+          { status: response.status },
+        );
   }
 
-  return data as T;
+  const body = isJson ? await response.text() : '';
+  return (body ? JSON.parse(body) : undefined) as T;
 };

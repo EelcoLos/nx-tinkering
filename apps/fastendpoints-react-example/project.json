@@ -16,6 +16,7 @@
       "cache": true,
       "inputs": [
         "{projectRoot}/orval.config.ts",
+        "{projectRoot}/src/app/api-clients.ts",
         "{workspaceRoot}/apps/fastendpoints-react-api/wwwroot/api/v1.json",
         { "externalDependencies": ["orval"] }
       ],
