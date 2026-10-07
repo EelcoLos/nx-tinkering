@@ -1,14 +1,13 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package FastEndpoints@8.2.0-beta.33
-#:package FastEndpoints.OpenApi@8.2.0-beta.33
-#:package Scalar.AspNetCore@2.14.11
-#:package StronglyTypedId@1.0.0-beta08
-#:property ManagePackageVersionsCentrally=false
+#:package FastEndpoints
+#:package FastEndpoints.OpenApi
+#:package Scalar.AspNetCore
+#:package Vogen
 #:property PublishAot=false
 
 using FastEndpoints;
 using FastEndpoints.OpenApi;
-using StronglyTypedIds;
+using Vogen;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder();
@@ -25,7 +24,9 @@ app.MapOpenApi();
 app.MapScalarApiReference(o => o.AddDocuments("v1"));
 app.Run();
 
-[StronglyTypedId]
+// Vogen generates System.Text.Json + TypeConverter conversions and TryParse,
+// so UserId works in JSON bodies and route params.
+[ValueObject<Guid>(customizations: Customizations.AddFactoryMethodForGuids)]
 public readonly partial struct UserId;
 
 public record MyRequest(string FirstName, string LastName, int Age);
@@ -40,5 +41,19 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
     }
 
     public override Task HandleAsync(MyRequest req, CancellationToken ct) =>
-        Send.OkAsync(new MyResponse(UserId.New()), cancellation: ct);
+        Send.OkAsync(new MyResponse(UserId.FromNewGuid()), cancellation: ct);
+}
+
+public record GetUserRequest(UserId Id);
+
+public class GetUserEndpoint : Endpoint<GetUserRequest, MyResponse>
+{
+    public override void Configure()
+    {
+        Get("/api/user/{id}");
+        AllowAnonymous();
+    }
+
+    public override Task HandleAsync(GetUserRequest req, CancellationToken ct) =>
+        Send.OkAsync(new MyResponse(req.Id), cancellation: ct);
 }
