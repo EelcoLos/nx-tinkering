@@ -8,7 +8,7 @@ export default defineConfig({
   'fastendpoints-react-example': {
     input: resolve(
       appRoot,
-      '../fastendpoints-react-api/wwwroot/api/specification.json',
+      '../fastendpoints-react-api/wwwroot/api/v1.json',
     ),
     output: {
       target: resolve(appRoot, './src/generated/orval/index.ts'),

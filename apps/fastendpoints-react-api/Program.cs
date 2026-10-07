@@ -1,8 +1,6 @@
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
-using FastEndpoints.OpenApi.Kiota;
-using Kiota.Builder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using FastEndpointsReactApi;
@@ -55,20 +53,8 @@ if (app.Environment.IsDevelopment())
   app.MapScalarApiReference(o => o.AddDocuments("v1"));
 }
 
-await app.ExportOpenApiJsonAndExitAsync(
-    "v1",
-    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "api"),
-    "specification.json");
-
-await app.GenerateApiClientsAndExitAsync(
-    c =>
-    {
-      c.OpenApiDocumentName = "v1";
-      c.Language = GenerationLanguage.TypeScript;
-      c.OutputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "fastendpoints-react-example", "src", "generated", "kiota");
-      c.ClientNamespaceName = "FastEndpointsReactApi";
-      c.ClientClassName = "FastEndpointsReactApiClient";
-    });
-
+// `nx run fastendpoints-react-api:openapi` passes `--export-openapi-docs true`, which writes
+// wwwroot/api/v1.json (OpenApiExportPath in the csproj) and exits.
+await app.ExportOpenApiArtifactsAndExitAsync("v1");
 
 app.Run();
