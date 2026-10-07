@@ -3,6 +3,8 @@
     "nrwl.angular-console",
     "esbenp.prettier-vscode",
     "vitest.explorer",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "ms-dotnettools.csdevkit",
+    "humao.rest-client"
   ]
 }

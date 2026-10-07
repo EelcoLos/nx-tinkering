@@ -1,12 +1,12 @@
+# a2a-demo-fastendpoints coordinator (FastEndpoints.A2A 1.0.0-beta.5, A2A v1.0 JSON-RPC binding).
+# Start (from this folder): dotnet run coordinator.cs
+# Delegates to the specialist, which must be running on http://localhost:5162. There is no "/" route.
 @host = http://localhost:5163
-
-### Server info
-GET {{host}}/
 
 ### Well-known agent card
 GET {{host}}/.well-known/agent-card.json
 
-### Direct A2A JSON-RPC call to coordinator skill (delegates to specialist)
+### A2A JSON-RPC SendMessage to the coordinator_delegate skill (delegates to the specialist)
 POST {{host}}/a2a
 Content-Type: application/json
 
@@ -17,17 +17,21 @@ Content-Type: application/json
   "params": {
     "message": {
       "messageId": "local-client-2",
-      "role": "user",
+      "role": "ROLE_USER",
       "parts": [
-        {
-          "data": {
-            "Input": "delegate this"
-          }
-        }
+        { "data": { "Input": "delegate this" } }
       ]
     },
     "metadata": {
       "skill": "coordinator_delegate"
     }
   }
+}
+
+### Same skill as a plain FastEndpoints endpoint (anonymous)
+POST {{host}}/skills/coordinator-delegate
+Content-Type: application/json
+
+{
+  "input": "delegate this"
 }

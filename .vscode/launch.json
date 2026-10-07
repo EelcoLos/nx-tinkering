@@ -8,9 +8,9 @@
       "name": "dotnet-fe-auth",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build",
+      "preLaunchTask": "build dotnet-fe-auth",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/dist/apps/dotnet-fe-auth/net9.0/dotnet-fe-auth.dll",
+      "program": "${workspaceFolder}/dist/apps/dotnet-fe-auth/net10.0/dotnet-fe-auth.dll",
       "args": [],
       "cwd": "${workspaceFolder}/apps/dotnet-fe-auth",
       "stopAtEntry": false,
@@ -20,10 +20,9 @@
         "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
       },
       "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "sourceFileMap": {
-        "/Views": "${workspaceFolder}/Views"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        // Matches the https profile in launchSettings.json and the angular-auth-example proxy.
+        "ASPNETCORE_URLS": "https://localhost:5001;http://localhost:5000"
       }
     },
     {
@@ -185,6 +184,207 @@
       "preLaunchTask": "serve a2a website",
       "url": "http://127.0.0.1:8080",
       "webRoot": "${workspaceFolder}/apps/a2a-docker-demo/website/public"
+    },
+    {
+      "name": "api-demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build api-demo",
+      "program": "${workspaceFolder}/dist/apps/api-demo/net10.0/ApiDemo.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/api-demo",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5266"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "ms-graph-demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ms-graph-demo",
+      "program": "${workspaceFolder}/dist/apps/ms-graph-demo/net10.0/MsGraphDemo.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/ms-graph-demo",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5100"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "fastendpoints-react-api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build fastendpoints-react-api",
+      "program": "${workspaceFolder}/dist/apps/fastendpoints-react-api/net10.0/fastendpoints-react-api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/fastendpoints-react-api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:5002;http://localhost:5003"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "fe_onefile",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build fe_onefile",
+      "program": "${workspaceFolder}/dist/apps/fe_onefile/FE_OneFile.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/fe_onefile",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5000"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "strongytypedid",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build strongytypedid",
+      "program": "${workspaceFolder}/dist/apps/strongytypedid/app.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/strongytypedid",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5000"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "x402-demo",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build x402-demo",
+      "program": "${workspaceFolder}/dist/apps/x402-demo/app.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/x402-demo",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      },
+      "launchSettingsFilePath": "${workspaceFolder}/apps/x402-demo/app.run.json",
+      "launchSettingsProfile": "http"
+    },
+    {
+      "name": "a2a-demo: specialist",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a-demo-specialist",
+      "program": "${workspaceFolder}/dist/apps/a2a-demo/specialist/specialist.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-demo/specialist",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "a2a-demo: coordinator",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a-demo-coordinator",
+      "program": "${workspaceFolder}/dist/apps/a2a-demo/coordinator/coordinator.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-demo/coordinator",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "a2a-demo-fastendpoints: specialist",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a-demo-fastendpoints-specialist",
+      "program": "${workspaceFolder}/dist/apps/a2a-demo-fastendpoints/specialist/specialist.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-demo-fastendpoints/specialist",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "a2a-demo-fastendpoints: coordinator",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build a2a-demo-fastendpoints-coordinator",
+      "program": "${workspaceFolder}/dist/apps/a2a-demo-fastendpoints/coordinator/coordinator.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/a2a-demo-fastendpoints/coordinator",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\bNow listening on:s+(https?://S+)"
+      }
+    },
+    {
+      "name": "angular-auth-example",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "serve angular-auth-example",
+      "url": "https://localhost:4200",
+      "webRoot": "${workspaceFolder}/apps/angular-auth-example/src"
+    },
+    {
+      "name": "nx-tinkering",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "serve nx-tinkering",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/apps/nx-tinkering/src"
+    },
+    {
+      "name": "fastendpoints-react-example",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "serve fastendpoints-react-example",
+      "url": "http://localhost:4300",
+      "webRoot": "${workspaceFolder}/apps/fastendpoints-react-example/src"
     }
   ],
   "compounds": [
@@ -212,6 +412,32 @@
         "A2A Demo: Handler",
         "A2A Demo: API Backend",
         "A2A Demo: Website"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "FastEndpoints + Angular (dotnet-fe-auth + angular-auth-example)",
+      "configurations": ["dotnet-fe-auth", "angular-auth-example"],
+      "stopAll": true
+    },
+    {
+      "name": "FastEndpoints + React (fastendpoints-react-api + fastendpoints-react-example)",
+      "configurations": [
+        "fastendpoints-react-api",
+        "fastendpoints-react-example"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "a2a-demo (specialist + coordinator)",
+      "configurations": ["a2a-demo: specialist", "a2a-demo: coordinator"],
+      "stopAll": true
+    },
+    {
+      "name": "a2a-demo-fastendpoints (specialist + coordinator)",
+      "configurations": [
+        "a2a-demo-fastendpoints: specialist",
+        "a2a-demo-fastendpoints: coordinator"
       ],
       "stopAll": true
     }

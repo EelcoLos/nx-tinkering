@@ -1,10 +1,13 @@
-@dotnet_fe_auth_HostAddress = http://localhost:5000
+# fe_onefile: single-file FastEndpoints app (no auth, no OpenAPI).
+# Start (from this folder): dotnet run FE_OneFile.cs
+@host = http://localhost:5000
 
-POST {{dotnet_fe_auth_HostAddress}}/api/user/create
+### Create user (anonymous)
+POST {{host}}/api/user/create
 Content-Type: application/json
 
 {
-  "firstName": "string",
-  "lastName": "string",
-  "age": 0
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "age": 30
 }

@@ -5,7 +5,12 @@
   "tags": [],
   "targets": {
     "test": {
-      "inputs": ["default", "{workspaceRoot}/scripts/**/*"]
+      "inputs": [
+        "default",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/tools/nx-plugins/**/*",
+        "{workspaceRoot}/apps/a2a-docker-demo/docker-compose*.yml"
+      ]
     }
   }
 }

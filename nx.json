@@ -97,7 +97,9 @@
       "options": {
         "testTargetName": "test"
       }
-    }
+    },
+    "./tools/nx-plugins/dotnet-file-apps.ts",
+    "./tools/nx-plugins/docker-compose.ts"
   ],
   "generators": {
     "@nx/angular:application": {

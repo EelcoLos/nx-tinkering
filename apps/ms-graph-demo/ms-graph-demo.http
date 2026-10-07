@@ -1,0 +1,27 @@
+# ms-graph-demo: FastEndpoints API protected by Entra ID, calls Microsoft Graph on-behalf-of the caller.
+# No launchSettings: the VS Code launch config sets ASPNETCORE_URLS=http://localhost:5100.
+# (A plain `dotnet run` without ASPNETCORE_URLS falls back to Kestrel's default http://localhost:5000.)
+@host = http://localhost:5100
+
+# Entra ID access token for THIS API (audience api://<client-id>), acquired outside this file,
+# for example: az account get-access-token --scope api://<client-id>/access_as_user --query accessToken -o tsv
+#   - GET /me    needs the delegated scope access_as_user
+#   - GET /users needs access_as_user, or the app role Users.List (daemon / client credentials)
+@token =
+
+### Current user's Graph profile (delegated access_as_user)
+GET {{host}}/me
+Authorization: Bearer {{token}}
+
+### Directory users, top 25 (access_as_user or app role Users.List)
+GET {{host}}/users
+Authorization: Bearer {{token}}
+
+### Without a token (expect 401)
+GET {{host}}/me
+
+### OpenAPI document
+GET {{host}}/openapi/v1.json
+
+### Scalar API reference (Development only)
+GET {{host}}/scalar/v1
