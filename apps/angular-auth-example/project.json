@@ -14,7 +14,6 @@
         "outputPath": "dist/apps/angular-auth-example",
         "index": "apps/angular-auth-example/src/index.html",
         "browser": "apps/angular-auth-example/src/main.ts",
-        "polyfills": ["zone.js"],
         "tsConfig": "apps/angular-auth-example/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -76,15 +75,9 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "@angular/build:unit-test",
       "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "coverage": true
-        }
+        "watch": false
       }
     },
     "serve-static": {
@@ -93,6 +86,18 @@
         "buildTarget": "angular-auth-example:build",
         "staticFilePath": "dist/apps/angular-auth-example/browser",
         "spa": true
+      }
+    },
+    "generate-client": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/dotnet-fe-auth",
+        "commands": [
+          "dotnet run --no-launch-profile -- --export-openapi-docs true --urls http://127.0.0.1:0",
+          "npx orval --config ../angular-auth-example/orval.config.ts",
+          "npx prettier --write ../angular-auth-example/src/api-integration/api.ts"
+        ],
+        "parallel": false
       }
     }
   }

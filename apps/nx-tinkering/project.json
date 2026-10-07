@@ -14,7 +14,6 @@
         "outputPath": "dist/apps/nx-tinkering",
         "index": "apps/nx-tinkering/src/index.html",
         "browser": "apps/nx-tinkering/src/main.ts",
-        "polyfills": ["zone.js"],
         "tsConfig": "apps/nx-tinkering/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -72,15 +71,9 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "@angular/build:unit-test",
       "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "coverage": true
-        }
+        "watch": false
       }
     }
   }

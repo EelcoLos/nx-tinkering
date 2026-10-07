@@ -1,26 +1,19 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Client, ValidateTokenRequest } from '../api-integration/api';
-import { map } from 'rxjs';
+import { DotnetFEAuthService } from '../api-integration/api';
+import { catchError, map, of } from 'rxjs';
 
 export const loginGuard: CanActivateFn = () => {
-  const router = inject(Router);
-  const apiService = inject(Client);
-  const loginUrl = router.createUrlTree(['/login']);
-
-  const token = localStorage.getItem('token');
-  if (!token) {
+  const loginUrl = inject(Router).createUrlTree(['/login']);
+  if (!localStorage.getItem('token')) {
     return loginUrl;
   }
 
-  const request: ValidateTokenRequest = { token: token };
-  // validate token with the server before allowing navigation
-  return apiService.validatetoken(request).pipe(
-    map((response) => {
-      if (!response.isValid) {
-        return loginUrl;
-      }
-      return true;
-    }),
-  );
+  // validate the token with the server before allowing navigation
+  return inject(DotnetFEAuthService)
+    .validatetoken()
+    .pipe(
+      map(() => true),
+      catchError(() => of(loginUrl)),
+    );
 };
