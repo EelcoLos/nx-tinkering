@@ -13,18 +13,12 @@ Content-Type: application/json
 
 ### Validate Token Request
 
-@token = {{login.response.body}}
+@token = {{login.response.body.token}}
 
-POST {{dotnet_fe_auth_HostAddress}}/api/validate-token
-Content-Type: application/json
+GET {{dotnet_fe_auth_HostAddress}}/api/validate-token
 Authorization: Bearer {{token}}
 
-{
-  "token": "{{token}}"
-}
-
 ### Create User Request
-@token = {{login.response.body.token}}
 
 POST {{dotnet_fe_auth_HostAddress}}/api/user/create
 Authorization: Bearer {{token}}

@@ -1,9 +1,10 @@
 using FastEndpoints;
+using FastEndpoints.Security;
 using FluentValidation;
 
 namespace DotnetFeAuth;
 
-public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest, LoginResponse>
+public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 {
   public override void Configure()
   {
@@ -14,8 +15,11 @@ public class LoginEndpoint(FETokenHandler tokenHandler) : Endpoint<LoginRequest,
 
   public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
   {
-    var token = tokenHandler.GenerateToken(req.Email, req.Password);
-    Console.WriteLine(token);
+    var token = JwtBearer.CreateToken(o =>
+    {
+      o.ExpireAt = DateTime.UtcNow.AddHours(1);
+      o.User.Claims.Add(("sub", req.Email), ("email", req.Email));
+    });
     await Send.OkAsync(new() { Token = token }, cancellation: ct);
   }
 }

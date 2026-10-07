@@ -1,26 +1,27 @@
 import { Component, inject, signal } from '@angular/core';
-import { Client, MyRequest, MyResponse } from '../api-integration/api';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { catchError, map } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { form, FormField, FormRoot } from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 import { JsonPipe } from '@angular/common';
+import { DotnetFEAuthService, MyResponse } from '../api-integration/api';
 
 @Component({
   selector: 'app-endpoint',
   template: `
     <div class="container">
       <h2>Endpoint Form</h2>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <form [formRoot]="endpointForm">
         <div class="form-group">
           <label for="firstName">First Name:</label>
-          <input id="firstName" formControlName="firstName" />
+          <input id="firstName" [formField]="endpointForm.firstName" />
         </div>
         <div class="form-group">
           <label for="lastName">Last Name:</label>
-          <input id="lastName" formControlName="lastName" />
+          <input id="lastName" [formField]="endpointForm.lastName" />
         </div>
         <div class="form-group">
           <label for="age">Age:</label>
-          <input id="age" formControlName="age" />
+          <input id="age" type="number" [formField]="endpointForm.age" />
         </div>
         <button type="submit">Submit</button>
       </form>
@@ -62,43 +63,28 @@ import { JsonPipe } from '@angular/common';
       }
     `,
   ],
-  imports: [ReactiveFormsModule, JsonPipe],
-  providers: [Client],
+  imports: [FormField, FormRoot, JsonPipe],
 })
 export class EndpointComponent {
-  private fb = inject(FormBuilder);
+  private readonly api = inject(DotnetFEAuthService);
 
-  apiService = inject(Client);
-  form: FormGroup;
-  data = signal<MyResponse | null>(null);
+  readonly data = signal<MyResponse | HttpErrorResponse | null>(null);
 
-  constructor() {
-    this.form = this.fb.group({
-      firstName: [''],
-      lastName: [''],
-      age: [''],
-    });
-  }
-
-  onSubmit() {
-    const formValue = this.form.value;
-    const requestPayload: MyRequest = {
-      firstName: formValue.firstName,
-      lastName: formValue.lastName,
-      age: formValue.age,
-    };
-    this.apiService
-      .createuser(requestPayload)
-      .pipe(
-        map((response) => {
-          console.log('Response:', response);
-          this.data.update(() => response);
-        }),
-        catchError((error) => {
-          this.data.update(error);
-          throw error;
-        }),
-      )
-      .subscribe();
-  }
+  readonly endpointForm = form(
+    signal({ firstName: '', lastName: '', age: 0 }),
+    {
+      submission: {
+        action: async (f) => {
+          try {
+            this.data.set(
+              await firstValueFrom(this.api.createuser(f().value())),
+            );
+          } catch (error) {
+            this.data.set(error as HttpErrorResponse);
+          }
+          return undefined;
+        },
+      },
+    },
+  );
 }

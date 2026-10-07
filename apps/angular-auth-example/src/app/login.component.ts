@@ -1,41 +1,36 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { Client } from '../api-integration/api';
-
+  email,
+  form,
+  FormField,
+  FormRoot,
+  required,
+} from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { catchError, map } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { DotnetFEAuthService } from '../api-integration/api';
 
 @Component({
   selector: 'app-login',
   template: `
     <div class="login-container">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <form [formRoot]="loginForm">
         <label for="email">Email:</label>
-        <input id="email" formControlName="email" type="email" />
-        @if (
-          loginForm.get('email')?.invalid && loginForm.get('email')?.touched
-        ) {
+        <input id="email" type="email" [formField]="loginForm.email" />
+        @if (loginForm.email().invalid() && loginForm.email().touched()) {
           <div>Email is required and must be a valid email address.</div>
         }
 
         <label for="password">Password:</label>
-        <input id="password" formControlName="password" type="password" />
-        @if (
-          loginForm.get('password')?.invalid &&
-          loginForm.get('password')?.touched
-        ) {
+        <input id="password" type="password" [formField]="loginForm.password" />
+        @if (loginForm.password().invalid() && loginForm.password().touched()) {
           <div>Password is required.</div>
         }
 
-        <button type="submit" [disabled]="loginForm.invalid">Login</button>
+        <button type="submit" [disabled]="loginForm().invalid()">Login</button>
       </form>
-      @if (error) {
-        <div class="error">{{ error }}</div>
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
       }
     </div>
   `,
@@ -68,50 +63,37 @@ import { catchError, map } from 'rxjs';
       }
     `,
   ],
-  imports: [ReactiveFormsModule],
-  providers: [Client],
+  imports: [FormField, FormRoot],
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
+  private readonly api = inject(DotnetFEAuthService);
+  private readonly router = inject(Router);
 
-  loginForm: FormGroup;
-  apiService = inject(Client);
-  error: string | null = null;
-  router = inject(Router);
+  readonly error = signal<string | null>(null);
 
-  constructor() {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-    });
-  }
-
-  onSubmit() {
-    if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      console.log('Logging in...');
-      this.apiService
-        .login({ email, password })
-        .pipe(
-          map((response) => {
-            console.log('Login response:', response);
-            if (!response.token) {
-              this.error = 'Invalid email or password.';
-              return [];
-            }
-            localStorage.setItem('token', response.token);
-
-            this.router.navigate(['/endpoint']);
-            return response; // Ensure a value is returned
-          }),
-          catchError((error) => {
-            console.error('Login error:', error);
-            this.error =
-              'An error occurred while logging in. Please try again.';
-            return [];
-          }),
-        )
-        .subscribe();
-    }
-  }
+  readonly loginForm = form(
+    signal({ email: '', password: '' }),
+    (p) => {
+      required(p.email);
+      email(p.email);
+      required(p.password);
+    },
+    {
+      submission: {
+        action: async (f) => {
+          this.error.set(null);
+          try {
+            const { token } = await firstValueFrom(this.api.login(f().value()));
+            localStorage.setItem('token', token);
+            await this.router.navigate(['/endpoint']);
+          } catch {
+            this.error.set(
+              'An error occurred while logging in. Please try again.',
+            );
+          }
+          return undefined;
+        },
+      },
+    },
+  );
 }
