@@ -21,4 +21,7 @@
   <Folder Name="/apps/a2a-docker-demo/common/">
     <Project Path="apps/a2a-docker-demo/common/A2ADemo.Common.csproj" />
   </Folder>
+  <Folder Name="/libs/">
+    <Project Path="libs/my-dotnet-lib/MyDotNetLib.csproj" />
+  </Folder>
 </Solution>

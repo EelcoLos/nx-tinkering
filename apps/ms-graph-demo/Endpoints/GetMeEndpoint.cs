@@ -1,37 +1,32 @@
 using FastEndpoints;
+using Microsoft.Graph;
 
 namespace MsGraphDemo;
 
 /// <summary>
-/// Returns basic profile information for the authenticated user.
-///
-/// Secured with the "User.Read" policy, which is dynamically registered at startup
-/// via <see cref="PermissionRequirement"/> so the same pattern scales to any number
-/// of Graph permissions without repeating boilerplate for each one.
-///
-/// FastEndpoints wires this to ASP.NET Core's standard authorization pipeline via
-/// <c>Policies("User.Read")</c> — identical to [Authorize(Policy = "User.Read")]
-/// on a controller action.
+/// Returns the caller's Graph profile. The API's <c>access_as_user</c> token is exchanged
+/// on-behalf-of the user for a Graph token with the delegated <c>User.Read</c> scope
+/// (the default scope configured under <c>DownstreamApis:MicrosoftGraph</c>).
 /// </summary>
-public class GetMeEndpoint : EndpointWithoutRequest<MeResponse>
+public class GetMeEndpoint(GraphServiceClient graph) : EndpointWithoutRequest<MeResponse>
 {
   public override void Configure()
   {
     Get("/me");
-    Policies("User.Read");
+    Policies(ApiPolicies.AccessAsUser);
     Description(d => d.WithName("GetMe").WithTags("Graph"));
   }
 
-  public override Task HandleAsync(CancellationToken ct)
+  public override async Task HandleAsync(CancellationToken ct)
   {
-    var user = HttpContext.User;
-    var response = new MeResponse
+    var me = await graph.Me.GetAsync(r => r.QueryParameters.Select = ["id", "displayName", "mail", "userPrincipalName"], ct);
+
+    await Send.OkAsync(new MeResponse
     {
-      DisplayName = user.FindFirst("name")?.Value ?? user.Identity?.Name ?? string.Empty,
-      Email = user.FindFirst("preferred_username")?.Value ?? user.FindFirst("email")?.Value ?? string.Empty,
-      ObjectId = user.FindFirst("oid")?.Value ?? user.FindFirst("sub")?.Value ?? string.Empty,
-    };
-    return Send.OkAsync(response, ct);
+      DisplayName = me?.DisplayName ?? string.Empty,
+      Email = me?.Mail ?? me?.UserPrincipalName ?? string.Empty,
+      ObjectId = me?.Id ?? string.Empty,
+    }, ct);
   }
 }
 
