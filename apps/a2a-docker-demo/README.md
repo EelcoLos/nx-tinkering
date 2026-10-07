@@ -31,30 +31,30 @@ into the next:
 
 ## Services
 
-| Service | Port | Nx project | Key files |
-| --- | --- | --- | --- |
-| identity | 5050 | `identity` | `identity/LoginEndpoint.cs`, `AgentTokenEndpoint.cs`, `ValidateTokenEndpoint.cs` |
-| discovery | 5051 | `discovery` | `discovery/ServiceRegistry.cs` |
-| classifier | 5052 | `classifier` | `classifier/SkillEndpoint.cs` |
-| assessor | 5053 | `assessor` | `assessor/SkillEndpoint.cs` |
-| router | 5054 | `router` | `router/SkillEndpoint.cs` |
-| handler | 5055 | `handler` | `handler/SkillEndpoint.cs` |
-| api-backend | 5056 | `api-backend` | `api-backend/DownstreamGateway.cs`, `SubmitTriageEndpoint.cs` |
-| website | 8080 | - | `website/public/` (static HTML/CSS/JS) |
-| common | - | `A2ADemo.Common` | shared auth, hosting and telemetry helpers |
+| Service     | Port | Nx project       | Key files                                                                        |
+| ----------- | ---- | ---------------- | -------------------------------------------------------------------------------- |
+| identity    | 5050 | `identity`       | `identity/LoginEndpoint.cs`, `AgentTokenEndpoint.cs`, `ValidateTokenEndpoint.cs` |
+| discovery   | 5051 | `discovery`      | `discovery/ServiceRegistry.cs`                                                   |
+| classifier  | 5052 | `classifier`     | `classifier/SkillEndpoint.cs`                                                    |
+| assessor    | 5053 | `assessor`       | `assessor/SkillEndpoint.cs`                                                      |
+| router      | 5054 | `router`         | `router/SkillEndpoint.cs`                                                        |
+| handler     | 5055 | `handler`        | `handler/SkillEndpoint.cs`                                                       |
+| api-backend | 5056 | `api-backend`    | `api-backend/DownstreamGateway.cs`, `SubmitTriageEndpoint.cs`                    |
+| website     | 8080 | -                | `website/public/` (static HTML/CSS/JS)                                           |
+| common      | -    | `A2ADemo.Common` | shared auth, hosting and telemetry helpers                                       |
 
 ### Skills
 
 Each specialist exposes one FastEndpoints endpoint as an A2A skill. The orchestrator selects it with
 `metadata.skill` on the A2A `SendMessage` call.
 
-| Skill id | REST route | Input | Output |
-| --- | --- | --- | --- |
-| `classifier` | `POST /skills/classify` | `input` | `classification_type`: `incident`, `defect`, `feature_request`, `inquiry`, `general` |
-| `assessor` | `POST /skills/assess` | `classification` | `priority`: `critical`, `high`, `medium`, `low`, `normal` |
-| `router` | `POST /skills/route` | `priority` | `next_handler`: `urgent-handler`, `priority-handler`, `standard-handler`, `self-service-handler`, `general-handler` |
-| `handler` | `POST /skills/handle` | `input`, `classification`, `priority` | `status`, `ticket_id`, `summary` |
-| `triage_orchestration` (api-backend) | `POST /api/triage` | `input` | full triage record |
+| Skill id                             | REST route              | Input                                 | Output                                                                                                              |
+| ------------------------------------ | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `classifier`                         | `POST /skills/classify` | `input`                               | `classification_type`: `incident`, `defect`, `feature_request`, `inquiry`, `general`                                |
+| `assessor`                           | `POST /skills/assess`   | `classification`                      | `priority`: `critical`, `high`, `medium`, `low`, `normal`                                                           |
+| `router`                             | `POST /skills/route`    | `priority`                            | `next_handler`: `urgent-handler`, `priority-handler`, `standard-handler`, `self-service-handler`, `general-handler` |
+| `handler`                            | `POST /skills/handle`   | `input`, `classification`, `priority` | `status`, `ticket_id`, `summary`                                                                                    |
+| `triage_orchestration` (api-backend) | `POST /api/triage`      | `input`                               | full triage record                                                                                                  |
 
 ### Endpoints
 
@@ -80,12 +80,12 @@ docker compose -f docker-compose.local.yml up --build -d
 ./test-stack.sh        # health and login smoke test (test-e2e.sh [host] adds auth checks)
 ```
 
-| URL | What |
-| --- | --- |
-| http://localhost:8080 | website (log in as `admin` / `demo123` or `user` / `user456`) |
-| http://localhost:5056/health | API backend |
-| http://localhost:8081 | Keycloak (realm `a2a-local`, created by the `keycloak-init` service) |
-| http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview | Grafana tool-calling dashboard |
+| URL                                                                | What                                                                 |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| http://localhost:8080                                              | website (log in as `admin` / `demo123` or `user` / `user456`)        |
+| http://localhost:5056/health                                       | API backend                                                          |
+| http://localhost:8081                                              | Keycloak (realm `a2a-local`, created by the `keycloak-init` service) |
+| http://localhost:3001/d/a2a-tool-calling/a2a-tool-calling-overview | Grafana tool-calling dashboard                                       |
 
 Stop with `docker compose -f docker-compose.local.yml down -v`. For a Docker Swarm deployment see
 [DEPLOYMENT.md](DEPLOYMENT.md).
