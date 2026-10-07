@@ -9,20 +9,22 @@ Microsoft.Testing.Platform (`global.json`). TypeScript projects use Vitest.
 
 ## Projects
 
-| Project                                                                                                          | Stack                                                            | In Nx graph          |
-| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------- |
-| `apps/dotnet-fe-auth` + `apps/angular-auth-example`                                                              | FastEndpoints JWT API + zoneless Angular client                  | yes                  |
-| `apps/fastendpoints-react-api` + `apps/fastendpoints-react-example` (+ `-e2e`), `libs/fastendpoints-react-state` | FastEndpoints JWT API + React client comparing Orval and Hey API | yes                  |
-| `apps/nx-tinkering` (+ `-e2e`)                                                                                   | Plain Angular welcome app                                        | yes                  |
-| `apps/api-demo` (+ `.Test`)                                                                                      | FastEndpoints API with OpenAPI + Scalar                          | yes                  |
-| `apps/fakelogger-demo` (+ `.Test`)                                                                               | `FakeLogger<T>` log assertions                                   | yes                  |
-| `apps/ms-graph-demo` (+ `.Test`)                                                                                 | Entra-secured API calling Microsoft Graph                        | yes                  |
-| `libs/my-dotnet-lib`                                                                                             | Minimal NuGet library                                            | yes                  |
-| `apps/a2a-docker-demo`                                                                                           | Multi-agent A2A system on Docker Compose                         | yes                  |
-| `apps/a2a-demo`, `apps/a2a-demo-fastendpoints`                                                                   | Single-file A2A coordinator/specialist                           | no (file-based apps) |
-| `apps/fe_onefile`, `apps/strongytypedid`, `apps/x402-demo`                                                       | Single-file FastEndpoints apps                                   | no (file-based apps) |
+| Project                                                                                                          | Stack                                                            | In Nx graph           |
+| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------- |
+| `apps/dotnet-fe-auth` + `apps/angular-auth-example`                                                              | FastEndpoints JWT API + zoneless Angular client                  | yes                   |
+| `apps/fastendpoints-react-api` + `apps/fastendpoints-react-example` (+ `-e2e`), `libs/fastendpoints-react-state` | FastEndpoints JWT API + React client comparing Orval and Hey API | yes                   |
+| `apps/nx-tinkering` (+ `-e2e`)                                                                                   | Plain Angular welcome app                                        | yes                   |
+| `apps/api-demo` (+ `.Test`)                                                                                      | FastEndpoints API with OpenAPI + Scalar                          | yes                   |
+| `apps/fakelogger-demo` (+ `.Test`)                                                                               | `FakeLogger<T>` log assertions                                   | yes                   |
+| `apps/ms-graph-demo` (+ `.Test`)                                                                                 | Entra-secured API calling Microsoft Graph                        | yes                   |
+| `libs/my-dotnet-lib`                                                                                             | Minimal NuGet library                                            | yes                   |
+| `apps/a2a-docker-demo`                                                                                           | Multi-agent A2A system on Docker Compose                         | yes                   |
+| `apps/a2a-demo`, `apps/a2a-demo-fastendpoints`                                                                   | Single-file A2A coordinator/specialist                           | yes (file-based apps) |
+| `apps/fe_onefile`, `apps/strongytypedid`, `apps/x402-demo`                                                       | Single-file FastEndpoints apps                                   | yes (file-based apps) |
 
-File-based apps run with `dotnet run <file>.cs` and still take package versions from `Directory.Packages.props`.
+File-based apps run with `dotnet run <file>.cs` and still take package versions from `Directory.Packages.props`. The local plugin `tools/nx-plugins/dotnet-file-apps.ts` adds them to the Nx graph with `build` and `run` targets; the a2a demos become one project per folder (`a2a-demo-coordinator`, `a2a-demo-specialist`, and the same for `a2a-demo-fastendpoints`).
+
+`tools/nx-plugins/docker-compose.ts` gives `apps/a2a-docker-demo` the targets `compose-up`, `compose-down` and `e2e` (needs Docker and a `.env` copied from `.env.example`).
 
 ## FastEndpoints + Angular (`dotnet-fe-auth`, `angular-auth-example`)
 

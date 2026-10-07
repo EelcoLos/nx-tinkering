@@ -68,7 +68,7 @@ test_endpoint "Invalid User Login" "POST" "http://$HOST_IP:5050/auth/login" '{"u
 
 # Test Agent Token
 echo -e "\n${YELLOW}=== Agent Token Tests ===${NC}"
-test_endpoint "Get Agent Token" "GET" "http://$HOST_IP:5050/auth/agent/token" "" "200"
+test_endpoint "Get Agent Token" "GET" "http://$HOST_IP:5050/auth/agent/token?agentId=discovery-agent" "" "200"
 
 # Test API Endpoints
 echo -e "\n${YELLOW}=== API Endpoint Tests ===${NC}"
