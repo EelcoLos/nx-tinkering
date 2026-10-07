@@ -1,3 +1,4 @@
+/// <reference types='vitest/config' />
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
@@ -33,5 +34,17 @@ export default defineConfig(() => ({
     outDir: resolve(appRoot, '../../dist/apps/fastendpoints-react-example'),
     emptyOutDir: true,
     reportCompressedSize: true,
+  },
+  test: {
+    name: 'fastendpoints-react-example',
+    watch: false,
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: '../../coverage/apps/fastendpoints-react-example',
+      provider: 'v8' as const,
+    },
   },
 }));
