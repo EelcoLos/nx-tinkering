@@ -16,6 +16,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddToolServiceInfrastructure(settings, DemoTelemetry.ActivitySourceName);
 builder.Services.AddToolServiceA2A(settings, "Website-facing A2A triage orchestrator.");
 builder.Services.AddExceptionHandler<TriageExceptionHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<TriageStore>();
 builder.Services.AddSingleton<AuthenticationGateway>();
 builder.Services.AddSingleton<DownstreamGateway>();
