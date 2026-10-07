@@ -11,33 +11,26 @@ describe('appStateSlice reducer', () => {
     );
   });
 
-  it('should update the comparison stack and auth form state', () => {
+  it('should switch the comparison stack', () => {
     const state = appStateSliceReducer(
-      appStateSliceReducer(
-        appStateSliceReducer(
-          appStateSliceReducer(undefined, { type: '' }),
-          appStateSliceActions.setActiveStack('orval'),
-        ),
-        appStateSliceActions.setEmail('agent@example.com'),
-      ),
-      appStateSliceActions.setPassword('changed-password'),
+      undefined,
+      appStateSliceActions.setActiveStack('orval'),
     );
 
     expect(state.activeStack).toBe('orval');
-    expect(state.email).toBe('agent@example.com');
-    expect(state.password).toBe('changed-password');
   });
 
-  it('should track the token and demo counter', () => {
-    const state = appStateSliceReducer(
-      appStateSliceReducer(
-        undefined,
-        appStateSliceActions.setAccessToken('token-123'),
-      ),
-      appStateSliceActions.incrementDemoCount(),
+  it('should store and clear the access token', () => {
+    const withToken = appStateSliceReducer(
+      undefined,
+      appStateSliceActions.setAccessToken('token-123'),
     );
+    expect(withToken.accessToken).toBe('token-123');
 
-    expect(state.accessToken).toBe('token-123');
-    expect(state.demoCount).toBe(1);
+    const cleared = appStateSliceReducer(
+      withToken,
+      appStateSliceActions.clearAccessToken(),
+    );
+    expect(cleared.accessToken).toBe('');
   });
 });

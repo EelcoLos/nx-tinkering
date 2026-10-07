@@ -5,31 +5,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FastEndpointsReactApi</RootNamespace>
+    <OpenApiExportPath>wwwroot/api</OpenApiExportPath>
+    <UserSecretsId>1f707636-0ad7-4b29-8298-6e177b9cbb75</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Security" />
     <PackageReference Include="FastEndpoints.OpenApi" />
-    <PackageReference Include="FastEndpoints.OpenApi.Kiota" />
-  <PackageReference Include="Microsoft.Kiota.Abstractions" />
-  <PackageReference Include="Microsoft.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <NormalizedOutDir>$([System.String]::Copy('$(OutDir)').Replace('\', '/'))</NormalizedOutDir>
-    <RunOpenApiExportOnBuild Condition="$([System.String]::Copy('$(NormalizedOutDir)').Contains('/dist/apps/fastendpoints-react-api/'))">true</RunOpenApiExportOnBuild>
-  </PropertyGroup>
-
-  <Target Name="ExportOpenApiJson" AfterTargets="Build" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --exportopenapijson true" />
-  </Target>
-
-  <Target Name="GenerateKiotaClients" AfterTargets="ExportOpenApiJson" Condition="'$(RunOpenApiExportOnBuild)' == 'true'">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet &quot;$(TargetPath)&quot; --generateclients true" />
-  </Target>
-
 
 </Project>

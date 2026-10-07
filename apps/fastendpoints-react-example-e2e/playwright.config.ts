@@ -26,7 +26,7 @@ export default defineConfig({
   webServer: {
     command: 'npx nx run fastendpoints-react-example:preview',
     url: 'http://localhost:4300',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
   },
   projects: [

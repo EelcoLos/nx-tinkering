@@ -1,9 +1,8 @@
 {
-  "x-generator": "NSwag v14.7.0.0 (NJsonSchema v11.6.0.0 (Newtonsoft.Json v13.0.0.0))",
-  "openapi": "3.0.0",
+  "openapi": "3.1.1",
   "info": {
-    "title": "NSwag.AspNetCore.Launcher",
-    "version": "1.0.0"
+    "title": "FastEndpoints React API",
+    "version": "v1"
   },
   "paths": {
     "/api/login": {
@@ -14,8 +13,6 @@
         ],
         "operationId": "login",
         "requestBody": {
-          "x-name": "LoginRequest",
-          "description": "",
           "content": {
             "application/json": {
               "schema": {
@@ -23,8 +20,7 @@
               }
             }
           },
-          "required": true,
-          "x-position": 1
+          "required": true
         },
         "responses": {
           "200": {
@@ -57,16 +53,6 @@
           "Api"
         ],
         "operationId": "validateToken",
-        "parameters": [
-          {
-            "name": "token",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -77,59 +63,33 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
-        }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          }
+        ]
       }
     }
   },
   "components": {
     "schemas": {
-      "LoginResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "accessToken"
-        ],
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "email",
-          "password"
-        ],
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "minLength": 1,
-            "pattern": "^[^@]+@[^@]+$",
-            "nullable": false
-          },
-          "password": {
-            "type": "string",
-            "minLength": 1,
-            "nullable": false
-          }
-        }
-      },
       "ErrorResponse": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "statusCode": {
             "type": "integer",
+            "description": "the http status code sent to the client. default is 400.",
             "format": "int32",
             "default": 400
           },
           "message": {
             "type": "string",
+            "description": "the message for the error response",
             "default": "One or more errors occurred!"
           },
           "errors": {
@@ -141,20 +101,54 @@
               }
             }
           }
-        }
+        },
+        "description": "the dto used to send an error response to the client"
       },
-      "ValidateTokenResponse": {
+      "LoginRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
         "type": "object",
-        "additionalProperties": false,
         "properties": {
-          "isValid": {
-            "type": "boolean"
+          "email": {
+            "minLength": 1,
+            "pattern": "^[^@]+@[^@]+$",
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
           }
         }
       },
-      "ValidateTokenRequest": {
+      "LoginResponse": {
+        "required": [
+          "accessToken"
+        ],
         "type": "object",
-        "additionalProperties": false
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidateTokenResponse": {
+        "required": [
+          "email",
+          "expiresAt"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       }
     },
     "securitySchemes": {

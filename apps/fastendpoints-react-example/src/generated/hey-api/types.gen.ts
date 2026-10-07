@@ -4,8 +4,21 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
-export type LoginResponse = {
-    accessToken: string;
+/**
+ * the dto used to send an error response to the client
+ */
+export type ErrorResponse = {
+    /**
+     * the http status code sent to the client. default is 400.
+     */
+    statusCode?: number;
+    /**
+     * the message for the error response
+     */
+    message?: string;
+    errors?: {
+        [key: string]: Array<string>;
+    };
 };
 
 export type LoginRequest = {
@@ -13,20 +26,13 @@ export type LoginRequest = {
     password: string;
 };
 
-export type ErrorResponse = {
-    statusCode?: number;
-    message?: string;
-    errors?: {
-        [key: string]: Array<string>;
-    };
+export type LoginResponse = {
+    accessToken: string;
 };
 
 export type ValidateTokenResponse = {
-    isValid?: boolean;
-};
-
-export type ValidateTokenRequest = {
-    [key: string]: never;
+    email: string;
+    expiresAt: string;
 };
 
 export type LoginData = {
@@ -57,10 +63,15 @@ export type LoginResponse2 = LoginResponses[keyof LoginResponses];
 export type ValidateTokenData = {
     body?: never;
     path?: never;
-    query: {
-        token: string;
-    };
+    query?: never;
     url: '/api/validate-token';
+};
+
+export type ValidateTokenErrors = {
+    /**
+     * Unauthorized
+     */
+    401: unknown;
 };
 
 export type ValidateTokenResponses = {
