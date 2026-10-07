@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FastEndpointsReactApi</RootNamespace>
     <OpenApiExportPath>wwwroot/api</OpenApiExportPath>
+    <UserSecretsId>1f707636-0ad7-4b29-8298-6e177b9cbb75</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
