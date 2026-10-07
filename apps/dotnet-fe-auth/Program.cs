@@ -2,15 +2,16 @@ using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var jwt = builder.Configuration.GetSection("Jwt");
 var signingKey = jwt["SigningKey"];
-if (string.IsNullOrEmpty(signingKey) && builder.IsNotExportMode())
+if (Encoding.UTF8.GetByteCount(signingKey ?? "") < 32 && builder.IsNotExportMode())
 {
   throw new InvalidOperationException(
-      "Jwt:SigningKey is not configured. See apps/dotnet-fe-auth/README.md (dotnet user-secrets).");
+      "Jwt:SigningKey is missing or shorter than 32 bytes (required for HS256). See apps/dotnet-fe-auth/README.md (dotnet user-secrets).");
 }
 
 builder.Services

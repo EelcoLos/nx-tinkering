@@ -9,6 +9,7 @@ import {
 } from '../generated/hey-api';
 import {
   useLogin as useOrvalLogin,
+  getValidateTokenQueryKey as getOrvalValidateTokenQueryKey,
   useValidateToken as useOrvalValidateToken,
 } from '../generated/orval';
 import {
@@ -127,8 +128,13 @@ function toValidationState(
 function useHeyApiClient(): StackClient {
   const accessToken = useAppSelector(selectAccessToken);
   const login = useMutation(heyApiLoginMutation());
+  // Bind `auth` to this token and key the query by it, so a new token never
+  // reuses cached or in-flight data from the previous identity.
+  const validateOptions = heyApiValidateTokenOptions({ auth: accessToken });
   const validation = useQuery({
-    ...heyApiValidateTokenOptions(),
+    ...validateOptions,
+    // `tags` is part of Hey API's typed query key, so it changes the key hash.
+    queryKey: [{ ...validateOptions.queryKey[0], tags: [accessToken] }],
     enabled: Boolean(accessToken),
   });
 
@@ -146,7 +152,10 @@ function useOrvalClient(): StackClient {
   const accessToken = useAppSelector(selectAccessToken);
   const login = useOrvalLogin();
   const validation = useOrvalValidateToken({
-    query: { enabled: Boolean(accessToken) },
+    query: {
+      enabled: Boolean(accessToken),
+      queryKey: [...getOrvalValidateTokenQueryKey(), accessToken],
+    },
   });
 
   return {

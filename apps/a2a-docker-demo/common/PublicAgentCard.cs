@@ -13,7 +13,7 @@ public static class PublicAgentCard
   private const string SchemeName = "agentBearer";
 
   public static bool IsAgentCardRequest(HttpContext context) =>
-      context.Request.Path.StartsWithSegments("/.well-known");
+      context.Request.Path.Equals("/.well-known/agent-card.json", StringComparison.OrdinalIgnoreCase);
 
   public static async Task HandleAsync(HttpContext context, Func<Task> next)
   {

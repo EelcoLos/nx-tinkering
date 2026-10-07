@@ -1,3 +1,4 @@
+using System.Text;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
@@ -9,10 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // or the Jwt__SigningKey environment variable. Both callbacks below run lazily, so the
 // OpenAPI export works without a signing key.
 var jwt = builder.Configuration.GetSection("Jwt");
-string SigningKey() => jwt["SigningKey"] is { Length: > 0 } key
-  ? key
-  : throw new InvalidOperationException(
-    "Jwt:SigningKey is not configured. Run `dotnet user-secrets set Jwt:SigningKey <32+ char secret>` in apps/fastendpoints-react-api.");
+string SigningKey() => jwt["SigningKey"] switch
+{
+  null or "" => throw new InvalidOperationException(
+    "Jwt:SigningKey is not configured. Run `dotnet user-secrets set Jwt:SigningKey <32+ byte secret>` in apps/fastendpoints-react-api."),
+  var key when Encoding.UTF8.GetByteCount(key) < 32 => throw new InvalidOperationException(
+    $"Jwt:SigningKey must be at least 32 bytes (256 bits) in UTF-8 for HMAC-SHA256; the configured key is {Encoding.UTF8.GetByteCount(key)} bytes."),
+  var key => key,
+};
 
 builder.Services
   .Configure<JwtCreationOptions>(o =>
