@@ -4,9 +4,12 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <!-- A2A (.NET SDK is preview; implements the A2A v1.0 spec) -->
+    <PackageVersion Include="A2A" Version="1.0.0-preview2" />
+    <PackageVersion Include="A2A.AspNetCore" Version="1.0.0-preview2" />
     <!-- FastEndpoints -->
     <PackageVersion Include="FastEndpoints" Version="8.3.0" />
-    <PackageVersion Include="FastEndpoints.A2A" Version="1.0.0-beta.1" />
+    <PackageVersion Include="FastEndpoints.A2A" Version="1.0.0-beta.5" />
     <PackageVersion Include="FastEndpoints.OpenApi" Version="8.3.0" />
     <PackageVersion Include="FastEndpoints.OpenApi.Kiota" Version="8.3.0" />
     <PackageVersion Include="FastEndpoints.Security" Version="8.3.0" />

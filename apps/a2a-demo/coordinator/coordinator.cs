@@ -1,12 +1,11 @@
 #:sdk Microsoft.NET.Sdk.Web
-#:package A2A@1.*-*
-#:package A2A.AspNetCore@1.*-*
-#:property ManagePackageVersionsCentrally=false
+#:package A2A
+#:package A2A.AspNetCore
+#:property PublishAot=false
 
 using A2A;
 using A2A.AspNetCore;
 using System.Linq;
-using System.Text.Json;
 
 const string CoordinatorHostUrl = "http://localhost:5063";
 const string CoordinatorEndpointPath = "/a2a/coordinator";
@@ -18,9 +17,11 @@ if (args.Contains("--client", StringComparer.OrdinalIgnoreCase))
     return;
 }
 
+var card = CoordinatorAgent.GetAgentCard($"{CoordinatorHostUrl}{CoordinatorEndpointPath}");
+
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls(CoordinatorHostUrl);
-builder.Services.AddA2AAgent<CoordinatorAgent>(CoordinatorAgent.GetAgentCard($"{CoordinatorHostUrl}{CoordinatorEndpointPath}"));
+builder.Services.AddA2AAgent<CoordinatorAgent>(card);
 
 var app = builder.Build();
 
@@ -32,9 +33,7 @@ app.MapGet("/", () => Results.Json(new
     specialist = SpecialistBaseUrl
 }));
 
-app.MapGet("/.well-known/agent-card.json", (AgentCard card)
-    => Results.Text(JsonSerializer.Serialize(card, A2AJsonUtilities.DefaultOptions), "application/json"));
-
+app.MapWellKnownAgentCard(card);
 app.MapA2A(CoordinatorEndpointPath);
 
 app.Run();

@@ -1,9 +1,11 @@
 # A2A Demo (Single-File .NET PoC)
 
-This folder contains a local, keyless proof-of-concept for A2A v1 using stable A2A primitives:
+This folder contains a local, keyless proof-of-concept for the A2A v1.0 spec. The .NET SDK is still preview:
 
-- A2A
-- A2A.AspNetCore
+- A2A (1.0.0-preview2)
+- A2A.AspNetCore (1.0.0-preview2)
+
+Versions come from the root Directory.Packages.props.
 
 Scope:
 
@@ -16,6 +18,7 @@ Scope:
 - specialist/specialist.cs
   - Hosts SpecialistAgent on http://localhost:5062
   - Exposes A2A endpoint at /a2a/specialist
+  - Agent card served by the SDK's MapWellKnownAgentCard at /.well-known/agent-card.json
 - coordinator/coordinator.cs
   - Server mode: hosts CoordinatorAgent on http://localhost:5063
   - Client mode: calls either specialist or coordinator via A2A discovery
