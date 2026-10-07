@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router';
 import * as ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
+import './app/api-clients';
 import App from './app/app';
 import { store } from './app/store';
 

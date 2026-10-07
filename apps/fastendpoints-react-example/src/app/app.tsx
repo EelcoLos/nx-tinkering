@@ -323,7 +323,7 @@ function HeyApiPanel() {
   });
 
   const validation = useQuery({
-    ...heyApiValidateTokenOptions({ query: { token: accessToken } }),
+    ...heyApiValidateTokenOptions(),
     enabled: Boolean(accessToken),
   });
 
@@ -340,7 +340,7 @@ function HeyApiPanel() {
       ? 'pending'
       : validation.isError
         ? 'error'
-        : validation.data?.isValid
+        : validation.data
           ? 'valid'
           : 'invalid';
 
@@ -363,7 +363,7 @@ function HeyApiPanel() {
             ? 'Checking the token with the Hey API query helpers...'
             : validation.isError
               ? 'The token-validation query failed.'
-              : validation.data?.isValid
+              : validation.data
                 ? 'The token is valid according to the backend.'
                 : 'The backend rejected the token.'
       }
@@ -401,21 +401,16 @@ function OrvalPanel() {
     mutation: {
       onSuccess: (response) => {
         dispatch(
-          appStateSliceActions.setAccessToken(response.data.accessToken),
+          appStateSliceActions.setAccessToken(response.accessToken),
         );
         navigate('/protected');
       },
     },
   });
 
-  const validation = useOrvalValidateToken(
-    { token: accessToken },
-    {
-      query: {
-        enabled: Boolean(accessToken),
-      },
-    },
-  );
+  const validation = useOrvalValidateToken({
+    query: { enabled: Boolean(accessToken) },
+  });
 
   const loginState: LoginState = login.isPending
     ? 'pending'
@@ -430,7 +425,7 @@ function OrvalPanel() {
       ? 'pending'
       : validation.isError
         ? 'error'
-        : validation.data?.data.isValid
+        : validation.data
           ? 'valid'
           : 'invalid';
 
@@ -453,7 +448,7 @@ function OrvalPanel() {
             ? 'Checking the token with the Orval query hook...'
             : validation.isError
               ? 'The token-validation request failed.'
-              : validation.data?.data.isValid
+              : validation.data
                 ? 'The token is valid according to the backend.'
                 : 'The backend rejected the token.'
       }
@@ -485,7 +480,7 @@ function ProtectedHeyApiPanel() {
   const demoCount = useAppSelector(selectDemoCount);
 
   const validation = useQuery({
-    ...heyApiValidateTokenOptions({ query: { token: accessToken } }),
+    ...heyApiValidateTokenOptions(),
     enabled: Boolean(accessToken),
   });
 
@@ -495,7 +490,7 @@ function ProtectedHeyApiPanel() {
       ? 'pending'
       : validation.isError
         ? 'error'
-        : validation.data?.isValid
+        : validation.data
           ? 'valid'
           : 'invalid';
 
@@ -510,7 +505,7 @@ function ProtectedHeyApiPanel() {
             ? 'Validating the token with Hey API...'
             : validation.isError
               ? 'The protected screen could not validate the token.'
-              : validation.data?.isValid
+              : validation.data
                 ? 'The protected screen is unlocked.'
                 : 'The stored token is not valid anymore.'
       }
@@ -526,14 +521,9 @@ function ProtectedOrvalPanel() {
   const accessToken = useAppSelector(selectAccessToken);
   const demoCount = useAppSelector(selectDemoCount);
 
-  const validation = useOrvalValidateToken(
-    { token: accessToken },
-    {
-      query: {
-        enabled: Boolean(accessToken),
-      },
-    },
-  );
+  const validation = useOrvalValidateToken({
+    query: { enabled: Boolean(accessToken) },
+  });
 
   const validationState: ValidationState = !accessToken
     ? 'idle'
@@ -541,7 +531,7 @@ function ProtectedOrvalPanel() {
       ? 'pending'
       : validation.isError
         ? 'error'
-        : validation.data?.data.isValid
+        : validation.data
           ? 'valid'
           : 'invalid';
 
@@ -556,7 +546,7 @@ function ProtectedOrvalPanel() {
             ? 'Validating the token with Orval...'
             : validation.isError
               ? 'The protected screen could not validate the token.'
-              : validation.data?.data.isValid
+              : validation.data
                 ? 'The protected screen is unlocked.'
                 : 'The stored token is not valid anymore.'
       }

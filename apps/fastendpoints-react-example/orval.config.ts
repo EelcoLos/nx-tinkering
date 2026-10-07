@@ -14,6 +14,16 @@ export default defineConfig({
       target: resolve(appRoot, './src/generated/orval/index.ts'),
       client: 'react-query',
       mode: 'single',
+      override: {
+        // Adds the bearer token and throws on non-2xx (see src/app/api-clients.ts).
+        mutator: {
+          path: resolve(appRoot, './src/app/api-clients.ts'),
+          name: 'orvalFetch',
+        },
+        fetch: {
+          includeHttpResponseReturnType: false,
+        },
+      },
     },
   },
 });

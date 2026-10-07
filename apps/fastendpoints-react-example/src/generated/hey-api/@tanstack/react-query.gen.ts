@@ -53,9 +53,9 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     return [params];
 };
 
-export const validateTokenQueryKey = (options: Options<ValidateTokenData>) => createQueryKey('validateToken', options);
+export const validateTokenQueryKey = (options?: Options<ValidateTokenData>) => createQueryKey('validateToken', options);
 
-export const validateTokenOptions = (options: Options<ValidateTokenData>) => queryOptions<ValidateTokenResponse2, DefaultError, ValidateTokenResponse2, ReturnType<typeof validateTokenQueryKey>>({
+export const validateTokenOptions = (options?: Options<ValidateTokenData>) => queryOptions<ValidateTokenResponse2, DefaultError, ValidateTokenResponse2, ReturnType<typeof validateTokenQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await validateToken({
             ...options,
