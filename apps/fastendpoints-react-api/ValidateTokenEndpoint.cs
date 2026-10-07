@@ -1,53 +1,32 @@
 using FastEndpoints;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+using FastEndpoints.Security;
 
 namespace FastEndpointsReactApi;
 
-public class ValidateTokenEndpoint(IConfiguration configuration) : Endpoint<ValidateTokenRequest, ValidateTokenResponse>
+/// <summary>
+/// Protected endpoint: the JWT bearer middleware validates the `Authorization: Bearer` header,
+/// so reaching the handler means the token is valid. Returns the caller's identity.
+/// </summary>
+public class ValidateTokenEndpoint : EndpointWithoutRequest<ValidateTokenResponse>
 {
   public override void Configure()
   {
     Get("/api/validate-token");
     Description(d => d.WithName("validateToken").WithTags("Auth"));
-    AllowAnonymous();
   }
 
-  public override async Task HandleAsync(ValidateTokenRequest req, CancellationToken ct)
+  public override async Task HandleAsync(CancellationToken ct)
   {
-    try
+    await Send.OkAsync(new()
     {
-      var tokenHandler = new JwtSecurityTokenHandler();
-      var validationResult = await tokenHandler.ValidateTokenAsync(req.Token, new TokenValidationParameters
-      {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = AuthTokenSettings.CreateSigningKey(configuration),
-        ValidateIssuer = true,
-        ValidIssuer = AuthTokenSettings.Issuer,
-        ValidateAudience = true,
-        ValidAudience = AuthTokenSettings.Audience,
-        ClockSkew = TimeSpan.Zero
-      });
-
-      await Send.OkAsync(new ValidateTokenResponse { IsValid = validationResult.IsValid }, cancellation: ct);
-    }
-    catch (SecurityTokenException)
-    {
-      await Send.OkAsync(new ValidateTokenResponse { IsValid = false }, cancellation: ct);
-    }
-    catch (ArgumentException)
-    {
-      await Send.OkAsync(new ValidateTokenResponse { IsValid = false }, cancellation: ct);
-    }
+      Email = User.ClaimValue("email") ?? string.Empty,
+      ExpiresAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(User.ClaimValue("exp") ?? "0")),
+    }, cancellation: ct);
   }
-}
-
-public class ValidateTokenRequest
-{
-  public required string Token { get; set; }
 }
 
 public class ValidateTokenResponse
 {
-  public bool IsValid { get; set; }
+  public required string Email { get; set; }
+  public required DateTimeOffset ExpiresAt { get; set; }
 }

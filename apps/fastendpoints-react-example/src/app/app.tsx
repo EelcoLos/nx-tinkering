@@ -1,5 +1,6 @@
-import { type ChangeEvent, type FormEvent, type ReactNode } from 'react';
-import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { useActionState, type ReactNode } from 'react';
+import { useFormStatus } from 'react-dom';
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import {
@@ -8,15 +9,13 @@ import {
 } from '../generated/hey-api';
 import {
   useLogin as useOrvalLogin,
+  getValidateTokenQueryKey as getOrvalValidateTokenQueryKey,
   useValidateToken as useOrvalValidateToken,
 } from '../generated/orval';
 import {
   appStateSliceActions,
   selectAccessToken,
   selectActiveStack,
-  selectDemoCount,
-  selectEmail,
-  selectPassword,
   type ClientStack,
 } from 'fastendpoints-react-state';
 
@@ -24,8 +23,22 @@ import { useAppDispatch, useAppSelector } from './hooks';
 import styles from './app.module.css';
 
 type StatusTone = 'neutral' | 'positive' | 'warning' | 'negative';
-type LoginState = 'idle' | 'pending' | 'success' | 'error';
-type ValidationState = 'idle' | 'pending' | 'valid' | 'invalid' | 'error';
+type LoginState = 'idle' | 'success' | 'error';
+type ValidationState = 'idle' | 'pending' | 'valid' | 'error';
+
+type Credentials = { email: string; password: string };
+
+/** Demo credentials accepted by fastendpoints-react-api (see LoginEndpoint.cs). */
+const demoCredentials: Credentials = {
+  email: 'demo@fastendpoints.dev',
+  password: 'SecureDevPassword123!',
+};
+
+/** What each stack exposes to the shared panels. */
+interface StackClient {
+  login: (credentials: Credentials) => Promise<string>;
+  validation: { state: ValidationState; email?: string };
+}
 
 const stackInfo: Record<
   ClientStack,
@@ -54,12 +67,23 @@ const statusToneClass: Record<StatusTone, string> = {
 
 const loginStateMeta: Record<
   LoginState,
-  { label: string; tone: StatusTone }
+  { label: string; tone: StatusTone; message: string }
 > = {
-  idle: { label: 'Ready', tone: 'neutral' },
-  pending: { label: 'Logging in', tone: 'warning' },
-  success: { label: 'Token stored', tone: 'positive' },
-  error: { label: 'Login failed', tone: 'negative' },
+  idle: {
+    label: 'Ready',
+    tone: 'neutral',
+    message: 'Use the demo credentials and submit the login mutation.',
+  },
+  success: {
+    label: 'Token stored',
+    tone: 'positive',
+    message: 'Access token stored in the Redux slice.',
+  },
+  error: {
+    label: 'Login failed',
+    tone: 'negative',
+    message: 'The login request was rejected by the API.',
+  },
 };
 
 const validationStateMeta: Record<
@@ -69,9 +93,80 @@ const validationStateMeta: Record<
   idle: { label: 'Waiting', tone: 'neutral' },
   pending: { label: 'Validating', tone: 'warning' },
   valid: { label: 'Token valid', tone: 'positive' },
-  invalid: { label: 'Token invalid', tone: 'negative' },
-  error: { label: 'Validation error', tone: 'negative' },
+  error: { label: 'Token rejected', tone: 'negative' },
 };
+
+function validationMessage({ state, email }: StackClient['validation']) {
+  switch (state) {
+    case 'idle':
+      return 'Log in first to call the protected endpoint.';
+    case 'pending':
+      return 'Calling /api/validate-token with the bearer token...';
+    case 'valid':
+      return `Authenticated as ${email}.`;
+    case 'error':
+      return 'The backend rejected the token (missing, expired or invalid).';
+  }
+}
+
+function maskToken(token: string) {
+  return token
+    ? `${token.slice(0, 12)}…${token.slice(-6)}`
+    : 'No token stored yet';
+}
+
+function toValidationState(
+  accessToken: string,
+  query: { isFetching: boolean; isError: boolean; data?: unknown },
+): ValidationState {
+  if (!accessToken) return 'idle';
+  if (query.isFetching) return 'pending';
+  if (query.isError) return 'error';
+  return query.data ? 'valid' : 'idle';
+}
+
+function useHeyApiClient(): StackClient {
+  const accessToken = useAppSelector(selectAccessToken);
+  const login = useMutation(heyApiLoginMutation());
+  // Bind `auth` to this token and key the query by it, so a new token never
+  // reuses cached or in-flight data from the previous identity.
+  const validateOptions = heyApiValidateTokenOptions({ auth: accessToken });
+  const validation = useQuery({
+    ...validateOptions,
+    // `tags` is part of Hey API's typed query key, so it changes the key hash.
+    queryKey: [{ ...validateOptions.queryKey[0], tags: [accessToken] }],
+    enabled: Boolean(accessToken),
+  });
+
+  return {
+    login: async (credentials) =>
+      (await login.mutateAsync({ body: credentials })).accessToken,
+    validation: {
+      state: toValidationState(accessToken, validation),
+      email: validation.data?.email,
+    },
+  };
+}
+
+function useOrvalClient(): StackClient {
+  const accessToken = useAppSelector(selectAccessToken);
+  const login = useOrvalLogin();
+  const validation = useOrvalValidateToken({
+    query: {
+      enabled: Boolean(accessToken),
+      queryKey: [...getOrvalValidateTokenQueryKey(), accessToken],
+    },
+  });
+
+  return {
+    login: async (credentials) =>
+      (await login.mutateAsync({ data: credentials })).accessToken,
+    validation: {
+      state: toValidationState(accessToken, validation),
+      email: validation.data?.email,
+    },
+  };
+}
 
 function StatusPill({
   tone,
@@ -117,40 +212,57 @@ function StackSwitcher() {
   );
 }
 
-function AuthPanelView({
-  stack,
-  loginState,
-  loginMessage,
-  validationState,
-  validationMessage,
-  email,
-  password,
-  accessToken,
-  demoCount,
-  onEmailChange,
-  onPasswordChange,
-  onSubmit,
-  onIncrementDemoCount,
-  onClearToken,
-}: {
-  stack: ClientStack;
-  loginState: LoginState;
-  loginMessage: string;
-  validationState: ValidationState;
-  validationMessage: string;
-  email: string;
-  password: string;
-  accessToken: string;
-  demoCount: number;
-  onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onIncrementDemoCount: () => void;
-  onClearToken: () => void;
-}) {
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button className={styles.primaryButton} type="submit" disabled={pending}>
+      {pending ? 'Logging in...' : 'Log in'}
+    </button>
+  );
+}
+
+function ClearTokenButton() {
+  const dispatch = useAppDispatch();
+
+  return (
+    <button
+      className={styles.secondaryButton}
+      type="button"
+      onClick={() => dispatch(appStateSliceActions.clearAccessToken())}
+    >
+      Clear token
+    </button>
+  );
+}
+
+function AuthPanel({ stack, client }: { stack: ClientStack; client: StackClient }) {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const accessToken = useAppSelector(selectAccessToken);
+
+  const [loginState, loginAction, isPending] = useActionState(
+    async (_previous: LoginState, formData: FormData): Promise<LoginState> => {
+      try {
+        const token = await client.login({
+          email: String(formData.get('email')),
+          password: String(formData.get('password')),
+        });
+        dispatch(appStateSliceActions.setAccessToken(token));
+        navigate('/protected');
+        return 'success';
+      } catch {
+        return 'error';
+      }
+    },
+    'idle',
+  );
+
   const info = stackInfo[stack];
-  const loginMeta = loginStateMeta[loginState];
-  const validationMeta = validationStateMeta[validationState];
+  const loginMeta = isPending
+    ? { label: 'Logging in', tone: 'warning' as const, message: 'Submitting...' }
+    : loginStateMeta[loginState];
+  const validationMeta = validationStateMeta[client.validation.state];
 
   return (
     <section className={styles.card}>
@@ -168,14 +280,15 @@ function AuthPanelView({
         </div>
       </header>
 
-      <form className={styles.form} onSubmit={onSubmit}>
+      <form className={styles.form} action={loginAction}>
         <label className={styles.field}>
           <span>Email</span>
           <input
             className={styles.input}
+            name="email"
             type="email"
-            value={email}
-            onChange={onEmailChange}
+            required
+            defaultValue={demoCredentials.email}
           />
         </label>
 
@@ -183,34 +296,16 @@ function AuthPanelView({
           <span>Password</span>
           <input
             className={styles.input}
+            name="password"
             type="password"
-            value={password}
-            onChange={onPasswordChange}
+            required
+            defaultValue={demoCredentials.password}
           />
         </label>
 
         <div className={styles.buttonRow}>
-          <button
-            className={styles.primaryButton}
-            type="submit"
-            disabled={loginState === 'pending'}
-          >
-            {loginState === 'pending' ? 'Logging in...' : 'Log in'}
-          </button>
-          <button
-            className={styles.secondaryButton}
-            type="button"
-            onClick={onIncrementDemoCount}
-          >
-            Demo counter +1
-          </button>
-          <button
-            className={styles.secondaryButton}
-            type="button"
-            onClick={onClearToken}
-          >
-            Clear token
-          </button>
+          <SubmitButton />
+          <ClearTokenButton />
           <Link className={styles.linkButton} to="/protected">
             Open protected screen
           </Link>
@@ -220,44 +315,33 @@ function AuthPanelView({
       <div className={styles.summaryGrid}>
         <div>
           <span className={styles.summaryLabel}>Access token</span>
-          <code className={styles.codeBlock}>
-            {accessToken || 'No token stored yet'}
-          </code>
-        </div>
-        <div>
-          <span className={styles.summaryLabel}>Demo counter</span>
-          <strong className={styles.metric}>{demoCount}</strong>
+          <code className={styles.codeBlock}>{maskToken(accessToken)}</code>
         </div>
         <div>
           <span className={styles.summaryLabel}>Login status</span>
-          <p className={styles.summaryCopy}>{loginMessage}</p>
+          <p className={styles.summaryCopy}>{loginMeta.message}</p>
         </div>
         <div>
           <span className={styles.summaryLabel}>Validation status</span>
-          <p className={styles.summaryCopy}>{validationMessage}</p>
+          <p className={styles.summaryCopy}>
+            {validationMessage(client.validation)}
+          </p>
         </div>
       </div>
     </section>
   );
 }
 
-function ProtectedPanelView({
+function ProtectedPanel({
   stack,
-  validationState,
-  validationMessage,
-  accessToken,
-  demoCount,
-  onClearToken,
+  client,
 }: {
   stack: ClientStack;
-  validationState: ValidationState;
-  validationMessage: string;
-  accessToken: string;
-  demoCount: number;
-  onClearToken: () => void;
+  client: StackClient;
 }) {
+  const accessToken = useAppSelector(selectAccessToken);
   const info = stackInfo[stack];
-  const validationMeta = validationStateMeta[validationState];
+  const validationMeta = validationStateMeta[client.validation.state];
 
   return (
     <section className={styles.card}>
@@ -266,8 +350,8 @@ function ProtectedPanelView({
           <p className={styles.kicker}>Protected screen</p>
           <h2 className={styles.cardTitle}>{info.label}</h2>
           <p className={styles.cardDescription}>
-            This screen re-validates the stored token with the currently
-            selected generated client.
+            This screen calls the protected endpoint with the stored token,
+            sent as an Authorization: Bearer header by the selected client.
           </p>
         </div>
         <StatusPill tone={validationMeta.tone}>{validationMeta.label}</StatusPill>
@@ -276,28 +360,18 @@ function ProtectedPanelView({
       <div className={styles.summaryGrid}>
         <div>
           <span className={styles.summaryLabel}>Access token</span>
-          <code className={styles.codeBlock}>
-            {accessToken || 'No token stored yet'}
-          </code>
-        </div>
-        <div>
-          <span className={styles.summaryLabel}>Demo counter</span>
-          <strong className={styles.metric}>{demoCount}</strong>
+          <code className={styles.codeBlock}>{maskToken(accessToken)}</code>
         </div>
         <div>
           <span className={styles.summaryLabel}>Validation detail</span>
-          <p className={styles.summaryCopy}>{validationMessage}</p>
+          <p className={styles.summaryCopy}>
+            {validationMessage(client.validation)}
+          </p>
         </div>
       </div>
 
       <div className={styles.buttonRow}>
-        <button
-          className={styles.secondaryButton}
-          type="button"
-          onClick={onClearToken}
-        >
-          Clear token
-        </button>
+        <ClearTokenButton />
         <Link className={styles.linkButton} to="/">
           Back to comparison
         </Link>
@@ -306,280 +380,35 @@ function ProtectedPanelView({
   );
 }
 
-function HeyApiPanel() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const email = useAppSelector(selectEmail);
-  const password = useAppSelector(selectPassword);
-  const accessToken = useAppSelector(selectAccessToken);
-  const demoCount = useAppSelector(selectDemoCount);
-
-  const login = useMutation({
-    ...heyApiLoginMutation(),
-    onSuccess: (response) => {
-      dispatch(appStateSliceActions.setAccessToken(response.accessToken));
-      navigate('/protected');
-    },
-  });
-
-  const validation = useQuery({
-    ...heyApiValidateTokenOptions({ query: { token: accessToken } }),
-    enabled: Boolean(accessToken),
-  });
-
-  const loginState: LoginState = login.isPending
-    ? 'pending'
-    : login.isError
-      ? 'error'
-      : login.isSuccess
-        ? 'success'
-        : 'idle';
-  const validationState: ValidationState = !accessToken
-    ? 'idle'
-    : validation.isFetching
-      ? 'pending'
-      : validation.isError
-        ? 'error'
-        : validation.data?.isValid
-          ? 'valid'
-          : 'invalid';
-
-  return (
-    <AuthPanelView
-      stack="hey-api"
-      loginState={loginState}
-      loginMessage={
-        login.isError
-          ? 'The login request was rejected by the API.'
-          : login.isSuccess
-            ? 'Access token stored in the generated Redux slice.'
-            : 'Use the demo credentials and submit the Hey API mutation.'
-      }
-      validationState={validationState}
-      validationMessage={
-        !accessToken
-          ? 'Log in first to run the token-validation query.'
-          : validation.isFetching
-            ? 'Checking the token with the Hey API query helpers...'
-            : validation.isError
-              ? 'The token-validation query failed.'
-              : validation.data?.isValid
-                ? 'The token is valid according to the backend.'
-                : 'The backend rejected the token.'
-      }
-      email={email}
-      password={password}
-      accessToken={accessToken}
-      demoCount={demoCount}
-      onEmailChange={(event) =>
-        dispatch(appStateSliceActions.setEmail(event.target.value))
-      }
-      onPasswordChange={(event) =>
-        dispatch(appStateSliceActions.setPassword(event.target.value))
-      }
-      onSubmit={(event) => {
-        event.preventDefault();
-        login.mutate({ body: { email, password } });
-      }}
-      onIncrementDemoCount={() =>
-        dispatch(appStateSliceActions.incrementDemoCount())
-      }
-      onClearToken={() => dispatch(appStateSliceActions.clearAccessToken())}
-    />
-  );
+function HeyApiAuthPanel() {
+  return <AuthPanel stack="hey-api" client={useHeyApiClient()} />;
 }
 
-function OrvalPanel() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const email = useAppSelector(selectEmail);
-  const password = useAppSelector(selectPassword);
-  const accessToken = useAppSelector(selectAccessToken);
-  const demoCount = useAppSelector(selectDemoCount);
-
-  const login = useOrvalLogin({
-    mutation: {
-      onSuccess: (response) => {
-        dispatch(
-          appStateSliceActions.setAccessToken(response.data.accessToken),
-        );
-        navigate('/protected');
-      },
-    },
-  });
-
-  const validation = useOrvalValidateToken(
-    { token: accessToken },
-    {
-      query: {
-        enabled: Boolean(accessToken),
-      },
-    },
-  );
-
-  const loginState: LoginState = login.isPending
-    ? 'pending'
-    : login.isError
-      ? 'error'
-      : login.isSuccess
-        ? 'success'
-        : 'idle';
-  const validationState: ValidationState = !accessToken
-    ? 'idle'
-    : validation.isFetching
-      ? 'pending'
-      : validation.isError
-        ? 'error'
-        : validation.data?.data.isValid
-          ? 'valid'
-          : 'invalid';
-
-  return (
-    <AuthPanelView
-      stack="orval"
-      loginState={loginState}
-      loginMessage={
-        login.isError
-          ? 'The Orval mutation failed.'
-          : login.isSuccess
-            ? 'Access token stored in the generated Redux slice.'
-            : 'Use the demo credentials and submit the Orval mutation.'
-      }
-      validationState={validationState}
-      validationMessage={
-        !accessToken
-          ? 'Log in first to run the Orval React Query hook.'
-          : validation.isFetching
-            ? 'Checking the token with the Orval query hook...'
-            : validation.isError
-              ? 'The token-validation request failed.'
-              : validation.data?.data.isValid
-                ? 'The token is valid according to the backend.'
-                : 'The backend rejected the token.'
-      }
-      email={email}
-      password={password}
-      accessToken={accessToken}
-      demoCount={demoCount}
-      onEmailChange={(event) =>
-        dispatch(appStateSliceActions.setEmail(event.target.value))
-      }
-      onPasswordChange={(event) =>
-        dispatch(appStateSliceActions.setPassword(event.target.value))
-      }
-      onSubmit={(event) => {
-        event.preventDefault();
-        login.mutate({ data: { email, password } });
-      }}
-      onIncrementDemoCount={() =>
-        dispatch(appStateSliceActions.incrementDemoCount())
-      }
-      onClearToken={() => dispatch(appStateSliceActions.clearAccessToken())}
-    />
-  );
+function OrvalAuthPanel() {
+  return <AuthPanel stack="orval" client={useOrvalClient()} />;
 }
 
-function ProtectedHeyApiPanel() {
-  const dispatch = useAppDispatch();
-  const accessToken = useAppSelector(selectAccessToken);
-  const demoCount = useAppSelector(selectDemoCount);
-
-  const validation = useQuery({
-    ...heyApiValidateTokenOptions({ query: { token: accessToken } }),
-    enabled: Boolean(accessToken),
-  });
-
-  const validationState: ValidationState = !accessToken
-    ? 'idle'
-    : validation.isFetching
-      ? 'pending'
-      : validation.isError
-        ? 'error'
-        : validation.data?.isValid
-          ? 'valid'
-          : 'invalid';
-
-  return (
-    <ProtectedPanelView
-      stack="hey-api"
-      validationState={validationState}
-      validationMessage={
-        !accessToken
-          ? 'No access token is stored yet.'
-          : validation.isFetching
-            ? 'Validating the token with Hey API...'
-            : validation.isError
-              ? 'The protected screen could not validate the token.'
-              : validation.data?.isValid
-                ? 'The protected screen is unlocked.'
-                : 'The stored token is not valid anymore.'
-      }
-      accessToken={accessToken}
-      demoCount={demoCount}
-      onClearToken={() => dispatch(appStateSliceActions.clearAccessToken())}
-    />
-  );
+function HeyApiProtectedPanel() {
+  return <ProtectedPanel stack="hey-api" client={useHeyApiClient()} />;
 }
 
-function ProtectedOrvalPanel() {
-  const dispatch = useAppDispatch();
-  const accessToken = useAppSelector(selectAccessToken);
-  const demoCount = useAppSelector(selectDemoCount);
-
-  const validation = useOrvalValidateToken(
-    { token: accessToken },
-    {
-      query: {
-        enabled: Boolean(accessToken),
-      },
-    },
-  );
-
-  const validationState: ValidationState = !accessToken
-    ? 'idle'
-    : validation.isFetching
-      ? 'pending'
-      : validation.isError
-        ? 'error'
-        : validation.data?.data.isValid
-          ? 'valid'
-          : 'invalid';
-
-  return (
-    <ProtectedPanelView
-      stack="orval"
-      validationState={validationState}
-      validationMessage={
-        !accessToken
-          ? 'No access token is stored yet.'
-          : validation.isFetching
-            ? 'Validating the token with Orval...'
-            : validation.isError
-              ? 'The protected screen could not validate the token.'
-              : validation.data?.data.isValid
-                ? 'The protected screen is unlocked.'
-                : 'The stored token is not valid anymore.'
-      }
-      accessToken={accessToken}
-      demoCount={demoCount}
-      onClearToken={() => dispatch(appStateSliceActions.clearAccessToken())}
-    />
-  );
+function OrvalProtectedPanel() {
+  return <ProtectedPanel stack="orval" client={useOrvalClient()} />;
 }
 
 function ActiveStackPanel() {
   const activeStack = useAppSelector(selectActiveStack);
 
-  return activeStack === 'hey-api' ? <HeyApiPanel /> : <OrvalPanel />;
+  return activeStack === 'hey-api' ? <HeyApiAuthPanel /> : <OrvalAuthPanel />;
 }
 
 function ProtectedStackPanel() {
   const activeStack = useAppSelector(selectActiveStack);
 
   return activeStack === 'hey-api' ? (
-    <ProtectedHeyApiPanel />
+    <HeyApiProtectedPanel />
   ) : (
-    <ProtectedOrvalPanel />
+    <OrvalProtectedPanel />
   );
 }
 
@@ -595,15 +424,16 @@ export function App() {
             Compare generated client stacks against the same backend.
           </h1>
           <p className={styles.pageCopy}>
-            The generated Redux slice keeps the stack toggle, token, and demo
-            counter in one place while the backend is consumed through either
-            Hey API + TanStack Query or Orval + React Query.
+            A small Redux Toolkit slice keeps the stack toggle and access token
+            in one place while the backend is consumed through either Hey API +
+            TanStack Query or Orval + React Query, both generated from the same
+            OpenAPI spec.
           </p>
           <div className={styles.heroRow}>
             <StatusPill tone="neutral">
               Current stack: {stackInfo[activeStack].label}
             </StatusPill>
-            <StatusPill tone="positive">Generated state: Redux Toolkit</StatusPill>
+            <StatusPill tone="positive">Shared state: Redux Toolkit</StatusPill>
           </div>
         </header>
 

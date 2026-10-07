@@ -1,41 +1,48 @@
+using System.Text;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.OpenApi;
-using FastEndpoints.OpenApi.Kiota;
-using Kiota.Builder;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using FastEndpointsReactApi;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<AuthTokenHandler>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-      options.TokenValidationParameters = new TokenValidationParameters
-      {
-        ValidateIssuer = true,
-        ValidIssuer = AuthTokenSettings.Issuer,
-        ValidateAudience = true,
-        ValidAudience = AuthTokenSettings.Audience,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = AuthTokenSettings.CreateSigningKey(builder.Configuration)
-      };
-    });
-
-builder.Services.AddAuthorization()
-                .AddFastEndpoints()
-                .OpenApiDocument(p =>
+// Jwt:Issuer/Audience live in appsettings.json; Jwt:SigningKey comes from user-secrets (dev)
+// or the Jwt__SigningKey environment variable. Both callbacks below run lazily, so the
+// OpenAPI export works without a signing key.
+var jwt = builder.Configuration.GetSection("Jwt");
+string SigningKey() => jwt["SigningKey"] switch
 {
-  p.DocumentName = "v1";
-  p.Title = "FastEndpoints React API";
-  p.Version = "v1";
-  p.ShortSchemaNames = true;
-  p.MaxEndpointVersion = 1;
-});
+  null or "" => throw new InvalidOperationException(
+    "Jwt:SigningKey is not configured. Run `dotnet user-secrets set Jwt:SigningKey <32+ byte secret>` in apps/fastendpoints-react-api."),
+  var key when Encoding.UTF8.GetByteCount(key) < 32 => throw new InvalidOperationException(
+    $"Jwt:SigningKey must be at least 32 bytes (256 bits) in UTF-8 for HMAC-SHA256; the configured key is {Encoding.UTF8.GetByteCount(key)} bytes."),
+  var key => key,
+};
+
+builder.Services
+  .Configure<JwtCreationOptions>(o =>
+  {
+    o.SigningKey = SigningKey();
+    o.Issuer = jwt["Issuer"];
+    o.Audience = jwt["Audience"];
+  })
+  .AddAuthenticationJwtBearer(
+    s => s.SigningKey = SigningKey(),
+    b =>
+    {
+      b.TokenValidationParameters.ValidIssuer = jwt["Issuer"];
+      b.TokenValidationParameters.ValidAudience = jwt["Audience"];
+    })
+  .AddAuthorization()
+  .AddFastEndpoints()
+  .OpenApiDocument(p =>
+  {
+    p.DocumentName = "v1";
+    p.Title = "FastEndpoints React API";
+    p.Version = "v1";
+    p.ShortSchemaNames = true;
+    p.MaxEndpointVersion = 1;
+  });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -55,20 +62,8 @@ if (app.Environment.IsDevelopment())
   app.MapScalarApiReference(o => o.AddDocuments("v1"));
 }
 
-await app.ExportOpenApiJsonAndExitAsync(
-    "v1",
-    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "api"),
-    "specification.json");
-
-await app.GenerateApiClientsAndExitAsync(
-    c =>
-    {
-      c.OpenApiDocumentName = "v1";
-      c.Language = GenerationLanguage.TypeScript;
-      c.OutputPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "fastendpoints-react-example", "src", "generated", "kiota");
-      c.ClientNamespaceName = "FastEndpointsReactApi";
-      c.ClientClassName = "FastEndpointsReactApiClient";
-    });
-
+// `nx run fastendpoints-react-api:openapi` passes `--export-openapi-docs true`, which writes
+// wwwroot/api/v1.json (OpenApiExportPath in the csproj) and exits.
+await app.ExportOpenApiArtifactsAndExitAsync("v1");
 
 app.Run();

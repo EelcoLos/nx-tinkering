@@ -2,4 +2,4 @@
 
 export { loginMutation, type QueryKey, validateTokenOptions, validateTokenQueryKey } from './@tanstack/react-query.gen';
 export { login, type Options, validateToken } from './sdk.gen';
-export type { ClientOptions, ErrorResponse, LoginData, LoginError, LoginErrors, LoginRequest, LoginResponse, LoginResponse2, LoginResponses, ValidateTokenData, ValidateTokenRequest, ValidateTokenResponse, ValidateTokenResponse2, ValidateTokenResponses } from './types.gen';
+export type { ClientOptions, ErrorResponse, LoginData, LoginError, LoginErrors, LoginRequest, LoginResponse, LoginResponse2, LoginResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponse, ValidateTokenResponse2, ValidateTokenResponses } from './types.gen';

@@ -1,0 +1,23 @@
+{
+  "name": "fastendpoints-react-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "openapi": {
+      "description": "Export the OpenAPI document to wwwroot/api/v1.json",
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": true,
+      "inputs": ["production", "!{projectRoot}/wwwroot/api/v1.json"],
+      "outputs": ["{projectRoot}/wwwroot/api/v1.json"],
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [
+          "dotnet run --no-build --no-launch-profile -- --export-openapi-docs true --urls http://127.0.0.1:0",
+          "node strip-null-const.mjs"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}
