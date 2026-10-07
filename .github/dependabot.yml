@@ -44,9 +44,6 @@ updates:
       client-prettier:
         patterns:
           - 'prettier'
-      client-kiota:
-        patterns:
-          - '@microsoft/kiota*'
       client-eslint:
         patterns:
           - 'eslint'
