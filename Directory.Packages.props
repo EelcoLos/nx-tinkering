@@ -33,6 +33,6 @@
     <!-- Vogen -->
     <PackageVersion Include="Vogen" Version="8.0.7" />
     <!-- xunit -->
-    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>
 </Project>
