@@ -56,7 +56,7 @@
     "@nx/vitest": "23.3.0",
     "@nx/web": "23.3.0",
     "@nx/workspace": "23.3.0",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@rolldown/plugin-babel": "^0.2.4",
     "@schematics/angular": "22.2.2",
     "@swc-node/register": "1.12.1",
