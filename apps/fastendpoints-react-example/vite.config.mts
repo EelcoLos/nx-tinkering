@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 
 const appRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +30,11 @@ export default defineConfig(() => ({
     host: 'localhost',
   },
   // React Compiler (babel-plugin-react-compiler) via the plugin-react preset.
-  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
+  plugins: [
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
+    nxReadySignal(),
+  ],
   build: {
     outDir: resolve(appRoot, '../../dist/apps/fastendpoints-react-example'),
     emptyOutDir: true,
