@@ -1,6 +1,6 @@
 {
   "name": "nx-tinkering",
-  "version": "23.3.0",
+  "version": "24.0.0",
   "license": "MIT",
   "scripts": {
     "format:write": "nx format:write --base=origin/main && dotnet format nx-tinker.slnx",
