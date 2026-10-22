@@ -65,3 +65,4 @@ vite.config.*.timestamp*
 .claude/settings.local.json
 vitest.config.*.timestamp*
 .vitest
+migrations.json
