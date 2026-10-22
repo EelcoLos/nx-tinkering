@@ -94,7 +94,11 @@
         "buildTarget": "angular-auth-example:build",
         "staticFilePath": "dist/apps/angular-auth-example/browser",
         "spa": true
-      }
+      },
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"]
     },
     "generate-client": {
       "executor": "nx:run-commands",
