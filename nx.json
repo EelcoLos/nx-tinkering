@@ -22,15 +22,6 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "@nx/eslint:lint": {
-      "cache": true,
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/eslint.config.*",
-        "{workspaceRoot}/tools/eslint-rules/**/*"
-      ]
-    },
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
     },
