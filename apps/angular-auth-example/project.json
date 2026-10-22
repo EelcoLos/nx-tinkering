@@ -63,6 +63,9 @@
           "sslCert": "apps/angular-auth-example/ssl/localhost.pem",
           "ssl": true
         }
+      },
+      "readyWhen": {
+        "signal": true
       }
     },
     "extract-i18n": {
@@ -90,15 +93,15 @@
     },
     "serve-static": {
       "executor": "@nx/web:file-server",
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"],
       "options": {
         "buildTarget": "angular-auth-example:build",
         "staticFilePath": "dist/apps/angular-auth-example/browser",
         "spa": true
-      },
-      "readyWhen": {
-        "signal": true
-      },
-      "dependsOn": ["build"]
+      }
     },
     "generate-client": {
       "executor": "nx:run-commands",

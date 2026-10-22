@@ -59,6 +59,9 @@
         "development": {
           "buildTarget": "nx-tinkering:build:development"
         }
+      },
+      "readyWhen": {
+        "signal": true
       }
     },
     "extract-i18n": {
