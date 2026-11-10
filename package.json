@@ -17,7 +17,7 @@
     "@angular/router": "22.2.4",
     "@nx/angular": "24.0.3",
     "@reduxjs/toolkit": "2.14.0",
-    "@tanstack/react-query": "^5.105.0",
+    "@tanstack/react-query": "^5.107.1",
     "@x402/evm": "^2.30.0",
     "@x402/fetch": "^2.29.0",
     "react": "^19.3.1",
