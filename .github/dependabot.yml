@@ -85,6 +85,8 @@ updates:
       nuget-microsoft-identity-web:
         patterns:
           - 'Microsoft.Identity.Web*'
+          - 'System.Security.Cryptography.Xml'
+          - 'Microsoft.Extensions.Logging.Abstractions'
       nuget-xunit:
         patterns:
           - 'xunit*'
