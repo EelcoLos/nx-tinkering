@@ -8,12 +8,12 @@
     <PackageVersion Include="A2A" Version="1.0.0-preview2" />
     <PackageVersion Include="A2A.AspNetCore" Version="1.0.0-preview2" />
     <!-- FastEndpoints -->
-    <PackageVersion Include="FastEndpoints" Version="9.0.0-beta.11" />
+    <PackageVersion Include="FastEndpoints" Version="9.0.0" />
     <PackageVersion Include="FastEndpoints.A2A" Version="1.0.0-beta.5" />
-    <PackageVersion Include="FastEndpoints.OpenApi" Version="9.0.0-beta.11" />
-    <PackageVersion Include="FastEndpoints.Security" Version="9.0.0-beta.11" />
+    <PackageVersion Include="FastEndpoints.OpenApi" Version="9.0.0" />
+    <PackageVersion Include="FastEndpoints.Security" Version="9.0.0" />
     <!-- Microsoft.AspNetCore -->
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-rc.3.26522.148" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
     <!-- Microsoft.Extensions -->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />
@@ -33,5 +33,5 @@
     <PackageVersion Include="Vogen" Version="8.0.7" />
     <!-- xunit -->
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
-  </ItemGroup>
+  </ItemGroup>   
 </Project>
