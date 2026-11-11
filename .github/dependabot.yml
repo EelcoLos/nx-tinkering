@@ -73,10 +73,20 @@ updates:
   - package-ecosystem: 'nuget'
     directory: '/'
     ignore:
-      - dependency-name: 'Microsoft.*'
+      # Suppress major updates for current Microsoft dependencies except Microsoft.OpenApi.
+      - dependency-name: 'Microsoft.AspNetCore.OpenApi'
         update-types: ['version-update:semver-major']
-      # Pinned to 2.x on purpose, see Directory.Packages.props
-      - dependency-name: 'Microsoft.OpenApi'
+      - dependency-name: 'Microsoft.Extensions.Diagnostics.Testing'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Extensions.Logging.Abstractions'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Graph'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Identity.Web'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Identity.Web.GraphServiceClient'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.IdentityModel.Tokens'
         update-types: ['version-update:semver-major']
     groups:
       nuget-fastendpoints:
