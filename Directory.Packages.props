@@ -10,8 +10,8 @@
     <!-- FastEndpoints -->
     <PackageVersion Include="FastEndpoints" Version="9.0.0-beta.11" />
     <PackageVersion Include="FastEndpoints.A2A" Version="1.0.0-beta.5" />
-    <PackageVersion Include="FastEndpoints.OpenApi" Version="8.3.0" />
-    <PackageVersion Include="FastEndpoints.Security" Version="8.3.0" />
+    <PackageVersion Include="FastEndpoints.OpenApi" Version="9.0.0-beta.11" />
+    <PackageVersion Include="FastEndpoints.Security" Version="9.0.0-beta.11" />
     <!-- Microsoft.AspNetCore -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
     <!-- Microsoft.Extensions -->
