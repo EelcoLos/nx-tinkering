@@ -12,10 +12,15 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
 
   public override async Task HandleAsync(MyRequest req, CancellationToken ct)
   {
+    AgeEligibility ageEligibility = req.Age > 18 ? new Over18() : new NotOver18();
     await Send.OkAsync(new()
     {
       FullName = req.FirstName + " " + req.LastName,
-      IsOver18 = req.Age > 18
+      IsOver18 = ageEligibility switch
+      {
+        Over18 => true,
+        NotOver18 => false,
+      }
     }, cancellation: ct);
   }
 }
