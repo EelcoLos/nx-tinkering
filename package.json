@@ -103,11 +103,11 @@
   },
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,
-    "@swc/core@1.16.20": true,
+    "@swc/core@1.16.22": true,
     "esbuild@0.28.2": true,
     "lmdb@3.5.6": true,
     "msgpackr-extract@3.0.4": true,
-    "nx@24.0.3": true,
+    "nx@24.0.5": true,
     "oxc-resolver@11.6.1": true,
     "unrs-resolver@1.12.2": true
   }

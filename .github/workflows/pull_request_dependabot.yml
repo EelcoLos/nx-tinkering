@@ -67,7 +67,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: "11.0.x"
       - name: Restore NuGet packages
         run: dotnet restore nx-tinker.slnx
       - name: Derive appropriate SHAs for `nx affected`
@@ -112,15 +112,15 @@ jobs:
     needs: [dependabot-check, override-cleanup]
     if: always() &&
       (
-        inputs.nx_update == 'true' ||
-        (
-          github.event_name == 'pull_request' &&
-          (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) &&
-          (
-            contains(needs.dependabot-check.outputs.dependency-names, '@nx/') ||
-            contains(needs.dependabot-check.outputs.dependency-names, 'nx')
-          )
-        )
+      inputs.nx_update == 'true' ||
+      (
+      github.event_name == 'pull_request' &&
+      (github.event.action == 'opened' || (github.event.action == 'synchronize' && github.event.sender.login == 'dependabot[bot]')) &&
+      (
+      contains(needs.dependabot-check.outputs.dependency-names, '@nx/') ||
+      contains(needs.dependabot-check.outputs.dependency-names, 'nx')
+      )
+      )
       )
     steps:
       - name: "Checkout code for Dependabot automation"
