@@ -83,7 +83,7 @@
     "jsdom": "^31.0.1",
     "nx": "24.0.5",
     "orval": "^8.47.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "ts-node": "10.9.2",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.72.1",
