@@ -56,7 +56,7 @@
     "@nx/web": "24.0.5",
     "@nx/workspace": "24.0.5",
     "@playwright/test": "^1.65.1",
-    "@rolldown/plugin-babel": "^0.3.0",
+    "@rolldown/plugin-babel": "^0.3.1",
     "@schematics/angular": "22.2.6",
     "@swc-node/register": "1.12.1",
     "@swc/cli": "~0.8.2",
