@@ -27,6 +27,13 @@ function renderApp() {
 }
 
 describe('App', () => {
+  it('should render the comparison heading only once', () => {
+    const { getAllByRole } = renderApp();
+    expect(
+      getAllByRole('heading', { name: /Compare generated client stacks/i }),
+    ).toHaveLength(1);
+  });
+
   it('should render successfully', () => {
     const { baseElement } = renderApp();
     expect(baseElement).toBeTruthy();

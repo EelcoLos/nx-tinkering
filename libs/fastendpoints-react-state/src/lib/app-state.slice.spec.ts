@@ -5,6 +5,18 @@ import {
 } from './app-state.slice';
 
 describe('appStateSlice reducer', () => {
+  it('should preserve the active stack when storing an access token', () => {
+    const state = appStateSliceReducer(
+      undefined,
+      appStateSliceActions.setActiveStack('orval'),
+    );
+    const withToken = appStateSliceReducer(
+      state,
+      appStateSliceActions.setAccessToken('token-123'),
+    );
+    expect(withToken.activeStack).toBe('orval');
+  });
+
   it('should handle initial state', () => {
     expect(appStateSliceReducer(undefined, { type: '' })).toEqual(
       initialAppStateSliceState,
